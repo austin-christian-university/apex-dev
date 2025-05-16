@@ -3,66 +3,80 @@
 @tailwind utilities;
 
 @layer base {
+  /* --- Brand Color Palette --- */
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    /* Brand Colors */
+    --brand-black: 231 4% 13%;      /* #231F20 Neutral Black C */
+    --brand-navy: 213 31% 18%;      /* #1F2F3D Pantone 7546 C */
+    --brand-bronze: 34 51% 39%;     /* #976231 Pantone 730 C */
+    --brand-white: 0 0% 100%;       /* #FFFFFF Pantone Cool Gray 1 C */
+    --brand-green: 146 100% 17%;    /* #005600 Pantone 2427 C */
+    --brand-maroon: 350 77% 22%;    /* #6b0e18 Pantone 1955 C */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Typography (Branding) */
+    --font-subtitle: Superior Text, sans-serif; /* Superior Text for subtitles and smaller portions of text */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Semantic Colors (Light) */
+    --background: var(--brand-white);
+    --foreground: var(--brand-black);
 
-    --primary: 214 80% 46%;
-    --primary-foreground: 210 40% 98%;
+    --card: var(--brand-white);
+    --card-foreground: var(--brand-black);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --popover: var(--brand-white);
+    --popover-foreground: var(--brand-black);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --primary: var(--brand-black);
+    --primary-foreground: var(--brand-white);
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--brand-navy);
+    --secondary-foreground: var(--brand-white);
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: var(--brand-bronze);
+    --muted-foreground: var(--brand-black);
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 214 80% 46%;
+    --accent: var(--brand-green);
+    --accent-foreground: var(--brand-white);
+
+    --destructive: var(--brand-maroon);
+    --destructive-foreground: var(--brand-white);
+
+    --border: var(--brand-navy);
+    --input: var(--brand-navy);
+    --ring: var(--brand-bronze);
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Semantic Colors (Dark) */
+    --background: var(--brand-navy);
+    --foreground: var(--brand-white);
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: var(--brand-navy);
+    --card-foreground: var(--brand-white);
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: var(--brand-navy);
+    --popover-foreground: var(--brand-white);
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: var(--brand-white);
+    --primary-foreground: var(--brand-black);
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: var(--brand-bronze);
+    --secondary-foreground: var(--brand-black);
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: var(--brand-black);
+    --muted-foreground: var(--brand-white);
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: var(--brand-green);
+    --accent-foreground: var(--brand-white);
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: var(--brand-maroon);
+    --destructive-foreground: var(--brand-white);
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --border: var(--brand-bronze);
+    --input: var(--brand-bronze);
+    --ring: var(--brand-green);
   }
 }
 
@@ -84,15 +98,23 @@
   }
   h4 {
     @apply text-xl md:text-2xl lg:text-3xl font-medium;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
   p {
     @apply text-base md:text-lg lg:text-xl leading-relaxed;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
   .text-sm {
     @apply text-base md:text-lg lg:text-xl;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
   .text-xs {
     @apply text-sm md:text-base lg:text-lg;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
   .text-lg {
     @apply text-xl md:text-2xl lg:text-3xl;
@@ -124,10 +146,14 @@
 
   .stat-label {
     @apply text-lg md:text-xl lg:text-2xl text-muted-foreground dark:text-muted-foreground font-medium;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .nav-item {
     @apply flex items-center space-x-4 px-6 py-4 rounded-md text-lg md:text-xl lg:text-2xl font-medium transition-colors;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .nav-item-active {
@@ -140,6 +166,8 @@
 
   .data-table {
     @apply w-full text-lg md:text-xl lg:text-2xl;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .data-table th {
@@ -156,18 +184,26 @@
 
   .badge-success {
     @apply bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .badge-warning {
     @apply bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .badge-info {
     @apply bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .badge-danger {
     @apply bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .progress-container {
@@ -209,23 +245,33 @@
 
   .card-description {
     @apply text-lg md:text-xl lg:text-2xl text-muted-foreground;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   /* Form elements */
   .form-label {
     @apply text-lg md:text-xl lg:text-2xl font-medium mb-2;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .form-input {
     @apply text-lg md:text-xl lg:text-2xl px-4 py-3;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .form-select {
     @apply text-lg md:text-xl lg:text-2xl px-4 py-3;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .form-button {
     @apply text-lg md:text-xl lg:text-2xl px-6 py-3;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   /* Tabs */
@@ -235,6 +281,8 @@
 
   .tabs-trigger {
     @apply text-lg md:text-xl lg:text-2xl px-6 py-3;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .tabs-content {
@@ -244,6 +292,8 @@
   /* Button styles */
   .button {
     @apply text-lg md:text-xl lg:text-2xl px-6 py-3 rounded-lg font-medium;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .button-sm {
@@ -257,11 +307,15 @@
   /* Input styles */
   .input {
     @apply text-lg md:text-xl lg:text-2xl px-4 py-3 rounded-lg;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   /* Select styles */
   .select {
     @apply text-lg md:text-xl lg:text-2xl px-4 py-3 rounded-lg;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   /* Avatar styles */
@@ -402,6 +456,8 @@
   /* Score adjustment buttons */
   .score-btn {
     @apply flex items-center justify-center w-8 h-8 rounded-full bg-secondary dark:bg-secondary/30 text-foreground dark:text-foreground transition-all duration-200 hover:bg-primary/20 dark:hover:bg-primary/30;
+    font-family: var(--font-subtitle, Superior, sans-serif);
+    letter-spacing: -0.03em;
   }
 
   .score-btn-add {
