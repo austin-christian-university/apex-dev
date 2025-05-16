@@ -135,7 +135,7 @@ export default function LoginPage() {
                       Signing in...
                     </div>
                   ) : (
-                    "Sign In – ACU"
+                    "Sign In"
                   )}
                 </Button>
               </div>
