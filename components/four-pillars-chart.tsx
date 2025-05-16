@@ -20,6 +20,14 @@ export function FourPillarsChart({ data, size = "md" }: FourPillarsChartProps) {
   const [hoveredValue, setHoveredValue] = useState<{ label: string; value: number } | null>(null)
   const [hoveredPosition, setHoveredPosition] = useState<{ x: number; y: number } | null>(null)
 
+  // Helper to detect dark mode
+  function isDarkMode() {
+    if (typeof window !== "undefined") {
+      return document.documentElement.classList.contains("dark")
+    }
+    return false
+  }
+
   // Set canvas size based on the size prop
   const getCanvasSize = () => {
     switch (size) {
@@ -193,18 +201,20 @@ export function FourPillarsChart({ data, size = "md" }: FourPillarsChartProps) {
 
     // Draw labels
     ctx.font = `500 ${size === "sm" ? 12 : 14}px Inter, sans-serif`
-    ctx.fillStyle = "currentColor"
+    ctx.fillStyle = isDarkMode() ? "#fff" : "#1e293b" // white for dark, slate-800 for light
     ctx.textAlign = "center"
     ctx.textBaseline = "middle"
 
+    // Offset for labels to avoid cut-off
+    const labelOffset = 36
     // Christ Centered (top)
-    ctx.fillText("Christ Centered", centerX, centerY - radius - 20)
+    ctx.fillText("Christ Centered", centerX, centerY - radius - labelOffset)
     // Excellence (right)
-    ctx.fillText("Excellence", centerX + radius + 40, centerY)
+    ctx.fillText("Excellence", centerX + radius + labelOffset, centerY)
     // Service (bottom)
-    ctx.fillText("Service", centerX, centerY + radius + 20)
+    ctx.fillText("Service", centerX, centerY + radius + labelOffset)
     // Community (left)
-    ctx.fillText("Community", centerX - radius - 40, centerY)
+    ctx.fillText("Community", centerX - radius - labelOffset, centerY)
 
     // Add hover detection
     canvas.onmousemove = (e) => {
@@ -302,9 +312,6 @@ export function FourPillarsChart({ data, size = "md" }: FourPillarsChartProps) {
       <CardContent className="flex justify-center p-4">
         <div className="relative">
           <canvas ref={canvasRef} width={canvasSize} height={canvasSize} className="max-w-full" />
-          <div className="absolute bottom-0 right-0 bg-background/80 dark:bg-background/60 backdrop-blur-sm rounded-md px-2 py-1 text-xs text-muted-foreground border border-border/60">
-            Hover over points for details
-          </div>
         </div>
       </CardContent>
     </Card>
