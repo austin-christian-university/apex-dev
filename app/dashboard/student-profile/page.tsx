@@ -17,6 +17,11 @@ export default function StudentProfilePage() {
   const [student, setStudent] = useState<Student | null>(null)
   const userRole = useUserRole()
 
+  // Get avatar image based on student name
+  const getStudentAvatar = (name: string) => {
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
+  }
+
   useEffect(() => {
     const fetchedStudent = getStudentById(selectedStudentId)
     if (fetchedStudent) {
@@ -59,68 +64,70 @@ export default function StudentProfilePage() {
         <div className="md:col-span-1">
           <Card className="shadow-card border border-border/60 overflow-hidden">
             <div className="h-32 bg-gradient-to-r from-primary-100 to-primary-50"></div>
-            <CardContent className="pt-0 relative">
-              <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-                <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-white">
-                  <Image
-                    src={student.profileImage || "/placeholder.svg?height=128&width=128"}
-                    alt={student.name}
-                    width={128}
-                    height={128}
-                    className="object-cover"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-20 text-center mb-6">
-                <h2 className="text-xl font-bold text-primary-900">{student.name}</h2>
-                <p className="text-muted-foreground">{student.email}</p>
-                <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">
-                  {student.year}
-                  {getOrdinal(student.year)} Year Student
-                </Badge>
-              </div>
-
-              <div className="space-y-4 border-t border-border pt-4">
-                <div className="flex items-center">
-                  <BookOpen className="h-4 w-4 text-muted-foreground mr-2" />
-                  <div>
-                    <p className="text-sm font-medium">Major</p>
-                    <p className="text-sm text-muted-foreground">{student.major}</p>
+            <CardContent className="pt-0">
+              <div className="flex flex-col items-center">
+                <div className="relative -mt-16 mb-4">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-md bg-white">
+                    <Image
+                      src={getStudentAvatar(student.name)}
+                      alt={student.name}
+                      width={128}
+                      height={128}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 </div>
 
-                {student.minor && (
+                <div className="text-center mb-6">
+                  <h2 className="text-xl font-bold text-primary-900">{student.name}</h2>
+                  <p className="text-muted-foreground">{student.email}</p>
+                  <Badge className="mt-2 bg-primary/10 text-primary border-primary/20">
+                    {student.year}
+                    {getOrdinal(student.year)} Year Student
+                  </Badge>
+                </div>
+
+                <div className="space-y-4 border-t border-border pt-4">
                   <div className="flex items-center">
                     <BookOpen className="h-4 w-4 text-muted-foreground mr-2" />
                     <div>
-                      <p className="text-sm font-medium">Minor</p>
-                      <p className="text-sm text-muted-foreground">{student.minor}</p>
+                      <p className="text-sm font-medium">Major</p>
+                      <p className="text-sm text-muted-foreground">{student.major}</p>
                     </div>
                   </div>
-                )}
 
-                <div className="flex items-center">
-                  <Award className="h-4 w-4 text-muted-foreground mr-2" />
-                  <div>
-                    <p className="text-sm font-medium">GPA</p>
-                    <p className="text-sm text-muted-foreground">{student.gpa.toFixed(2)}</p>
+                  {student.minor && (
+                    <div className="flex items-center">
+                      <BookOpen className="h-4 w-4 text-muted-foreground mr-2" />
+                      <div>
+                        <p className="text-sm font-medium">Minor</p>
+                        <p className="text-sm text-muted-foreground">{student.minor}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center">
+                    <Award className="h-4 w-4 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">GPA</p>
+                      <p className="text-sm text-muted-foreground">{student.gpa.toFixed(2)}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 text-muted-foreground mr-2" />
-                  <div>
-                    <p className="text-sm font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">{student.email}</p>
+                  <div className="flex items-center">
+                    <Mail className="h-4 w-4 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Email</p>
+                      <p className="text-sm text-muted-foreground">{student.email}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center">
-                  <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
-                  <div>
-                    <p className="text-sm font-medium">Student ID</p>
-                    <p className="text-sm text-muted-foreground">{student.studentId}</p>
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 text-muted-foreground mr-2" />
+                    <div>
+                      <p className="text-sm font-medium">Student ID</p>
+                      <p className="text-sm text-muted-foreground">{student.studentId}</p>
+                    </div>
                   </div>
                 </div>
               </div>
