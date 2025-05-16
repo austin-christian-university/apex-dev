@@ -152,6 +152,9 @@ export default function LoginPage() {
                   className="flex flex-col items-center justify-center h-auto py-2 hover:bg-muted/50"
                   onClick={() => {
                     setIsLoading(true)
+                    localStorage.setItem("userRole", type.id)
+                    localStorage.setItem("userName", type.name)
+                    localStorage.setItem("userEmail", `${type.id}@acu.edu`)
                     setTimeout(() => {
                       setIsLoading(false)
                       router.push("/dashboard")

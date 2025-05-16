@@ -89,7 +89,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   ]
 
   // Filter navigation items based on user role
-  const filteredNavigation = navigation.filter((item) => item.roles.includes(userRole))
+  let filteredNavigation = navigation.filter((item) => item.roles.includes(userRole))
+  console.log(filteredNavigation)
+  console.log(userRole)
+  if (userRole === "leader") {
+    filteredNavigation = navigation.filter((item) => item.name === "Dashboard")
+  }
 
   // Replace getAvatarImage to use DiceBear
   function getAvatarImage(userRole: string, userName?: string) {
@@ -124,6 +129,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       default:
         return "User"
     }
+  }
+
+  // Get user email from localStorage
+  const getUserEmail = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('userEmail') || 'user@acu.edu'
+    }
+    return 'user@acu.edu'
   }
 
   return (
@@ -211,6 +224,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </Avatar>
               <div className="ml-3 flex-1">
                 <p className="text-sm font-medium">{getUserName()}</p>
+                <p className="text-xs text-muted-foreground">{getUserEmail()}</p>
                 <Link href="/" className="text-xs font-medium text-muted-foreground hover:text-primary">
                   Sign out
                 </Link>

@@ -24,6 +24,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { useUserRole } from "@/lib/auth"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -32,6 +33,7 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const userRole = useUserRole()
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -41,6 +43,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ]
+
+  // Only show Dashboard for student leader
+  const filteredNavigation = userRole === "leader"
+    ? navigation.filter((item) => item.name === "Dashboard")
+    : navigation
 
   return (
     <SidebarProvider defaultOpen={!isCollapsed} onOpenChange={setIsCollapsed}>
@@ -60,7 +67,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {navigation.map((item) => (
+                  {filteredNavigation.map((item) => (
                     <SidebarMenuItem key={item.name}>
                       <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.name}>
                         <Link href={item.href}>

@@ -10,6 +10,7 @@ import { StudentSelector } from "@/components/student-selector"
 import { CoreValueBreakdown } from "@/components/core-value-breakdown"
 import { ScoreAdjuster } from "@/components/score-adjuster"
 import { getAllStudents, getStudentById } from "@/lib/data"
+import { useUserRole } from "@/lib/auth"
 
 // Define the new pillars and subcategories
 const PILLARS = [
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>("1")
   const [selectedPillar, setSelectedPillar] = useState<string>("academic")
   const [isLoading, setIsLoading] = useState(true)
+  const userRole = useUserRole()
 
   useEffect(() => {
     // Fetch students data
@@ -171,26 +173,28 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-blue-500/5 z-0" />
-          <CardHeader className="relative z-10">
-            <CardTitle>Score Adjustment</CardTitle>
-            <CardDescription>Add or remove points from each pillar with supporting evidence</CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10">
-            <ScoreAdjuster
-              studentId={selectedStudentId}
-              studentName={selectedStudent.name}
-              onScoreChange={handleScoreChange}
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
+      {userRole !== "student" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-blue-500/5 z-0" />
+            <CardHeader className="relative z-10">
+              <CardTitle>Score Adjustment</CardTitle>
+              <CardDescription>Add or remove points from each pillar with supporting evidence</CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              <ScoreAdjuster
+                studentId={selectedStudentId}
+                studentName={selectedStudent.name}
+                onScoreChange={handleScoreChange}
+              />
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -229,10 +233,10 @@ export default function DashboardPage() {
                         selectedStudent.history.map((record, i) => (
                           <tr key={i} className="border-b">
                             <td className="p-2">{record.date}</td>
-                            <td className="p-2">{record.spiritual}</td>
-                            <td className="p-2">{record.academic}</td>
-                            <td className="p-2">{record.physical}</td>
-                            <td className="p-2">{record.social}</td>
+                            <td className="p-2">{record.christCentered}</td>
+                            <td className="p-2">{record.excellence}</td>
+                            <td className="p-2">{record.service}</td>
+                            <td className="p-2">{record.community}</td>
                           </tr>
                         ))}
                     </tbody>

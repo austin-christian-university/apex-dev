@@ -76,6 +76,7 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
     notes: "Student is showing consistent improvement in this area.",
   })
 
+  // Only allow editing if user is admin or leader
   const canEdit = userRole === "admin" || userRole === "leader"
 
   const handleSave = () => {
@@ -192,10 +193,10 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
               <div className="flex justify-between items-center">
                 <div className="text-sm font-medium">{category}</div>
                 <div className="text-sm text-muted-foreground">
-                  {isEditing ? editedData.categories[category] : value}/100
+                  {canEdit && isEditing ? editedData.categories[category] : value}/100
                 </div>
               </div>
-              {isEditing ? (
+              {canEdit && isEditing ? (
                 <Slider
                   value={[editedData.categories[category]]}
                   min={0}
@@ -235,22 +236,26 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
             )}
           </div>
         </div>
+        {/* Only show edit/save/cancel buttons if canEdit is true */}
+        {canEdit && (
+          <CardFooter className="flex gap-2 pt-4">
+            {isEditing ? (
+              <>
+                <Button size="sm" onClick={handleSave} className="bg-primary text-white">
+                  <Save className="h-4 w-4 mr-1" /> Save
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" variant="outline" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4 mr-1" /> Edit Values
+              </Button>
+            )}
+          </CardFooter>
+        )}
       </CardContent>
-      {canEdit && (
-        <CardFooter className="border-t border-border pt-4 bg-secondary/30 dark:bg-secondary/10">
-          {isEditing ? (
-            <Button onClick={handleSave} className="ml-auto">
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
-            </Button>
-          ) : (
-            <Button variant="outline" onClick={() => setIsEditing(true)} className="ml-auto">
-              <Edit className="mr-2 h-4 w-4" />
-              Edit Values
-            </Button>
-          )}
-        </CardFooter>
-      )}
     </Card>
   )
 }
