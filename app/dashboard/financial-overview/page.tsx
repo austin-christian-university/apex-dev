@@ -52,7 +52,7 @@ export default function FinancialOverviewPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary-900">Financial Overview</h1>
+          <h1 className="text-2xl font-bold text-foreground">Financial Overview</h1>
           <p className="text-muted-foreground">View and manage financial information</p>
         </div>
         <StudentSelector selectedStudentId={selectedStudentId} onStudentChange={handleStudentChange} />
@@ -61,23 +61,23 @@ export default function FinancialOverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="md:col-span-1">
           <Card className="shadow-card border border-border/60 overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-border/60">
-              <CardTitle className="text-emerald-700">Account Summary</CardTitle>
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-background dark:from-emerald-950/50 dark:to-background border-b border-border/60">
+              <CardTitle className="text-emerald-700 dark:text-emerald-300">Account Summary</CardTitle>
               <CardDescription>
                 {student.name} - {student.studentId}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-5">
               <div className="space-y-5">
-                <div className={`p-5 rounded-lg border ${student.financialStanding.accountBalance > 0 ? 'bg-red-50/50 border-red-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                <div className={`p-5 rounded-lg border ${student.financialStanding.accountBalance > 0 ? 'bg-red-50/50 dark:bg-red-950/30 border-red-100 dark:border-red-800' : 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-800'}`}>
                   <p className="text-sm text-muted-foreground mb-1">Current Balance</p>
                   <p
-                    className={`text-2xl font-bold ${student.financialStanding.accountBalance > 0 ? "text-red-600" : "text-emerald-600"}`}
+                    className={`text-2xl font-bold ${student.financialStanding.accountBalance > 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
                   >
                     ${student.financialStanding.accountBalance.toFixed(2)}
                   </p>
                   {student.financialStanding.accountBalance > 0 && (
-                    <div className="flex items-center mt-2 text-xs text-amber-600">
+                    <div className="flex items-center mt-2 text-xs text-amber-600 dark:text-amber-400">
                       <AlertCircle className="h-3 w-3 mr-1" />
                       Payment due by September 30, 2023
                     </div>
@@ -86,14 +86,14 @@ export default function FinancialOverviewPage() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <p className="text-sm font-medium">Tuition Progress</p>
+                    <p className="text-sm font-medium text-foreground">Tuition Progress</p>
                     <p className="text-sm text-muted-foreground">
                       ${student.financialStanding.tuitionPaid.toFixed(2)} / ${student.financialStanding.tuitionTotal.toFixed(2)}
                     </p>
                   </div>
                   <div className="progress-container">
                     <div
-                      className="progress-bar progress-bar-green"
+                      className="progress-bar progress-bar-green dark:bg-emerald-600"
                       style={{ width: `${paymentPercentage}%` }}
                     />
                   </div>
@@ -105,22 +105,22 @@ export default function FinancialOverviewPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="stat-card">
                     <div className="stat-label">Financial Aid</div>
-                    <div className="stat-value text-emerald-600">${totalFinancialAid.toFixed(2)}</div>
+                    <div className="stat-value text-emerald-600 dark:text-emerald-400">${totalFinancialAid.toFixed(2)}</div>
                   </div>
                   <div className="stat-card">
                     <div className="stat-label">Payment Plan</div>
-                    <Badge variant="outline" className="badge-info mt-1">
+                    <Badge variant="outline" className="badge-info dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800 mt-1">
                       Semester
                     </Badge>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-border space-y-3">
-                  <Button className="w-full justify-start bg-emerald-600 hover:bg-emerald-700">
+                  <Button className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-800">
                     <CreditCard className="mr-2 h-4 w-4" />
                     Make a Payment
                   </Button>
-                  <Button variant="outline" className="w-full justify-start text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                  <Button variant="outline" className="w-full justify-start text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
                     <FileText className="mr-2 h-4 w-4" />
                     View Payment Plan
                   </Button>
@@ -132,13 +132,13 @@ export default function FinancialOverviewPage() {
 
         <div className="md:col-span-2">
           <Card className="shadow-card border border-border/60 overflow-hidden mb-6">
-            <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-border/60">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-background dark:from-emerald-950/50 dark:to-background border-b border-border/60">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-emerald-700">Tuition & Fees Breakdown</CardTitle>
+                  <CardTitle className="text-emerald-700 dark:text-emerald-300">Tuition & Fees Breakdown</CardTitle>
                   <CardDescription>Fall 2023 Semester</CardDescription>
                 </div>
-                <Button variant="outline" size="sm" className="text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                <Button variant="outline" size="sm" className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/30">
                   <Download className="h-4 w-4 mr-2" />
                   Download Invoice
                 </Button>
@@ -146,55 +146,55 @@ export default function FinancialOverviewPage() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
-                <div className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-primary-900">Tuition (Full-time)</p>
+                      <p className="font-medium text-foreground">Tuition (Full-time)</p>
                       <p className="text-sm text-muted-foreground">15 credit hours at $600 per credit</p>
                     </div>
-                    <p className="font-medium">$9,000.00</p>
+                    <p className="font-medium text-foreground">$9,000.00</p>
                   </div>
                 </div>
-                <div className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-primary-900">Student Activity Fee</p>
+                      <p className="font-medium text-foreground">Student Activity Fee</p>
                       <p className="text-sm text-muted-foreground">Required for all students</p>
                     </div>
-                    <p className="font-medium">$250.00</p>
+                    <p className="font-medium text-foreground">$250.00</p>
                   </div>
                 </div>
-                <div className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-primary-900">Technology Fee</p>
+                      <p className="font-medium text-foreground">Technology Fee</p>
                       <p className="text-sm text-muted-foreground">Campus technology services</p>
                     </div>
-                    <p className="font-medium">$350.00</p>
+                    <p className="font-medium text-foreground">$350.00</p>
                   </div>
                 </div>
-                <div className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-primary-900">Health Services Fee</p>
+                      <p className="font-medium text-foreground">Health Services Fee</p>
                       <p className="text-sm text-muted-foreground">Campus health center access</p>
                     </div>
-                    <p className="font-medium">$200.00</p>
+                    <p className="font-medium text-foreground">$200.00</p>
                   </div>
                 </div>
-                <div className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-primary-900">Campus Ministry Fee</p>
+                      <p className="font-medium text-foreground">Campus Ministry Fee</p>
                       <p className="text-sm text-muted-foreground">Spiritual development programs</p>
                     </div>
-                    <p className="font-medium">$200.00</p>
+                    <p className="font-medium text-foreground">$200.00</p>
                   </div>
                 </div>
-                <div className="p-4 bg-emerald-50/50">
+                <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/30">
                   <div className="flex justify-between items-center">
-                    <p className="font-medium text-emerald-800">Total Charges</p>
-                    <p className="font-bold text-emerald-800">$10,000.00</p>
+                    <p className="font-medium text-emerald-800 dark:text-emerald-300">Total Charges</p>
+                    <p className="font-bold text-emerald-800 dark:text-emerald-300">$10,000.00</p>
                   </div>
                 </div>
               </div>
@@ -203,20 +203,20 @@ export default function FinancialOverviewPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-card border border-border/60 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-border/60 pb-3">
-                <CardTitle className="text-emerald-700">Financial Aid</CardTitle>
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-background dark:from-emerald-950/50 dark:to-background border-b border-border/60 pb-3">
+                <CardTitle className="text-emerald-700 dark:text-emerald-300">Financial Aid</CardTitle>
                 <CardDescription>Scholarships, grants, and loans</CardDescription>
               </CardHeader>
               <CardContent className="p-5">
                 <div className="space-y-4">
                   {student.financialStanding.financialAid.map((aid) => (
-                    <div key={aid.id} className="p-4 border border-border rounded-md hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors">
+                    <div key={aid.id} className="p-4 border border-border rounded-md hover:border-emerald-200 dark:hover:border-emerald-800 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium text-primary-900">{aid.name}</p>
+                          <p className="font-medium text-foreground">{aid.name}</p>
                           <p className="text-sm text-muted-foreground capitalize">{aid.type}</p>
                         </div>
-                        <p className="font-medium text-emerald-600">${aid.amount.toFixed(2)}</p>
+                        <p className="font-medium text-emerald-600 dark:text-emerald-400">${aid.amount.toFixed(2)}</p>
                       </div>
                     </div>
                   ))}
@@ -225,20 +225,20 @@ export default function FinancialOverviewPage() {
             </Card>
 
             <Card className="shadow-card border border-border/60 overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-white border-b border-border/60 pb-3">
-                <CardTitle className="text-emerald-700">Payment History</CardTitle>
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-background dark:from-emerald-950/50 dark:to-background border-b border-border/60 pb-3">
+                <CardTitle className="text-emerald-700 dark:text-emerald-300">Payment History</CardTitle>
                 <CardDescription>Recent transactions and payments</CardDescription>
               </CardHeader>
               <CardContent className="p-5">
                 <div className="space-y-4">
                   {student.financialStanding.transactions.map((transaction) => (
-                    <div key={transaction.id} className="p-4 border border-border rounded-md hover:border-emerald-200 hover:bg-emerald-50/30 transition-colors">
+                    <div key={transaction.id} className="p-4 border border-border rounded-md hover:border-emerald-200 dark:hover:border-emerald-800 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium text-primary-900">{transaction.description}</p>
+                          <p className="font-medium text-foreground">{transaction.description}</p>
                           <p className="text-sm text-muted-foreground">{transaction.date}</p>
                         </div>
-                        <p className={`font-medium ${transaction.amount > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                        <p className={`font-medium ${transaction.amount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
                           {transaction.amount > 0 ? '+' : ''}${transaction.amount.toFixed(2)}
                         </p>
                       </div>
