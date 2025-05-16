@@ -47,6 +47,54 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
 
+  // Get user name based on role
+  const getUserName = () => {
+    switch (userRole) {
+      case "admin":
+        return "Administrator"
+      case "leader":
+        return "Student Leader"
+      case "student":
+        return "Emma Johnson"
+      default:
+        return "User"
+    }
+  }
+
+  // Get user email based on role
+  const getUserEmail = () => {
+    switch (userRole) {
+      case "admin":
+        return "admin@acu.edu"
+      case "leader":
+        return "leader@acu.edu"
+      case "student":
+        return "emma.johnson@acu.edu"
+      default:
+        return "user@acu.edu"
+    }
+  }
+
+  // Get avatar fallback based on user role
+  const getAvatarFallback = () => {
+    switch (userRole) {
+      case "admin":
+        return "AD"
+      case "leader":
+        return "SL"
+      case "student":
+        return "JD"
+      default:
+        return "U"
+    }
+  }
+
+  // Get avatar image based on role
+  const getAvatarImage = () => {
+    const seed = userRole === "student" ? "John Doe" : userRole
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`
+  }
+
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Student Profile", href: "/dashboard/student-profile", icon: User },
@@ -109,12 +157,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="/placeholder.svg?height=40&width=40&text=A" />
-                  <AvatarFallback className="text-lg">A</AvatarFallback>
+                  <AvatarImage src={getAvatarImage()} alt="User avatar" />
+                  <AvatarFallback className="text-lg">{getAvatarFallback()}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-base md:text-lg font-medium">Admin User</p>
-                  <p className="text-sm md:text-base text-muted-foreground">admin@acu.edu</p>
+                  <p className="text-base md:text-lg font-medium">{getUserName()}</p>
+                  <p className="text-sm md:text-base text-muted-foreground">{getUserEmail()}</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
