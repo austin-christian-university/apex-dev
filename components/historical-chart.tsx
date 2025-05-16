@@ -20,13 +20,6 @@ interface HistoricalChartProps {
 
 export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [hoveredPoint, setHoveredPoint] = useState<{
-    x: number
-    y: number
-    value: number
-    pillar: string
-    date: string
-  } | null>(null)
   const [isDark, setIsDark] = useState(false)
 
   // Helper to detect dark mode
@@ -47,10 +40,7 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
       })
     })
 
-    // Start observing the document with the configured parameters
     observer.observe(document.documentElement, { attributes: true })
-
-    // Set initial theme state
     setIsDark(isDarkMode())
 
     return () => observer.disconnect()
@@ -73,8 +63,8 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
     const chartHeight = canvas.height - padding.top - padding.bottom
 
     // Set text color based on theme
-    const textColor = isDark ? "rgba(226, 232, 240, 0.8)" : "rgba(15, 23, 42, 0.8)" // slate-200 for dark, slate-900 for light
-    const mutedTextColor = isDark ? "rgba(148, 163, 184, 0.8)" : "rgba(71, 85, 105, 0.8)" // slate-400 for dark, slate-600 for light
+    const textColor = isDark ? "#FFFFFF" : "#231F20"
+    const mutedTextColor = isDark ? "rgba(148, 163, 184, 0.8)" : "rgba(71, 85, 105, 0.8)"
 
     // Draw background
     ctx.fillStyle = "rgba(255, 255, 255, 0.01)"
@@ -82,7 +72,7 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
 
     // Draw axes with modern styling
     ctx.beginPath()
-    ctx.strokeStyle = "rgba(226, 232, 240, 0.2)" // Lighter grid lines
+    ctx.strokeStyle = "rgba(226, 232, 240, 0.2)"
     ctx.lineWidth = 1
 
     // X-axis
@@ -96,7 +86,7 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
 
     // Draw grid lines with modern styling
     ctx.beginPath()
-    ctx.strokeStyle = "rgba(241, 245, 249, 0.1)" // Very subtle grid
+    ctx.strokeStyle = "rgba(241, 245, 249, 0.1)"
     ctx.setLineDash([5, 5])
 
     // Horizontal grid lines (20% intervals)
@@ -120,16 +110,7 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         { key: "community", color: "#f59e0b", gradient: ["#f59e0b", "#d97706"], label: "Community" },
       ]
 
-      // Store all points for hover detection
-      const allPoints: {
-        x: number
-        y: number
-        value: number
-        pillar: string
-        date: string
-      }[] = []
-
-      // Draw lines for each pillar with enhanced glow effect
+      // Draw lines for each pillar
       pillars.forEach((pillar) => {
         // Create gradient for the line
         const gradient = ctx.createLinearGradient(
@@ -141,10 +122,8 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         gradient.addColorStop(0, pillar.gradient[0])
         gradient.addColorStop(1, pillar.gradient[1])
 
-        // Draw glow
+        // Draw line
         ctx.beginPath()
-        ctx.shadowColor = pillar.color
-        ctx.shadowBlur = 15
         ctx.strokeStyle = gradient
         ctx.lineWidth = 3
 
@@ -157,34 +136,16 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
           } else {
             ctx.lineTo(x, y)
           }
-
-          allPoints.push({
-            x,
-            y,
-            value: item[pillar.key as keyof HistoryRecord] as number,
-            pillar: pillar.label,
-            date: item.date,
-          })
         })
 
         ctx.stroke()
-        ctx.shadowBlur = 0
 
-        // Draw points with enhanced styling
+        // Draw points
         data.forEach((item, index) => {
           const x = padding.left + index * xStep
           const y = canvas.height - padding.bottom - chartHeight * ((item[pillar.key as keyof HistoryRecord] as number) / 100)
 
-          // Draw point glow
-          ctx.beginPath()
-          ctx.shadowColor = pillar.color
-          ctx.shadowBlur = 10
-          ctx.arc(x, y, 6, 0, 2 * Math.PI)
-          ctx.fillStyle = "rgba(255, 255, 255, 0.1)"
-          ctx.fill()
-          ctx.shadowBlur = 0
-
-          // Draw point with white border
+          // Draw point
           ctx.beginPath()
           ctx.arc(x, y, 5, 0, 2 * Math.PI)
           ctx.fillStyle = "#ffffff"
@@ -201,11 +162,12 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         })
       })
 
-      // Draw x-axis labels with theme-aware styling
+      // Draw x-axis labels
       ctx.fillStyle = textColor
-      ctx.font = "12px Inter, sans-serif"
+      ctx.font = "12px Superior Text, sans-serif"
       ctx.textAlign = "center"
       ctx.textBaseline = "top"
+      ctx.letterSpacing = "-0.03em"
 
       data.forEach((item, index) => {
         const x = padding.left + index * xStep
@@ -214,10 +176,12 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         ctx.fillText(label, x, canvas.height - padding.bottom + 10)
       })
 
-      // Draw y-axis labels with theme-aware styling
+      // Draw y-axis labels
       ctx.textAlign = "right"
       ctx.textBaseline = "middle"
       ctx.fillStyle = textColor
+      ctx.font = "12px Superior Text, sans-serif"
+      ctx.letterSpacing = "-0.03em"
 
       for (let i = 0; i <= 5; i++) {
         const y = canvas.height - padding.bottom - chartHeight * (i * 0.2)
@@ -225,12 +189,11 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         ctx.fillText(label, padding.left - 10, y)
       }
 
-      // Draw legend outside the chart area
+      // Draw legend
       const legendX = canvas.width - legendWidth + 20
       const legendY = padding.top + 20
       const legendSpacing = 30
 
-      // Draw legend items with theme-aware styling
       pillars.forEach((pillar, index) => {
         const y = legendY + index * legendSpacing
 
@@ -246,17 +209,14 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         ctx.lineTo(legendX + 30, y)
         ctx.stroke()
 
-        // Draw point with glow
+        // Draw point
         ctx.beginPath()
-        ctx.shadowColor = pillar.color
-        ctx.shadowBlur = 8
         ctx.arc(legendX + 15, y, 4, 0, 2 * Math.PI)
         ctx.fillStyle = "#ffffff"
         ctx.fill()
         ctx.strokeStyle = pillar.color
         ctx.lineWidth = 2
         ctx.stroke()
-        ctx.shadowBlur = 0
 
         // Draw inner point
         ctx.beginPath()
@@ -264,97 +224,16 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         ctx.fillStyle = lineGradient
         ctx.fill()
 
-        // Draw label with theme-aware styling
+        // Draw label
         ctx.fillStyle = textColor
         ctx.textAlign = "left"
         ctx.textBaseline = "middle"
-        ctx.font = "500 13px Inter, sans-serif"
+        ctx.font = "500 13px Superior Text, sans-serif"
+        ctx.letterSpacing = "-0.03em"
         ctx.fillText(pillar.label, legendX + 40, y)
       })
-
-      // Add hover detection
-      canvas.onmousemove = (e) => {
-        const rect = canvas.getBoundingClientRect()
-        const mouseX = e.clientX - rect.left
-        const mouseY = e.clientY - rect.top
-
-        // Only detect hover within chart area
-        if (mouseX < padding.left || mouseX > canvas.width - padding.right - legendWidth ||
-            mouseY < padding.top || mouseY > canvas.height - padding.bottom) {
-          setHoveredPoint(null)
-          canvas.style.cursor = "default"
-          return
-        }
-
-        let closestPoint = null
-        let minDistance = Number.MAX_VALUE
-
-        allPoints.forEach((point) => {
-          const distance = Math.sqrt(Math.pow(mouseX - point.x, 2) + Math.pow(mouseY - point.y, 2))
-          if (distance < 15 && distance < minDistance) {
-            minDistance = distance
-            closestPoint = point
-          }
-        })
-
-        if (closestPoint) {
-          setHoveredPoint(closestPoint)
-          canvas.style.cursor = "pointer"
-        } else {
-          setHoveredPoint(null)
-          canvas.style.cursor = "default"
-        }
-      }
-
-      canvas.onmouseleave = () => {
-        setHoveredPoint(null)
-      }
-
-      // Draw tooltip with theme-aware styling
-      if (hoveredPoint) {
-        const tooltipWidth = 180
-        const tooltipHeight = 80
-        let tooltipX = hoveredPoint.x - tooltipWidth / 2
-        const tooltipY = hoveredPoint.y - tooltipHeight - 15
-
-        // Ensure tooltip stays within chart area
-        if (tooltipX < padding.left) tooltipX = padding.left
-        if (tooltipX + tooltipWidth > canvas.width - padding.right - legendWidth) {
-          tooltipX = canvas.width - padding.right - legendWidth - tooltipWidth
-        }
-
-        // Draw tooltip background with theme-aware styling
-        ctx.shadowColor = "rgba(0, 0, 0, 0.2)"
-        ctx.shadowBlur = 15
-        ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)"
-        ctx.beginPath()
-        ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8)
-        ctx.fill()
-        ctx.shadowBlur = 0
-
-        // Draw tooltip border with theme-aware styling
-        ctx.strokeStyle = isDark ? "rgba(226, 232, 240, 0.1)" : "rgba(15, 23, 42, 0.1)"
-        ctx.lineWidth = 1
-        ctx.stroke()
-
-        // Draw tooltip content with theme-aware styling
-        ctx.fillStyle = isDark ? "#ffffff" : "#0f172a"
-        ctx.font = "600 13px Inter, sans-serif"
-        ctx.textAlign = "center"
-        ctx.textBaseline = "top"
-        ctx.fillText(hoveredPoint.pillar, tooltipX + tooltipWidth / 2, tooltipY + 12)
-
-        ctx.font = "500 20px Inter, sans-serif"
-        ctx.fillText(`${hoveredPoint.value.toFixed(0)}`, tooltipX + tooltipWidth / 2, tooltipY + 32)
-
-        const date = new Date(hoveredPoint.date)
-        const formattedDate = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`
-        ctx.font = "400 12px Inter, sans-serif"
-        ctx.fillStyle = isDark ? "rgba(226, 232, 240, 0.7)" : "rgba(15, 23, 42, 0.7)"
-        ctx.fillText(formattedDate, tooltipX + tooltipWidth / 2, tooltipY + 60)
-      }
     }
-  }, [data, hoveredPoint, isDark])
+  }, [data, isDark])
 
   return (
     <Card className="shadow-card border border-border/60 overflow-hidden card-glow transition-all duration-300">
@@ -377,9 +256,6 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
       <CardContent className="p-4">
         <div className="relative">
           <canvas ref={canvasRef} width={800} height={height} className="w-full" />
-          <div className="absolute bottom-2 right-2 bg-background/80 dark:bg-background/60 backdrop-blur-sm rounded-md px-2 py-1 text-xs text-muted-foreground border border-border/60">
-            Hover over points for details
-          </div>
         </div>
       </CardContent>
     </Card>
