@@ -84,25 +84,18 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       href: "/dashboard/settings",
       icon: Settings,
       current: pathname === "/dashboard/settings",
-      roles: ["admin", "leader", "student"],
+      roles: ["admin", "student"],
     },
   ]
 
   // Filter navigation items based on user role
   const filteredNavigation = navigation.filter((item) => item.roles.includes(userRole))
 
-  // Get avatar image based on user role
-  const getAvatarImage = () => {
-    switch (userRole) {
-      case "admin":
-        return "/avatars/admin.png"
-      case "leader":
-        return "/avatars/leader.png"
-      case "student":
-        return "/avatars/student-1.png"
-      default:
-        return "/placeholder.svg?height=36&width=36"
-    }
+  // Replace getAvatarImage to use DiceBear
+  function getAvatarImage(userRole: string, userName?: string) {
+    // Use initials if userName is provided, otherwise use userRole
+    const seed = userName ? encodeURIComponent(userName) : userRole
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`
   }
 
   // Get avatar fallback based on user role
@@ -213,7 +206,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           <div className="flex flex-shrink-0 border-t border-border p-4">
             <div className="flex items-center w-full">
               <Avatar className="h-9 w-9 border-2 border-primary/10">
-                <AvatarImage src={getAvatarImage() || "/placeholder.svg"} alt="User avatar" />
+                <AvatarImage src={getAvatarImage(userRole, getUserName())} alt="User avatar" />
                 <AvatarFallback className="bg-primary/10 text-primary">{getAvatarFallback()}</AvatarFallback>
               </Avatar>
               <div className="ml-3 flex-1">
@@ -297,7 +290,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <Avatar className="h-8 w-8 border border-border">
-                      <AvatarImage src={getAvatarImage() || "/placeholder.svg"} alt="User avatar" />
+                      <AvatarImage src={getAvatarImage(userRole, getUserName())} alt="User avatar" />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs">
                         {getAvatarFallback()}
                       </AvatarFallback>

@@ -1,166 +1,190 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
+import { BackgroundAnimation } from "@/components/background-animation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { userTypes } from "@/lib/data"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [role, setRole] = useState<string>("admin")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const particlesRef = useRef<HTMLDivElement>(null)
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate loading
+    // Simulate login
     setTimeout(() => {
-      // In a real app, we would authenticate the user here
-      // and store their role in a context or cookie
-      localStorage.setItem("userRole", role)
+      setIsLoading(false)
       router.push("/dashboard")
     }, 1500)
   }
 
-  // Create particles for background animation
-  useEffect(() => {
-    if (!particlesRef.current) return
-
-    const container = particlesRef.current
-    const containerWidth = container.offsetWidth
-    const containerHeight = container.offsetHeight
-
-    // Clear existing particles
-    container.innerHTML = ""
-
-    // Create particles
-    for (let i = 0; i < 50; i++) {
-      const particle = document.createElement("div")
-      particle.className = "particle"
-
-      // Random size between 5px and 20px
-      const size = Math.random() * 15 + 5
-      particle.style.width = `${size}px`
-      particle.style.height = `${size}px`
-
-      // Random position
-      particle.style.left = `${Math.random() * 100}%`
-      particle.style.top = `${Math.random() * 100}%`
-
-      // Random opacity
-      particle.style.opacity = `${Math.random() * 0.5 + 0.1}`
-
-      // Random animation delay
-      particle.style.animationDelay = `${Math.random() * 8}s`
-
-      // Random animation duration
-      particle.style.animationDuration = `${Math.random() * 12 + 8}s`
-
-      container.appendChild(particle)
-    }
-
-    return () => {
-      container.innerHTML = ""
-    }
-  }, [])
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden animated-gradient">
-      {/* Particles background */}
-      <div ref={particlesRef} className="absolute inset-0 z-0"></div>
+    <div className="relative min-h-screen flex flex-col items-center justify-center p-4">
+      <BackgroundAnimation />
 
-      {/* Glowing orbs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-blue-500/20 blur-3xl pulse-glow"></div>
-      <div
-        className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-violet-500/20 blur-3xl pulse-glow"
-        style={{ animationDelay: "1.5s" }}
-      ></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10 z-[-5]" />
 
-      {/* Theme toggle */}
-      <div className="absolute top-4 right-4 z-10">
-        <ThemeToggle />
-      </div>
+      <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-gradient-to-br from-blue-500/20 to-cyan-400/20 rounded-full blur-3xl z-[-1]" />
+      <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-gradient-to-tr from-purple-500/20 to-pink-400/20 rounded-full blur-3xl z-[-1]" />
 
-      <div className="w-full max-w-md px-4 z-10">
-        <div className="flex flex-col items-center mb-8 float">
-          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-800 dark:from-blue-500 dark:to-blue-700 rounded-full flex items-center justify-center mb-4 shadow-lg">
-            <span className="text-white text-3xl font-bold">ACU</span>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Austin Christian University</h1>
-          <p className="text-blue-100 dark:text-blue-200">Student Portfolio Dashboard</p>
-        </div>
-
-        <Card className="glassmorphism border-white/20 dark:border-white/10 shadow-xl">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md z-10"
+      >
+        <Card className="border-0 shadow-xl bg-background/80 backdrop-blur-md">
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl text-center">Sign In</CardTitle>
-            <CardDescription className="text-center">Enter your credentials to access the dashboard</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your.email@acu.edu"
-                  required
-                  className="bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50 focus:border-blue-500 transition-all duration-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  className="bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50 focus:border-blue-500 transition-all duration-200"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="role">Sign in as</Label>
-                <Select value={role} onValueChange={setRole}>
-                  <SelectTrigger className="bg-white/80 dark:bg-slate-800/80 border-white/20 dark:border-slate-700/50">
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">School Administrator</SelectItem>
-                    <SelectItem value="leader">Student Leader</SelectItem>
-                    <SelectItem value="student">Student</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
-                disabled={isLoading}
+            <div className="flex justify-center mb-4">
+              <motion.div
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                  delay: 0.2,
+                }}
+                className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center"
               >
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    Signing in...
+                <span className="text-white text-2xl font-bold">ACU</span>
+              </motion.div>
+            </div>
+            <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+            <CardDescription className="text-center">
+              Sign in to access your Austin Christian University dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleLogin}>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    placeholder="your.email@acu.edu"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-background/50"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link href="#" className="text-xs text-primary hover:underline">
+                      Forgot password?
+                    </Link>
                   </div>
-                ) : (
-                  "Sign In"
-                )}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+                  <Input
+                    id="password"
+                    placeholder="••••••••"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="bg-background/50"
+                  />
+                </div>
 
-        <div className="mt-8 text-center text-sm text-blue-100 dark:text-blue-200">
-          <p>© {new Date().getFullYear()} Austin Christian University. All rights reserved.</p>
-        </div>
-      </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </div>
+            </form>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue as</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {userTypes.map((type) => (
+                <Button
+                  key={type.id}
+                  variant="outline"
+                  className="flex flex-col items-center justify-center h-auto py-2 hover:bg-muted/50"
+                  onClick={() => {
+                    setIsLoading(true)
+                    setTimeout(() => {
+                      setIsLoading(false)
+                      router.push("/dashboard")
+                    }, 1000)
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-1">
+                    <span className="text-xs font-medium">{type.name.charAt(0)}</span>
+                  </div>
+                  <span className="text-xs">{type.name}</span>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-2">
+            <div className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <Link href="#" className="text-primary hover:underline">
+                Contact your administrator
+              </Link>
+            </div>
+          </CardFooter>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8, duration: 0.5 }}
+        className="mt-8 text-center text-sm text-muted-foreground"
+      >
+        &copy; {new Date().getFullYear()} Austin Christian University. All rights reserved.
+      </motion.div>
     </div>
   )
 }

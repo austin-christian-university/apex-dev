@@ -583,7 +583,7 @@ export const userTypes = [
   },
   {
     id: "leader",
-    name: "Faculty Leader",
+    name: "Student Leader",
     description: "Can view and edit student data",
     avatar: "/placeholder.svg?height=40&width=40&text=L",
     permissions: ["view", "edit"],

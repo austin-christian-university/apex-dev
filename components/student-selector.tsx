@@ -50,9 +50,11 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
     }
   }, [userRole, students, onStudentChange])
 
-  // Get avatar image based on student ID
-  const getStudentAvatar = (id: string) => {
-    return `/avatars/student-${id}.png`
+  // Replace getStudentAvatar to use DiceBear
+  function getStudentAvatar(id: string, name?: string) {
+    // Use initials if name is provided, otherwise use id
+    const seed = name ? encodeURIComponent(name) : id
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`
   }
 
   // If user is a student, show a simplified view
@@ -61,7 +63,7 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
       <div className="flex items-center space-x-2 bg-secondary/50 dark:bg-secondary/20 px-3 py-2 rounded-md border border-border/60">
         <Avatar className="h-8 w-8 border border-primary/10">
           <AvatarImage
-            src={selectedStudent ? getStudentAvatar(selectedStudent.id) : "/avatars/student-1.png"}
+            src={selectedStudent ? getStudentAvatar(selectedStudent.id, selectedStudent.name) : "https://api.dicebear.com/7.x/initials/svg?seed=Student"}
             alt={selectedStudent?.name || "Student"}
           />
           <AvatarFallback className="bg-primary/10 text-primary">
@@ -86,7 +88,7 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
             <div className="flex items-center space-x-2">
               <Avatar className="h-6 w-6 border border-primary/10">
                 <AvatarImage
-                  src={getStudentAvatar(selectedStudent.id)}
+                  src={getStudentAvatar(selectedStudent.id, selectedStudent.name)}
                   alt={selectedStudent.name}
                 />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs">
@@ -123,7 +125,7 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
                   <div className="flex items-center space-x-2">
                     <Avatar className="h-6 w-6 border border-primary/10">
                       <AvatarImage
-                        src={getStudentAvatar(student.id)}
+                        src={getStudentAvatar(student.id, student.name)}
                         alt={student.name}
                       />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs">

@@ -15,35 +15,64 @@ interface CoreValueBreakdownProps {
   pillar?: string
 }
 
-export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValueBreakdownProps) {
+// Map pillar keys to display names, colors, and subcategories
+const PILLAR_INFO: Record<string, { label: string; color: string; subcategories: string[] }> = {
+  christCentered: {
+    label: "Christ Centered",
+    color: "violet",
+    subcategories: [
+      "Spiritual Formation Activities",
+      "Scripture Engagement",
+      "Mission & Outreach Involvement",
+      "Character Development",
+    ],
+  },
+  excellence: {
+    label: "Excellence",
+    color: "blue",
+    subcategories: [
+      "Academic Performance",
+      "Professional Skills & Development",
+      "Analytical & Problem-Solving Abilities",
+      "Innovation & Creative Projects",
+    ],
+  },
+  service: {
+    label: "Service",
+    color: "emerald",
+    subcategories: [
+      "Direct Service Hours",
+      "Leadership in Service Initiatives",
+      "Promoting a Culture of Service",
+      "Compassionate Action & Empathy",
+    ],
+  },
+  community: {
+    label: "Community",
+    color: "amber",
+    subcategories: [
+      "Campus Engagement & Leadership",
+      "Collaborative Contributions",
+      "Positive Campus Citizenship",
+      "Exploration of Vocation & Calling",
+    ],
+  },
+}
+
+export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: CoreValueBreakdownProps) {
   const userRole = useUserRole()
   const [isEditing, setIsEditing] = useState(false)
   const student = getStudentById(studentId)
 
-  // Default data in case student data isn't loaded yet
-  const defaultData = {
-    score: 0,
-    categories: {
-      "Category 1": 0,
-      "Category 2": 0,
-      "Category 3": 0,
-      "Category 4": 0,
-    },
-    notes: "",
-  }
-
-  // Get the pillar data or use default if not available
+  const info = PILLAR_INFO[pillar] || PILLAR_INFO.christCentered
   const pillarData = student?.pillars?.[pillar as keyof typeof student.pillars] || 0
 
   // Create a compatible data structure for the component
   const [editedData, setEditedData] = useState({
     score: pillarData,
-    categories: {
-      "Academic Performance": pillarData * 0.9,
-      "Critical Thinking": pillarData * 1.1,
-      "Research Skills": pillarData * 0.95,
-      "Knowledge Application": pillarData * 1.05,
-    },
+    categories: Object.fromEntries(
+      info.subcategories.map((cat, i) => [cat, Math.round(pillarData * (0.9 + i * 0.05))])
+    ),
     notes: "Student is showing consistent improvement in this area.",
   })
 
@@ -72,25 +101,8 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
     }))
   }
 
-  // Map pillar names to colors
-  const getPillarColor = () => {
-    switch (pillar) {
-      case "academic":
-        return "blue"
-      case "spiritual":
-        return "violet"
-      case "physical":
-        return "emerald"
-      case "social":
-        return "amber"
-      default:
-        return "blue"
-    }
-  }
-
-  const color = getPillarColor()
-
-  // Get color classes based on the pillar
+  // Color helpers
+  const color = info.color
   const getColorClass = (colorName: string) => {
     switch (colorName) {
       case "blue":
@@ -105,7 +117,6 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
         return "progress-bar-blue"
     }
   }
-
   const getHeaderGradient = (colorName: string) => {
     switch (colorName) {
       case "blue":
@@ -120,7 +131,6 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
         return "from-blue-50 to-transparent dark:from-blue-950/20 dark:to-transparent"
     }
   }
-
   const getTextColor = (colorName: string) => {
     switch (colorName) {
       case "blue":
@@ -135,7 +145,6 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
         return "text-blue-700 dark:text-blue-400"
     }
   }
-
   const getBorderColor = (colorName: string) => {
     switch (colorName) {
       case "blue":
@@ -151,24 +160,6 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
     }
   }
 
-  // Get pillar title
-  const getPillarTitle = () => {
-    switch (pillar) {
-      case "academic":
-        return "Academic Excellence"
-      case "spiritual":
-        return "Spiritual Formation"
-      case "physical":
-        return "Physical Wellness"
-      case "social":
-        return "Social Responsibility"
-      default:
-        return "Core Value"
-    }
-  }
-
-  const title = getPillarTitle()
-
   if (!student) {
     return <div>Loading...</div>
   }
@@ -177,7 +168,7 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
     <Card className="shadow-card border border-border/60 overflow-hidden card-glow transition-all duration-300">
       <CardHeader className={`pb-3 bg-gradient-to-r ${getHeaderGradient(color)} border-b ${getBorderColor(color)}`}>
         <div className="flex justify-between items-center">
-          <CardTitle className={getTextColor(color)}>{title}</CardTitle>
+          <CardTitle className={getTextColor(color)}>{info.label}</CardTitle>
           <div className="flex items-center space-x-2">
             <div className={`text-2xl font-bold ${getTextColor(color)}`}>{pillarData}</div>
             <TooltipProvider>
@@ -186,13 +177,13 @@ export function CoreValueBreakdown({ studentId, pillar = "academic" }: CoreValue
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>This score represents the student's overall performance in the {title} core value.</p>
+                  <p>This score represents the student's overall performance in the {info.label} core value.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
         </div>
-        <CardDescription>Breakdown of performance in {title.toLowerCase()} categories</CardDescription>
+        <CardDescription>Breakdown of performance in {info.label.toLowerCase()} categories</CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
         <div className="space-y-5">
