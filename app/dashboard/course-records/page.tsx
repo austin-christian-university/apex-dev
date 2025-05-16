@@ -56,7 +56,7 @@ export default function CourseRecordsPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Course Records</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Course Records</h1>
           <p className="text-muted-foreground">View and manage academic course history</p>
         </div>
         <StudentSelector selectedStudentId={selectedStudentId} onStudentChange={handleStudentChange} />
@@ -178,7 +178,7 @@ export default function CourseRecordsPage() {
                       filteredCourses.map((course) => (
                         <tr key={course.id} className="hover:bg-blue-50/50 dark:hover:bg-blue-950/30">
                           <td className="font-medium text-blue-700 dark:text-blue-400">{course.code}</td>
-                          <td className="text-foreground">{course.name}</td>
+                          <td className="text-foreground text-base">{course.name}</td>
                           <td className="text-foreground">
                             {course.semester} {course.year}
                           </td>

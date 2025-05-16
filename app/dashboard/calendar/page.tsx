@@ -95,10 +95,10 @@ export default function CalendarPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary-900 mb-2">Academic Calendar</h1>
-          <p className="text-lg md:text-xl text-muted-foreground">View and manage academic events and schedules</p>
+          <h1 className="text-3xl font-bold tracking-tight">Academic Calendar</h1>
+          <p className="text-muted-foreground">View and manage academic events and schedules</p>
         </div>
-        <Button variant="outline" size="lg" className="text-lg md:text-xl text-primary-600 border-primary-200 hover:bg-primary-50 px-6 py-6">
+        <Button variant="outline" size="lg" className="text-primary-600 border-primary-200 hover:bg-primary-50 px-6 py-6">
           <CalendarIcon className="mr-3 h-6 w-6" />
           Add Event
         </Button>
@@ -108,8 +108,8 @@ export default function CalendarPage() {
         <div className="md:col-span-1">
           <Card className="shadow-card border border-border/60">
             <CardHeader className="pb-6">
-              <CardTitle className="text-2xl md:text-3xl">Calendar</CardTitle>
-              <CardDescription className="text-base md:text-lg">Select a date to view events</CardDescription>
+              <CardTitle>Calendar</CardTitle>
+              <CardDescription>Select a date to view events</CardDescription>
             </CardHeader>
             <CardContent>
               <Calendar
@@ -123,8 +123,8 @@ export default function CalendarPage() {
 
           <Card className="shadow-card border border-border/60 mt-8">
             <CardHeader className="pb-6">
-              <CardTitle className="text-2xl md:text-3xl">Upcoming Events</CardTitle>
-              <CardDescription className="text-base md:text-lg">Next 7 days</CardDescription>
+              <CardTitle>Upcoming Events</CardTitle>
+              <CardDescription>Next 7 days</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -134,12 +134,12 @@ export default function CalendarPage() {
                     className="p-4 md:p-6 border border-border rounded-md hover:border-primary-200 hover:bg-primary-50/30 transition-colors"
                   >
                     <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg md:text-xl font-medium text-primary-900">{event.title}</h3>
+                      <h3 className="text-base font-medium text-foreground">{event.title}</h3>
                       <Badge variant="outline" className={`text-base md:text-lg ${getEventTypeColor(event.type)}`}>
                         {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                       </Badge>
                     </div>
-                    <p className="text-base md:text-lg text-muted-foreground mb-3">{event.description}</p>
+                    <p className="text-muted-foreground mb-3">{event.description}</p>
                     <div className="flex flex-col gap-2 text-base md:text-lg text-muted-foreground">
                       <div className="flex items-center">
                         <Clock className="h-5 w-5 mr-2" />
@@ -162,7 +162,7 @@ export default function CalendarPage() {
             <CardHeader className="pb-6">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-2xl md:text-3xl lg:text-4xl">
+                  <CardTitle>
                     {date
                       ? date.toLocaleDateString("en-US", {
                           weekday: "long",
@@ -172,7 +172,7 @@ export default function CalendarPage() {
                         })
                       : "Select a date"}
                   </CardTitle>
-                  <CardDescription className="text-base md:text-lg mt-2">
+                  <CardDescription className="mt-2">
                     {selectedDateEvents.length} event{selectedDateEvents.length !== 1 ? "s" : ""} scheduled
                   </CardDescription>
                 </div>

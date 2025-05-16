@@ -52,7 +52,7 @@ export default function FinancialOverviewPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Financial Overview</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Financial Overview</h1>
           <p className="text-muted-foreground">View and manage financial information</p>
         </div>
         <StudentSelector selectedStudentId={selectedStudentId} onStudentChange={handleStudentChange} />
@@ -149,10 +149,10 @@ export default function FinancialOverviewPage() {
                 <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium text-foreground">Tuition (Full-time)</p>
+                      <p className="font-medium text-foreground text-base">Tuition (Full-time)</p>
                       <p className="text-sm text-muted-foreground">15 credit hours at $600 per credit</p>
                     </div>
-                    <p className="font-medium text-foreground">$9,000.00</p>
+                    <p className="font-medium text-foreground text-base">$9,000.00</p>
                   </div>
                 </div>
                 <div className="p-4 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/30 transition-colors">

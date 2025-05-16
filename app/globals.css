@@ -85,46 +85,70 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans transition-colors duration-300 text-base md:text-lg lg:text-xl;
+    @apply bg-background text-foreground font-sans transition-colors duration-300;
   }
   h1 {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight;
+    @apply text-3xl font-bold tracking-tight;
   }
   h2 {
-    @apply text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight;
+    @apply text-2xl font-semibold tracking-tight;
   }
   h3 {
-    @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+    @apply text-xl font-semibold;
   }
   h4 {
-    @apply text-xl md:text-2xl lg:text-3xl font-medium;
+    @apply text-lg font-medium;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
   p {
-    @apply text-base md:text-lg lg:text-xl leading-relaxed;
+    @apply text-base leading-relaxed;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
-  .text-sm {
-    @apply text-base md:text-lg lg:text-xl;
-    font-family: var(--font-subtitle, Superior, sans-serif);
-    letter-spacing: -0.03em;
-  }
-  .text-xs {
-    @apply text-sm md:text-base lg:text-lg;
-    font-family: var(--font-subtitle, Superior, sans-serif);
-    letter-spacing: -0.03em;
-  }
-  .text-lg {
-    @apply text-xl md:text-2xl lg:text-3xl;
-  }
-  .text-xl {
-    @apply text-2xl md:text-3xl lg:text-4xl;
-  }
-  .text-2xl {
-    @apply text-3xl md:text-4xl lg:text-5xl;
-  }
+}
+
+/* Define text size utilities with font family */
+.text-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-family: var(--font-subtitle, Superior, sans-serif);
+  letter-spacing: -0.03em;
 }
 
 @layer components {
@@ -141,17 +165,17 @@
   }
 
   .stat-value {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold text-primary dark:text-primary;
+    @apply text-2xl font-bold text-primary dark:text-primary;
   }
 
   .stat-label {
-    @apply text-lg md:text-xl lg:text-2xl text-muted-foreground dark:text-muted-foreground font-medium;
+    @apply text-sm text-muted-foreground dark:text-muted-foreground font-medium;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .nav-item {
-    @apply flex items-center space-x-4 px-6 py-4 rounded-md text-lg md:text-xl lg:text-2xl font-medium transition-colors;
+    @apply flex items-center space-x-4 px-6 py-4 rounded-md text-base font-medium transition-colors;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
@@ -165,7 +189,7 @@
   }
 
   .data-table {
-    @apply w-full text-lg md:text-xl lg:text-2xl;
+    @apply w-full text-sm;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
@@ -183,25 +207,25 @@
   }
 
   .badge-success {
-    @apply bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    @apply bg-green-50 text-green-700 border-green-200 dark:bg-green-950/50 dark:text-green-400 dark:border-green-800/50 text-xs px-2 py-1;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .badge-warning {
-    @apply bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    @apply bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-400 dark:border-amber-800/50 text-xs px-2 py-1;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .badge-info {
-    @apply bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    @apply bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-400 dark:border-blue-800/50 text-xs px-2 py-1;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .badge-danger {
-    @apply bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800/50 text-base md:text-lg lg:text-xl px-4 py-2;
+    @apply bg-red-50 text-red-700 border-red-200 dark:bg-red-950/50 dark:text-red-400 dark:border-red-800/50 text-xs px-2 py-1;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
@@ -240,36 +264,36 @@
   }
 
   .card-title {
-    @apply text-2xl md:text-3xl lg:text-4xl font-semibold;
+    @apply text-lg font-semibold;
   }
 
   .card-description {
-    @apply text-lg md:text-xl lg:text-2xl text-muted-foreground;
+    @apply text-sm text-muted-foreground;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   /* Form elements */
   .form-label {
-    @apply text-lg md:text-xl lg:text-2xl font-medium mb-2;
+    @apply text-sm font-medium mb-2;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .form-input {
-    @apply text-lg md:text-xl lg:text-2xl px-4 py-3;
+    @apply text-sm px-3 py-2;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .form-select {
-    @apply text-lg md:text-xl lg:text-2xl px-4 py-3;
+    @apply text-sm px-3 py-2;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .form-button {
-    @apply text-lg md:text-xl lg:text-2xl px-6 py-3;
+    @apply text-sm px-4 py-2;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
@@ -280,7 +304,7 @@
   }
 
   .tabs-trigger {
-    @apply text-lg md:text-xl lg:text-2xl px-6 py-3;
+    @apply text-sm px-4 py-2;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
@@ -291,53 +315,53 @@
 
   /* Button styles */
   .button {
-    @apply text-lg md:text-xl lg:text-2xl px-6 py-3 rounded-lg font-medium;
+    @apply text-sm px-4 py-2 rounded-lg font-medium;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   .button-sm {
-    @apply text-base md:text-lg lg:text-xl px-4 py-2;
+    @apply text-xs px-3 py-1;
   }
 
   .button-lg {
-    @apply text-xl md:text-2xl lg:text-3xl px-8 py-4;
+    @apply text-base px-6 py-3;
   }
 
   /* Input styles */
   .input {
-    @apply text-lg md:text-xl lg:text-2xl px-4 py-3 rounded-lg;
+    @apply text-sm px-3 py-2 rounded-lg;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   /* Select styles */
   .select {
-    @apply text-lg md:text-xl lg:text-2xl px-4 py-3 rounded-lg;
+    @apply text-sm px-3 py-2 rounded-lg;
     font-family: var(--font-subtitle, Superior, sans-serif);
     letter-spacing: -0.03em;
   }
 
   /* Avatar styles */
   .avatar {
-    @apply w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24;
+    @apply w-10 h-10;
   }
 
   .avatar-fallback {
-    @apply text-2xl md:text-3xl lg:text-4xl;
+    @apply text-base;
   }
 
   /* Icon sizes */
   .icon-sm {
-    @apply w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7;
+    @apply w-4 h-4;
   }
 
   .icon-md {
-    @apply w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8;
+    @apply w-5 h-5;
   }
 
   .icon-lg {
-    @apply w-7 h-7 md:w-8 md:h-8 lg:w-9 lg:h-9;
+    @apply w-6 h-6;
   }
 
   /* Futuristic elements */

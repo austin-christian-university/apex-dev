@@ -17,8 +17,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-gray-500">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground">Manage your account settings and preferences</p>
       </div>
 
       <Tabs defaultValue="account">
@@ -98,11 +98,11 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Email Notifications</h3>
+                <h3 className="text-base font-medium">Email Notifications</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">Academic Updates</p>
+                      <p className="font-medium text-base">Academic Updates</p>
                       <p className="text-sm text-gray-500">Receive notifications about grades, course changes, etc.</p>
                     </div>
                     <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
@@ -127,7 +127,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-4 pt-4 border-t border-gray-200">
-                <h3 className="text-lg font-medium">SMS Notifications</h3>
+                <h3 className="text-base font-medium">SMS Notifications</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Four Pillars Configuration</h3>
+                  <h3 className="text-base font-medium">Four Pillars Configuration</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-gray-200">
-                  <h3 className="text-lg font-medium">User Management</h3>
+                  <h3 className="text-base font-medium">User Management</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-gray-200">
-                  <h3 className="text-lg font-medium">System Settings</h3>
+                  <h3 className="text-base font-medium">System Settings</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
