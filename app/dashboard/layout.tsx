@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
@@ -10,6 +10,7 @@ import { BookOpen, Calendar, CreditCard, LayoutDashboard, LogOut, Settings, User
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Image from "next/image"
 import {
   Sidebar,
   SidebarContent,
@@ -25,6 +26,15 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { useUserRole } from "@/lib/auth"
+import { useTheme } from "next-themes"
+
+// Helper to detect dark mode (for branding image)
+function isDarkMode() {
+  if (typeof window !== "undefined") {
+    return document.documentElement.classList.contains("dark");
+  }
+  return false;
+}
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -34,6 +44,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const userRole = useUserRole()
+  const [mounted, setMounted] = useState(false)
+  const { theme } = useTheme()
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -49,16 +61,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     ? navigation.filter((item) => item.name === "Dashboard")
     : navigation
 
+  // Handle mounting
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Update logo based on theme
+  const logoSrc = mounted && theme === "dark" ? "/acu-logo-white.png" : "/acu-logo-bronze.png"
+
   return (
     <SidebarProvider defaultOpen={!isCollapsed} onOpenChange={setIsCollapsed}>
       <div className="flex min-h-screen bg-background">
         <Sidebar className="border-r border-border">
           <SidebarHeader className="border-b border-border p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-white text-lg font-bold">ACU</span>
-              </div>
-              <div className="text-base md:text-lg lg:text-xl font-semibold">Austin Christian University</div>
+              <Image
+                src={logoSrc}
+                alt="Austin Christian University"
+                width={40}
+                height={40}
+                className="w-40"
+              />
             </div>
           </SidebarHeader>
 
@@ -95,7 +118,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </div>
               <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <Link href="/login">
+                <Link href="/">
                   <LogOut className="h-5 w-5" />
                 </Link>
               </Button>

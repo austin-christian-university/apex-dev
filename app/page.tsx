@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
+import Image from "next/image"
 import { BackgroundAnimation } from "@/components/background-animation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"))
+  }, [])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,15 +56,15 @@ export default function LoginPage() {
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: 0.2,
-                }}
-                className="w-16 h-16 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center"
+                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.2 }}
               >
-                <span className="text-white text-2xl font-bold">ACU</span>
+                <Image
+                  src={isDark ? "/acu-logo-white.png" : "/acu-logo-bronze.png"}
+                  alt="Austin Christian University"
+                  width={96}
+                  height={96}
+                  className="w-40"
+                />
               </motion.div>
             </div>
             <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
@@ -101,7 +107,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-[#c4a777] to-[#c4a777] hover:from-[#877250] hover:to-[#877250] transition-all duration-[2000ms] ease-in-out"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -129,7 +135,7 @@ export default function LoginPage() {
                       Signing in...
                     </div>
                   ) : (
-                    "Sign In"
+                    "Sign In – ACU"
                   )}
                 </Button>
               </div>
