@@ -27,6 +27,7 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
     pillar: string
     date: string
   } | null>(null)
+  const [isDark, setIsDark] = useState(false)
 
   // Helper to detect dark mode
   function isDarkMode() {
@@ -35,6 +36,25 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
     }
     return false
   }
+
+  // Watch for theme changes
+  useEffect(() => {
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "class") {
+          setIsDark(isDarkMode())
+        }
+      })
+    })
+
+    // Start observing the document with the configured parameters
+    observer.observe(document.documentElement, { attributes: true })
+
+    // Set initial theme state
+    setIsDark(isDarkMode())
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -53,8 +73,8 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
     const chartHeight = canvas.height - padding.top - padding.bottom
 
     // Set text color based on theme
-    const textColor = isDarkMode() ? "rgba(226, 232, 240, 0.8)" : "rgba(15, 23, 42, 0.8)" // slate-200 for dark, slate-900 for light
-    const mutedTextColor = isDarkMode() ? "rgba(148, 163, 184, 0.8)" : "rgba(71, 85, 105, 0.8)" // slate-400 for dark, slate-600 for light
+    const textColor = isDark ? "rgba(226, 232, 240, 0.8)" : "rgba(15, 23, 42, 0.8)" // slate-200 for dark, slate-900 for light
+    const mutedTextColor = isDark ? "rgba(148, 163, 184, 0.8)" : "rgba(71, 85, 105, 0.8)" // slate-400 for dark, slate-600 for light
 
     // Draw background
     ctx.fillStyle = "rgba(255, 255, 255, 0.01)"
@@ -306,23 +326,19 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         // Draw tooltip background with theme-aware styling
         ctx.shadowColor = "rgba(0, 0, 0, 0.2)"
         ctx.shadowBlur = 15
-        ctx.fillStyle = isDarkMode() 
-          ? "rgba(15, 23, 42, 0.95)" // slate-900 with high opacity for dark mode
-          : "rgba(255, 255, 255, 0.95)" // white with high opacity for light mode
+        ctx.fillStyle = isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)"
         ctx.beginPath()
         ctx.roundRect(tooltipX, tooltipY, tooltipWidth, tooltipHeight, 8)
         ctx.fill()
         ctx.shadowBlur = 0
 
         // Draw tooltip border with theme-aware styling
-        ctx.strokeStyle = isDarkMode() 
-          ? "rgba(226, 232, 240, 0.1)" // slate-200 with low opacity for dark mode
-          : "rgba(15, 23, 42, 0.1)" // slate-900 with low opacity for light mode
+        ctx.strokeStyle = isDark ? "rgba(226, 232, 240, 0.1)" : "rgba(15, 23, 42, 0.1)"
         ctx.lineWidth = 1
         ctx.stroke()
 
         // Draw tooltip content with theme-aware styling
-        ctx.fillStyle = isDarkMode() ? "#ffffff" : "#0f172a" // white for dark mode, slate-900 for light mode
+        ctx.fillStyle = isDark ? "#ffffff" : "#0f172a"
         ctx.font = "600 13px Inter, sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "top"
@@ -334,13 +350,11 @@ export function HistoricalChart({ data, height = 300 }: HistoricalChartProps) {
         const date = new Date(hoveredPoint.date)
         const formattedDate = `${date.toLocaleString("default", { month: "long" })} ${date.getFullYear()}`
         ctx.font = "400 12px Inter, sans-serif"
-        ctx.fillStyle = isDarkMode() 
-          ? "rgba(226, 232, 240, 0.7)" // slate-200 with opacity for dark mode
-          : "rgba(15, 23, 42, 0.7)" // slate-900 with opacity for light mode
+        ctx.fillStyle = isDark ? "rgba(226, 232, 240, 0.7)" : "rgba(15, 23, 42, 0.7)"
         ctx.fillText(formattedDate, tooltipX + tooltipWidth / 2, tooltipY + 60)
       }
     }
-  }, [data, hoveredPoint])
+  }, [data, hoveredPoint, isDark])
 
   return (
     <Card className="shadow-card border border-border/60 overflow-hidden card-glow transition-all duration-300">
