@@ -7,10 +7,10 @@ import { Info } from "lucide-react"
 
 interface FourPillarsChartProps {
   data: {
-    christCentered: number
-    excellence: number
-    service: number
-    community: number
+    christCentered: { score: number; subcategories: Record<string, number> }
+    excellence: { score: number; subcategories: Record<string, number> }
+    service: { score: number; subcategories: Record<string, number> }
+    community: { score: number; subcategories: Record<string, number> }
   }
   size?: "sm" | "md" | "lg"
 }
@@ -124,10 +124,10 @@ export function FourPillarsChart({ data, size = "md" }: FourPillarsChartProps) {
 
     // Draw data
     const values = [
-      data.christCentered / 100,
-      data.excellence / 100,
-      data.service / 100,
-      data.community / 100,
+      data.christCentered.score / 100,
+      data.excellence.score / 100,
+      data.service.score / 100,
+      data.community.score / 100,
     ]
 
     // Draw filled area
@@ -287,7 +287,9 @@ export function FourPillarsChart({ data, size = "md" }: FourPillarsChartProps) {
   }
 
   // Calculate overall score
-  const overallScore = Math.round((data.christCentered + data.excellence + data.service + data.community) / 4)
+  const overallScore = Math.round(
+    (data.christCentered.score + data.excellence.score + data.service.score + data.community.score) / 4
+  )
 
   return (
     <Card className="shadow-card border border-border/60 overflow-hidden card-glow transition-all duration-300">

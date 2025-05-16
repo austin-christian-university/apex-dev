@@ -1,18 +1,24 @@
 "use client"
 
-import { useState } from "react"
-import { Edit, Save, Info } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Edit, Save, Info, Plus, Minus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUserRole } from "@/lib/auth"
-import { getStudentById } from "@/lib/data"
+import { getStudentById, students } from "@/lib/data"
+import { Progress } from "@/components/ui/progress"
 
 interface CoreValueBreakdownProps {
   studentId: string
   pillar?: string
+}
+
+// Define the type for subcategory scores
+type SubcategoryScores = {
+  [key: string]: number
 }
 
 // Map pillar keys to display names, colors, and subcategories
@@ -65,34 +71,99 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
   const student = getStudentById(studentId)
 
   const info = PILLAR_INFO[pillar] || PILLAR_INFO.christCentered
-  const pillarData = student?.pillars?.[pillar as keyof typeof student.pillars] || 0
+  const pillarData = student?.pillars?.[pillar as keyof typeof student.pillars]
 
-  // Create a compatible data structure for the component
-  const [editedData, setEditedData] = useState({
-    score: pillarData,
-    categories: Object.fromEntries(
-      info.subcategories.map((cat, i) => [cat, Math.round(pillarData * (0.9 + i * 0.05))])
-    ),
+  // Initialize categories with actual data from student
+  const [editedData, setEditedData] = useState<{
+    score: number
+    categories: SubcategoryScores
+    notes: string
+  }>({
+    score: pillarData?.score || 0,
+    categories: pillarData?.subcategories || {},
     notes: "Student is showing consistent improvement in this area.",
   })
 
-  // Only allow editing if user is admin or leader
+  // Update local state when student data changes
+  useEffect(() => {
+    if (student && pillarData) {
+      setEditedData(prev => ({
+        ...prev,
+        score: pillarData.score,
+        categories: pillarData.subcategories
+      }))
+    }
+  }, [student, pillar])
+
   const canEdit = userRole === "admin" || userRole === "leader"
 
+  const calculateNewPillarScore = (categories: SubcategoryScores) => {
+    const values = Object.values(categories)
+    return Math.round(values.reduce((sum, val) => sum + val, 0) / values.length)
+  }
+
+  const updateStudentData = (newCategories: SubcategoryScores) => {
+    const newScore = calculateNewPillarScore(newCategories)
+    
+    // Update the student data in our dummy data
+    const studentIndex = students.findIndex(s => s.id === studentId)
+    if (studentIndex !== -1) {
+      students[studentIndex] = {
+        ...students[studentIndex],
+        pillars: {
+          ...students[studentIndex].pillars,
+          [pillar]: {
+            score: newScore,
+            subcategories: newCategories
+          }
+        }
+      }
+    }
+  }
+
+  const handleScoreChange = (subcategory: string, change: number) => {
+    if (!canEdit) return
+
+    setEditedData(prev => {
+      const newCategories = {
+        ...prev.categories,
+        [subcategory]: Math.max(0, Math.min(100, prev.categories[subcategory] + change))
+      }
+      
+      const newScore = calculateNewPillarScore(newCategories)
+      
+      // Update the student data
+      updateStudentData(newCategories)
+
+      return {
+        ...prev,
+        score: newScore,
+        categories: newCategories
+      }
+    })
+  }
+
   const handleSave = () => {
-    // In a real app, this would save to the database
-    console.log("Saving data:", editedData)
+    // Update the student data with final values
+    updateStudentData(editedData.categories)
     setIsEditing(false)
   }
 
   const handleCategoryChange = (category: string, value: number) => {
-    setEditedData((prev) => ({
-      ...prev,
-      categories: {
+    setEditedData(prev => {
+      const newCategories = {
         ...prev.categories,
-        [category]: value,
-      },
-    }))
+        [category]: value
+      }
+      
+      const newScore = calculateNewPillarScore(newCategories)
+      
+      return {
+        ...prev,
+        score: newScore,
+        categories: newCategories
+      }
+    })
   }
 
   const handleNotesChange = (notes: string) => {
@@ -171,14 +242,16 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
         <div className="flex justify-between items-center">
           <CardTitle className={getTextColor(color)}>{info.label}</CardTitle>
           <div className="flex items-center space-x-2">
-            <div className={`text-2xl font-bold ${getTextColor(color)}`}>{pillarData}</div>
+            <div className={`text-2xl font-bold ${getTextColor(color)}`}>
+              {isEditing ? editedData.score : pillarData?.score}
+            </div>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>This score represents the student's overall performance in the {info.label} core value.</p>
+                  <p>This score represents the average of all subcategory scores in the {info.label} core value.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -190,8 +263,30 @@ export function CoreValueBreakdown({ studentId, pillar = "christCentered" }: Cor
         <div className="space-y-5">
           {Object.entries(editedData.categories).map(([category, value]) => (
             <div key={category} className="space-y-2">
-              <div className="flex justify-between items-center">
-                <div className="text-sm font-medium">{category}</div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">{category}</span>
+                  {userRole !== "student" && (
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleScoreChange(category, -1)}
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => handleScoreChange(category, 1)}
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
                 <div className="text-sm text-muted-foreground">
                   {canEdit && isEditing ? editedData.categories[category] : value}/100
                 </div>

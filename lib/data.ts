@@ -10,10 +10,42 @@ export interface Student {
   gpa: number
   profileImage?: string
   pillars: {
-    christCentered: number
-    excellence: number
-    service: number
-    community: number
+    christCentered: {
+      score: number
+      subcategories: {
+        "Spiritual Formation Activities": number
+        "Scripture Engagement": number
+        "Mission & Outreach Involvement": number
+        "Character Development": number
+      }
+    }
+    excellence: {
+      score: number
+      subcategories: {
+        "Academic Performance": number
+        "Professional Skills & Development": number
+        "Analytical & Problem-Solving Abilities": number
+        "Innovation & Creative Projects": number
+      }
+    }
+    service: {
+      score: number
+      subcategories: {
+        "Direct Service Hours": number
+        "Leadership in Service Initiatives": number
+        "Promoting a Culture of Service": number
+        "Compassionate Action & Empathy": number
+      }
+    }
+    community: {
+      score: number
+      subcategories: {
+        "Campus Engagement & Leadership": number
+        "Collaborative Contributions": number
+        "Positive Campus Citizenship": number
+        "Exploration of Vocation & Calling": number
+      }
+    }
   }
   history: {
     date: string
@@ -87,10 +119,42 @@ export const students: Student[] = [
     year: 3,
     gpa: 3.8,
     pillars: {
-      christCentered: 92,
-      excellence: 87,
-      service: 68,
-      community: 78,
+      christCentered: {
+        score: 92,
+        subcategories: {
+          "Spiritual Formation Activities": 95,
+          "Scripture Engagement": 90,
+          "Mission & Outreach Involvement": 88,
+          "Character Development": 95
+        }
+      },
+      excellence: {
+        score: 87,
+        subcategories: {
+          "Academic Performance": 90,
+          "Professional Skills & Development": 85,
+          "Analytical & Problem-Solving Abilities": 88,
+          "Innovation & Creative Projects": 85
+        }
+      },
+      service: {
+        score: 68,
+        subcategories: {
+          "Direct Service Hours": 65,
+          "Leadership in Service Initiatives": 70,
+          "Promoting a Culture of Service": 68,
+          "Compassionate Action & Empathy": 69
+        }
+      },
+      community: {
+        score: 78,
+        subcategories: {
+          "Campus Engagement & Leadership": 80,
+          "Collaborative Contributions": 75,
+          "Positive Campus Citizenship": 78,
+          "Exploration of Vocation & Calling": 79
+        }
+      }
     },
     history: [
       { date: "2023-01", christCentered: 88, excellence: 82, service: 65, community: 72 },
@@ -200,10 +264,42 @@ export const students: Student[] = [
     year: 2,
     gpa: 3.9,
     pillars: {
-      christCentered: 75,
-      excellence: 94,
-      service: 82,
-      community: 68,
+      christCentered: {
+        score: 75,
+        subcategories: {
+          "Spiritual Formation Activities": 72,
+          "Scripture Engagement": 78,
+          "Mission & Outreach Involvement": 74,
+          "Character Development": 76
+        }
+      },
+      excellence: {
+        score: 94,
+        subcategories: {
+          "Academic Performance": 95,
+          "Professional Skills & Development": 93,
+          "Analytical & Problem-Solving Abilities": 96,
+          "Innovation & Creative Projects": 92
+        }
+      },
+      service: {
+        score: 82,
+        subcategories: {
+          "Direct Service Hours": 80,
+          "Leadership in Service Initiatives": 85,
+          "Promoting a Culture of Service": 81,
+          "Compassionate Action & Empathy": 82
+        }
+      },
+      community: {
+        score: 68,
+        subcategories: {
+          "Campus Engagement & Leadership": 65,
+          "Collaborative Contributions": 70,
+          "Positive Campus Citizenship": 68,
+          "Exploration of Vocation & Calling": 69
+        }
+      }
     },
     history: [
       { date: "2023-01", christCentered: 70, excellence: 90, service: 78, community: 62 },
@@ -306,10 +402,42 @@ export const students: Student[] = [
     year: 4,
     gpa: 3.7,
     pillars: {
-      christCentered: 88,
-      excellence: 82,
-      service: 91,
-      community: 85,
+      christCentered: {
+        score: 88,
+        subcategories: {
+          "Spiritual Formation Activities": 90,
+          "Scripture Engagement": 85,
+          "Mission & Outreach Involvement": 89,
+          "Character Development": 88
+        }
+      },
+      excellence: {
+        score: 82,
+        subcategories: {
+          "Academic Performance": 80,
+          "Professional Skills & Development": 85,
+          "Analytical & Problem-Solving Abilities": 81,
+          "Innovation & Creative Projects": 82
+        }
+      },
+      service: {
+        score: 91,
+        subcategories: {
+          "Direct Service Hours": 90,
+          "Leadership in Service Initiatives": 92,
+          "Promoting a Culture of Service": 91,
+          "Compassionate Action & Empathy": 91
+        }
+      },
+      community: {
+        score: 85,
+        subcategories: {
+          "Campus Engagement & Leadership": 87,
+          "Collaborative Contributions": 84,
+          "Positive Campus Citizenship": 85,
+          "Exploration of Vocation & Calling": 84
+        }
+      }
     },
     history: [
       { date: "2023-01", christCentered: 84, excellence: 78, service: 87, community: 80 },
@@ -405,10 +533,42 @@ export const students: Student[] = [
     year: 1,
     gpa: 3.5,
     pillars: {
-      christCentered: 65,
-      excellence: 79,
-      service: 88,
-      community: 72,
+      christCentered: {
+        score: 65,
+        subcategories: {
+          "Spiritual Formation Activities": 62,
+          "Scripture Engagement": 68,
+          "Mission & Outreach Involvement": 64,
+          "Character Development": 66
+        }
+      },
+      excellence: {
+        score: 79,
+        subcategories: {
+          "Academic Performance": 75,
+          "Professional Skills & Development": 82,
+          "Analytical & Problem-Solving Abilities": 80,
+          "Innovation & Creative Projects": 79
+        }
+      },
+      service: {
+        score: 88,
+        subcategories: {
+          "Direct Service Hours": 85,
+          "Leadership in Service Initiatives": 90,
+          "Promoting a Culture of Service": 88,
+          "Compassionate Action & Empathy": 89
+        }
+      },
+      community: {
+        score: 72,
+        subcategories: {
+          "Campus Engagement & Leadership": 70,
+          "Collaborative Contributions": 73,
+          "Positive Campus Citizenship": 72,
+          "Exploration of Vocation & Calling": 73
+        }
+      }
     },
     history: [
       { date: "2023-01", christCentered: 60, excellence: 74, service: 84, community: 67 },
@@ -481,10 +641,42 @@ export const students: Student[] = [
     year: 3,
     gpa: 3.6,
     pillars: {
-      christCentered: 93,
-      excellence: 85,
-      service: 72,
-      community: 91,
+      christCentered: {
+        score: 93,
+        subcategories: {
+          "Spiritual Formation Activities": 95,
+          "Scripture Engagement": 92,
+          "Mission & Outreach Involvement": 93,
+          "Character Development": 92
+        }
+      },
+      excellence: {
+        score: 85,
+        subcategories: {
+          "Academic Performance": 83,
+          "Professional Skills & Development": 87,
+          "Analytical & Problem-Solving Abilities": 84,
+          "Innovation & Creative Projects": 86
+        }
+      },
+      service: {
+        score: 72,
+        subcategories: {
+          "Direct Service Hours": 70,
+          "Leadership in Service Initiatives": 75,
+          "Promoting a Culture of Service": 71,
+          "Compassionate Action & Empathy": 72
+        }
+      },
+      community: {
+        score: 91,
+        subcategories: {
+          "Campus Engagement & Leadership": 93,
+          "Collaborative Contributions": 90,
+          "Positive Campus Citizenship": 91,
+          "Exploration of Vocation & Calling": 90
+        }
+      }
     },
     history: [
       { date: "2023-01", christCentered: 89, excellence: 80, service: 68, community: 86 },

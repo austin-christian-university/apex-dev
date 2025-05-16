@@ -8,7 +8,6 @@ import { FourPillarsChart } from "@/components/four-pillars-chart"
 import { HistoricalChart } from "@/components/historical-chart"
 import { StudentSelector } from "@/components/student-selector"
 import { CoreValueBreakdown } from "@/components/core-value-breakdown"
-import { ScoreAdjuster } from "@/components/score-adjuster"
 import { getAllStudents, getStudentById } from "@/lib/data"
 import { useUserRole } from "@/lib/auth"
 
@@ -59,7 +58,7 @@ const PILLARS = [
 export default function DashboardPage() {
   const [students, setStudents] = useState<any[]>([])
   const [selectedStudentId, setSelectedStudentId] = useState<string>("1")
-  const [selectedPillar, setSelectedPillar] = useState<string>("academic")
+  const [selectedPillar, setSelectedPillar] = useState<string>("christCentered")
   const [isLoading, setIsLoading] = useState(true)
   const userRole = useUserRole()
 
@@ -74,11 +73,6 @@ export default function DashboardPage() {
 
     setIsLoading(false)
   }, [])
-
-  const handleScoreChange = (pillar: string, change: number, comment?: string, evidence?: string) => {
-    console.log(`Changed ${pillar} by ${change}`, { comment, evidence })
-    // In a real app, this would update the database
-  }
 
   const handleStudentChange = (studentId: string) => {
     setSelectedStudentId(studentId)
@@ -172,29 +166,6 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       </div>
-
-      {userRole !== "student" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className="overflow-hidden border-0 shadow-lg bg-gradient-to-br from-background to-background/80 backdrop-blur-sm">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-indigo-500/5 to-blue-500/5 z-0" />
-            <CardHeader className="relative z-10">
-              <CardTitle>Score Adjustment</CardTitle>
-              <CardDescription>Add or remove points from each pillar with supporting evidence</CardDescription>
-            </CardHeader>
-            <CardContent className="relative z-10">
-              <ScoreAdjuster
-                studentId={selectedStudentId}
-                studentName={selectedStudent.name}
-                onScoreChange={handleScoreChange}
-              />
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
