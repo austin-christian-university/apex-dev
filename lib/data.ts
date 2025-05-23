@@ -17,9 +17,9 @@ export interface Student {
   }
   scoreChangeHistory: {
     category: "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
-    description: string
+  description: string
     pointChange: number
-    date: string
+  date: string
   }[]
 }
 
@@ -534,7 +534,7 @@ export function getAllStudents() {
 }
 
 export function getStudentsByCompany(company: string) {
-  return students.filter((student) => student.studentId === company)
+  return students.filter((student) => student.company === company)
 }
 
 export function getUserTypeById(id: string) {

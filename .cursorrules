@@ -18,9 +18,10 @@ const folderStructure = `
 app/
   layout.js
   page.js
-  components/
   lib/
   styles/
+components/
+
 public/
 `;
 
