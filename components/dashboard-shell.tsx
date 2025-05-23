@@ -83,7 +83,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Student Profile", href: "/student-profile", icon: User },
+    { name: "Student Profile", href: "/my-profile", icon: User },
     { name: "Course Records", href: "/course-records", icon: BookOpen },
     { name: "Financial Overview", href: "/financial-overview", icon: CreditCard },
     { name: "Calendar", href: "/calendar", icon: Calendar },

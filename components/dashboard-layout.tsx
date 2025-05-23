@@ -60,9 +60,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     },
     {
       name: "Student Profile",
-      href: "/dashboard/student-profile",
+      href: "/dashboard/my-profile",
       icon: User,
-      current: pathname === "/dashboard/student-profile",
+      current: pathname === "/dashboard/my-profile",
       roles: ["admin", "student"],
     },
     {
