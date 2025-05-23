@@ -12,7 +12,7 @@ const fontSans = FontSans({
 })
 
 export const metadata: Metadata = {
-  title: "Austin Christian University Dashboard",
+  title: "The Den",
   description: "Student progress tracking and analytics dashboard",
   generator: 'v0.dev'
 }
