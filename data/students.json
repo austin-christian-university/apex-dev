@@ -9,7 +9,7 @@
     "company": "Alpha Company",
     "companyRole": "President",
     "score": {
-      "lionGames": 95,
+      "lionGames": 100,
       "attendance": 99,
       "leadershipRoles": 92,
       "serviceHours": 88,
@@ -18,6 +18,12 @@
       "grades": 3.8
     },
     "scoreChangeHistory": [
+      {
+        "category": "lionGames",
+        "pointChange": 20,
+        "description": "Lion Games: 2nd place",
+        "date": "2025-05-23"
+      },
       {
         "category": "attendance",
         "pointChange": 1,
