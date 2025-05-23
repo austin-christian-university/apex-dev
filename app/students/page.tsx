@@ -204,7 +204,6 @@ export default function StudentsPage() {
                   <TableHead className={"w-[150px]"}>Phone</TableHead>
                   <TableHead className={"w-[100px]"}>Year</TableHead>
                   <TableHead className={"w-[150px]"}>Company Role</TableHead>
-                  <TableHead className={"w-[120px]"}>Student ID</TableHead>
                   <TableHead className={"w-[100px] text-right"}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -219,7 +218,6 @@ export default function StudentsPage() {
                       <TableCell>{student.phoneNumber}</TableCell>
                       <TableCell>{student.year}</TableCell>
                       <TableCell>{student.companyRole}</TableCell>
-                      <TableCell>{student.studentId}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
