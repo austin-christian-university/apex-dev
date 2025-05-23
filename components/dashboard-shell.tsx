@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { BookOpen, Calendar, CreditCard, LayoutDashboard, LogOut, Settings, User } from "lucide-react"
+import { BookOpen, Calendar, CreditCard, LayoutDashboard, LogOut, Settings, User, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -83,11 +83,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Student Profile", href: "/my-profile", icon: User },
-    { name: "Course Records", href: "/course-records", icon: BookOpen },
-    { name: "Financial Overview", href: "/financial-overview", icon: CreditCard },
-    { name: "Calendar", href: "/calendar", icon: Calendar },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "Students", href: "/students", icon: Users },
+    { name: "My Profile", href: "/my-profile", icon: User },
+    // { name: "Course Records", href: "/course-records", icon: BookOpen },
+    // { name: "Financial Overview", href: "/financial-overview", icon: CreditCard },
+    // { name: "Calendar", href: "/calendar", icon: Calendar },
+    // { name: "Settings", href: "/settings", icon: Settings },
   ]
 
   // Only show Dashboard for student leader
