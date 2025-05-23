@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { getAllStudents } from "@/lib/data"
+import { getAllStudents, type Student } from "@/lib/data"
 import { CompanyStandings } from "@/components/company-standings"
 import { CompanyHistory } from "@/components/company-history"
 import { StudentScoresTable } from "@/components/student-scores-table"
@@ -14,7 +14,7 @@ interface CompanyStanding {
 }
 
 // Calculate company standings
-const calculateCompanyStandings = (students: any[]): CompanyStanding[] => {
+const calculateCompanyStandings = (students: Student[]): CompanyStanding[] => {
   const companies = ["Alpha Company", "Bravo Company", "Charlie Company", "Delta Company"]
   
   return companies.map(company => {
@@ -34,16 +34,25 @@ const calculateCompanyStandings = (students: any[]): CompanyStanding[] => {
 }
 
 export default function DashboardPage() {
-  const [students, setStudents] = useState<any[]>([])
+  const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
   const [companyStandings, setCompanyStandings] = useState<CompanyStanding[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const allStudents = getAllStudents()
-    setStudents(allStudents)
-    setCompanyStandings(calculateCompanyStandings(allStudents))
-    setIsLoading(false)
+    const fetchStudents = async () => {
+      try {
+        const allStudents = await getAllStudents()
+        setStudents(allStudents)
+        setCompanyStandings(calculateCompanyStandings(allStudents))
+      } catch (error) {
+        console.error("Error fetching students:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchStudents()
   }, [])
 
   if (isLoading) {
