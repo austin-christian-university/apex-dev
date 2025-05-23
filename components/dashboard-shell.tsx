@@ -139,32 +139,38 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-border p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={getAvatarImage()} alt="User avatar" />
-                  <AvatarFallback className="text-lg">{getAvatarFallback()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-base md:text-lg font-medium">{getUserName()}</p>
-                  <p className="text-sm md:text-base text-muted-foreground">{getUserEmail()}</p>
+          <div className="mt-auto">
+            <div className="flex justify-end px-4 py-4">
+              <ThemeToggle />
+            </div>
+            <SidebarFooter className="border-t border-border">
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={getAvatarImage()} alt="User avatar" />
+                      <AvatarFallback className="text-lg">{getAvatarFallback()}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-base md:text-lg font-medium">{getUserName()}</p>
+                      <p className="text-sm md:text-base text-muted-foreground">{getUserEmail()}</p>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
+                    <Link href="/">
+                      <LogOut className="h-5 w-5" />
+                    </Link>
+                  </Button>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <Link href="/">
-                  <LogOut className="h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-          </SidebarFooter>
+            </SidebarFooter>
+          </div>
         </Sidebar>
 
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-20 items-center gap-6 border-b bg-background px-8">
             <SidebarTrigger className="h-14 w-14" />
             <div className="flex-1" />
-            <ThemeToggle />
           </header>
 
           <main className="flex-1 p-8">
