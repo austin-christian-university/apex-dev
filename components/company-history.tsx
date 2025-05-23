@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { useTheme } from "next-themes"
 
 interface CompanyHistoryPoint {
   date: string
@@ -13,14 +14,38 @@ interface CompanyHistoryProps {
   companyStandings: { name: string; totalScore: number }[]
 }
 
+// Custom tooltip component for dark mode support
+const CustomTooltip = ({ active, payload, label }: any) => {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
+  if (active && payload && payload.length) {
+    return (
+      <div className={`p-3 rounded-lg border shadow-lg ${
+        isDark 
+          ? "bg-gray-900 border-gray-700 text-gray-100" 
+          : "bg-white border-gray-200 text-gray-900"
+      }`}>
+        <p className="font-medium mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ color: entry.color }} className="text-sm">
+            {entry.name}: {entry.value}
+          </p>
+        ))}
+      </div>
+    )
+  }
+  return null
+}
+
 // Generate company history data
 const generateCompanyHistory = (finalScores: { name: string; totalScore: number }[]): CompanyHistoryPoint[] => {
   const startDate = new Date("2024-07-01")
   const endDate = new Date("2025-05-01")
   const history: CompanyHistoryPoint[] = []
   
-  // Generate bi-weekly data points
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 14)) {
+  // Generate monthly data points for consistent spacing
+  for (let d = new Date(startDate); d <= endDate; d.setMonth(d.getMonth() + 1)) {
     const point: CompanyHistoryPoint = {
       date: d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
     }
@@ -64,7 +89,13 @@ const generateCompanyHistory = (finalScores: { name: string; totalScore: number 
 }
 
 export function CompanyHistory({ companyStandings }: CompanyHistoryProps) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const history = generateCompanyHistory(companyStandings)
+
+  const textColor = isDark ? '#e5e7eb' : '#374151'
+  const gridColor = isDark ? '#374151' : '#e5e7eb'
+  const axisColor = isDark ? '#4b5563' : '#d1d5db'
 
   return (
     <motion.div
@@ -80,11 +111,30 @@ export function CompanyHistory({ companyStandings }: CompanyHistoryProps) {
           <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fill: textColor, fontSize: 16 }}
+                  axisLine={{ stroke: axisColor }}
+                  tickLine={{ stroke: axisColor }}
+                  interval={0} // Show all ticks
+                  minTickGap={50} // Minimum gap between ticks
+                  angle={-45} // Angle the labels for better readability
+                  textAnchor="end" // Align the end of the text with the tick
+                  height={60} // Increase height to accommodate angled labels
+                />
+                <YAxis 
+                  tick={{ fill: textColor, fontSize: 16 }}
+                  axisLine={{ stroke: axisColor }}
+                  tickLine={{ stroke: axisColor }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend 
+                  wrapperStyle={{
+                    color: textColor,
+                    paddingTop: "20px" // Add some padding to account for angled labels
+                  }}
+                />
                 <Line
                   type="linear"
                   dataKey="Alpha Company"
