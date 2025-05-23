@@ -22,9 +22,9 @@ export interface Student {
   }
   scoreChangeHistory: {
     category: "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
-    description: string
+  description: string
     pointChange: number
-    date: string
+  date: string
   }[]
 }
 

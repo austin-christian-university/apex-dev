@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { getAllStudents, type Student, companies } from "@/lib/data"
 import { AddStudentModal } from "@/components/add-student-modal"
+import { EditScoreModal } from "@/components/edit-score-modal"
+import { DeleteStudentDialog } from "@/components/delete-student-dialog"
 import {
   Select,
   SelectContent,
@@ -21,13 +23,23 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { Plus } from "lucide-react"
+import { Plus, Pencil, Trash2 } from "lucide-react"
+
+// Helper function to split full name into first and last name
+function splitName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(" ")
+  const lastName = parts.pop() || ""
+  const firstName = parts.join(" ")
+  return { firstName, lastName }
+}
 
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
   const [isLoading, setIsLoading] = useState(true)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [editingStudent, setEditingStudent] = useState<Student | null>(null)
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -96,6 +108,52 @@ export default function StudentsPage() {
     }
   }
 
+  const handleEditScore = async (data: any) => {
+    if (!editingStudent) return
+
+    try {
+      const response = await fetch(`/api/students/${editingStudent.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update score")
+      }
+
+      const updatedStudent = await response.json()
+      setStudents(students.map(student => 
+        student.id === updatedStudent.id ? updatedStudent : student
+      ))
+    } catch (error) {
+      console.error("Error updating score:", error)
+      throw error
+    }
+  }
+
+  const handleDeleteStudent = async () => {
+    if (!deletingStudent) return
+
+    try {
+      const response = await fetch(`/api/students/${deletingStudent.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to delete student")
+      }
+
+      // Update local state
+      setStudents(students.filter(student => student.id !== deletingStudent.id))
+    } catch (error) {
+      console.error("Error deleting student:", error)
+      throw error
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
@@ -140,28 +198,53 @@ export default function StudentsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className={"w-[200px]"}>Name</TableHead>
+                  <TableHead className={"w-[150px]"}>First Name</TableHead>
+                  <TableHead className={"w-[150px]"}>Last Name</TableHead>
                   <TableHead className={"w-[250px]"}>Email</TableHead>
                   <TableHead className={"w-[150px]"}>Phone</TableHead>
                   <TableHead className={"w-[100px]"}>Year</TableHead>
                   <TableHead className={"w-[150px]"}>Company Role</TableHead>
                   <TableHead className={"w-[120px]"}>Student ID</TableHead>
+                  <TableHead className={"w-[100px] text-right"}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.email}</TableCell>
-                    <TableCell>{student.phoneNumber}</TableCell>
-                    <TableCell>{student.year}</TableCell>
-                    <TableCell>{student.companyRole}</TableCell>
-                    <TableCell>{student.studentId}</TableCell>
-                  </TableRow>
-                ))}
+                {filteredStudents.map((student) => {
+                  const { firstName, lastName } = splitName(student.name)
+                  return (
+                    <TableRow key={student.id}>
+                      <TableCell className="font-medium">{firstName}</TableCell>
+                      <TableCell className="font-medium">{lastName}</TableCell>
+                      <TableCell>{student.email}</TableCell>
+                      <TableCell>{student.phoneNumber}</TableCell>
+                      <TableCell>{student.year}</TableCell>
+                      <TableCell>{student.companyRole}</TableCell>
+                      <TableCell>{student.studentId}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setEditingStudent(student)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeletingStudent(student)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
                 {filteredStudents.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
                       No students found in {selectedCompany}
                     </TableCell>
                   </TableRow>
@@ -177,6 +260,24 @@ export default function StudentsPage() {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddStudent}
       />
+
+      {editingStudent && (
+        <EditScoreModal
+          isOpen={!!editingStudent}
+          onClose={() => setEditingStudent(null)}
+          student={editingStudent}
+          onSubmit={handleEditScore}
+        />
+      )}
+
+      {deletingStudent && (
+        <DeleteStudentDialog
+          isOpen={!!deletingStudent}
+          onClose={() => setDeletingStudent(null)}
+          student={deletingStudent}
+          onConfirm={handleDeleteStudent}
+        />
+      )}
     </motion.div>
   )
 }

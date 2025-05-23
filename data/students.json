@@ -10,7 +10,7 @@
     "companyRole": "President",
     "score": {
       "lionGames": 95,
-      "attendance": 98,
+      "attendance": 99,
       "leadershipRoles": 92,
       "serviceHours": 88,
       "apartmentChecks": 96,
@@ -18,6 +18,12 @@
       "grades": 3.8
     },
     "scoreChangeHistory": [
+      {
+        "category": "attendance",
+        "pointChange": 1,
+        "description": "yay",
+        "date": "2025-05-23"
+      },
       {
         "category": "lionGames",
         "description": "Won intramural basketball championship",
@@ -491,26 +497,6 @@
       "leadershipRoles": 78,
       "serviceHours": 84,
       "apartmentChecks": 86,
-      "eventExecution": 80,
-      "grades": 3.5
-    },
-    "scoreChangeHistory": []
-  },
-  {
-    "id": "21",
-    "studentId": "ACU20124",
-    "name": "John Doe",
-    "email": "john.doe@acu.edu",
-    "phoneNumber": "(512) 555-5555",
-    "year": "Sophomore",
-    "company": "Alpha Company",
-    "companyRole": "Member",
-    "score": {
-      "lionGames": 80,
-      "attendance": 85,
-      "leadershipRoles": 75,
-      "serviceHours": 80,
-      "apartmentChecks": 85,
       "eventExecution": 80,
       "grades": 3.5
     },
