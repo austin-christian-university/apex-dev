@@ -1,9 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { Mona_Sans as FontSans } from "next/font/google"
+import { ThemeProvider } from "@/components/theme-provider"
+import { DashboardShell } from "@/components/dashboard-shell"
 import "./globals.css"
 import { cn } from "@/lib/utils"
-import { ThemeProvider } from "@/components/theme-provider"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -13,7 +14,7 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "Austin Christian University Dashboard",
   description: "Student progress tracking and analytics dashboard",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -25,7 +26,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {children}
+          <DashboardShell>
+            {children}
+          </DashboardShell>
         </ThemeProvider>
       </body>
     </html>

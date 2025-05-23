@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -28,19 +26,7 @@ import {
 import { useUserRole } from "@/lib/auth"
 import { useTheme } from "next-themes"
 
-// Helper to detect dark mode (for branding image)
-function isDarkMode() {
-  if (typeof window !== "undefined") {
-    return document.documentElement.classList.contains("dark");
-  }
-  return false;
-}
-
-interface DashboardLayoutProps {
-  children: React.ReactNode
-}
-
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const userRole = useUserRole()
@@ -97,11 +83,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Student Profile", href: "/dashboard/student-profile", icon: User },
-    { name: "Course Records", href: "/dashboard/course-records", icon: BookOpen },
-    { name: "Financial Overview", href: "/dashboard/financial-overview", icon: CreditCard },
-    { name: "Calendar", href: "/dashboard/calendar", icon: Calendar },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Student Profile", href: "/student-profile", icon: User },
+    { name: "Course Records", href: "/course-records", icon: BookOpen },
+    { name: "Financial Overview", href: "/financial-overview", icon: CreditCard },
+    { name: "Calendar", href: "/calendar", icon: Calendar },
+    { name: "Settings", href: "/settings", icon: Settings },
   ]
 
   // Only show Dashboard for student leader
@@ -190,4 +176,4 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
     </SidebarProvider>
   )
-}
+} 
