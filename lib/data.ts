@@ -4,764 +4,499 @@ export interface Student {
   name: string
   email: string
   studentId: string
-  major: string
-  minor: string
-  year: number
-  gpa: number
-  profileImage?: string
-  pillars: {
-    christCentered: {
-      score: number
-      subcategories: {
-        "Spiritual Formation Activities": number
-        "Scripture Engagement": number
-        "Mission & Outreach Involvement": number
-        "Character Development": number
-      }
-    }
-    excellence: {
-      score: number
-      subcategories: {
-        "Academic Performance": number
-        "Professional Skills & Development": number
-        "Analytical & Problem-Solving Abilities": number
-        "Innovation & Creative Projects": number
-      }
-    }
-    service: {
-      score: number
-      subcategories: {
-        "Direct Service Hours": number
-        "Leadership in Service Initiatives": number
-        "Promoting a Culture of Service": number
-        "Compassionate Action & Empathy": number
-      }
-    }
-    community: {
-      score: number
-      subcategories: {
-        "Campus Engagement & Leadership": number
-        "Collaborative Contributions": number
-        "Positive Campus Citizenship": number
-        "Exploration of Vocation & Calling": number
-      }
-    }
+  company: string
+  companyRole: "President" | "Officer" | "Member"
+  score: {
+    lionGames: number
+    attendance: number
+    leadershipRoles: number
+    serviceHours: number
+    apartmentChecks: number
+    eventExecution: number
+    grades: number
   }
-  history: {
+  scoreChangeHistory: {
+    category: "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
+    description: string
+    pointChange: number
     date: string
-    christCentered: number
-    excellence: number
-    service: number
-    community: number
   }[]
-  academicRecords: {
-    academicStanding: "good" | "warning" | "probation"
-    totalCredits: number
-    creditsAttempted: number
-    creditsEarned: number
-    gpa: number
-    courses: Course[]
-  }
-  financialStanding: {
-    tuitionTotal: number
-    tuitionPaid: number
-    accountBalance: number
-    financialAid: FinancialAid[]
-    transactions: Transaction[]
-  }
-  achievements: Achievement[]
 }
 
-export interface Course {
-  id: string
-  code: string
-  name: string
-  semester: "Fall" | "Spring" | "Summer"
-  year: number
-  credits: number
-  grade?: "A" | "B" | "C" | "D" | "F" | "W" | "I"
-  status: "in-progress" | "completed"
-}
+// Company names
+const companies = [
+  "Alpha Company",
+  "Bravo Company",
+  "Charlie Company",
+  "Delta Company"
+] as const
 
-export interface FinancialAid {
-  id: string
-  type: "scholarship" | "grant" | "loan"
-  name: string
-  amount: number
-  status: "awarded" | "disbursed" | "pending"
-}
-
-export interface Transaction {
-  id: string
-  date: string
-  description: string
-  type: "payment" | "financial aid" | "refund"
-  amount: number
-}
-
-export interface Achievement {
-  id: string
-  name: string
-  type: "academic" | "service" | "leadership" | "athletic"
-  description: string
-  date: string
-}
-
-// Student data with more variability in Four Pillars scores
+// Generate 20 students (5 per company)
 export const students: Student[] = [
+  // Alpha Company
   {
     id: "1",
     name: "Emma Johnson",
     email: "emma.johnson@acu.edu",
     studentId: "ACU001234",
-    major: "Psychology",
-    minor: "Biblical Studies",
-    year: 3,
-    gpa: 3.8,
-    pillars: {
-      christCentered: {
-        score: 92,
-        subcategories: {
-          "Spiritual Formation Activities": 95,
-          "Scripture Engagement": 90,
-          "Mission & Outreach Involvement": 88,
-          "Character Development": 95
-        }
+    company: "Alpha Company",
+    companyRole: "President",
+    score: {
+      lionGames: 95,
+      attendance: 98,
+      leadershipRoles: 92,
+      serviceHours: 88,
+      apartmentChecks: 96,
+      eventExecution: 94,
+      grades: 3.8
+    },
+    scoreChangeHistory: [
+      {
+        category: "lionGames",
+        description: "Won intramural basketball championship",
+        pointChange: 10,
+        date: "2024-02-15"
       },
-      excellence: {
-        score: 87,
-        subcategories: {
-          "Academic Performance": 90,
-          "Professional Skills & Development": 85,
-          "Analytical & Problem-Solving Abilities": 88,
-          "Innovation & Creative Projects": 85
-        }
-      },
-      service: {
-        score: 68,
-        subcategories: {
-          "Direct Service Hours": 65,
-          "Leadership in Service Initiatives": 70,
-          "Promoting a Culture of Service": 68,
-          "Compassionate Action & Empathy": 69
-        }
-      },
-      community: {
-        score: 78,
-        subcategories: {
-          "Campus Engagement & Leadership": 80,
-          "Collaborative Contributions": 75,
-          "Positive Campus Citizenship": 78,
-          "Exploration of Vocation & Calling": 79
-        }
+      {
+        category: "leadershipRoles",
+        description: "Led company service project",
+        pointChange: 5,
+        date: "2024-02-10"
       }
-    },
-    history: [
-      { date: "2023-01", christCentered: 88, excellence: 82, service: 65, community: 72 },
-      { date: "2023-02", christCentered: 89, excellence: 84, service: 66, community: 74 },
-      { date: "2023-03", christCentered: 90, excellence: 85, service: 67, community: 75 },
-      { date: "2023-04", christCentered: 92, excellence: 87, service: 68, community: 78 },
-    ],
-    academicRecords: {
-      academicStanding: "good" as const,
-      totalCredits: 85,
-      creditsAttempted: 90,
-      creditsEarned: 85,
-      gpa: 3.8,
-      courses: [
-        {
-          id: "101",
-          code: "PSY201",
-          name: "Introduction to Psychology",
-          semester: "Fall",
-          year: 2022,
-          credits: 3,
-          grade: "A",
-          status: "completed",
-        },
-        {
-          id: "102",
-          code: "BIB101",
-          name: "Old Testament Survey",
-          semester: "Spring",
-          year: 2023,
-          credits: 3,
-          grade: "B",
-          status: "completed",
-        },
-        {
-          id: "103",
-          code: "ENG101",
-          name: "Freshman Composition",
-          semester: "Fall",
-          year: 2023,
-          credits: 3,
-          status: "in-progress",
-        },
-      ],
-    },
-    financialStanding: {
-      tuitionTotal: 30000,
-      tuitionPaid: 25000,
-      accountBalance: 5000,
-      financialAid: [
-        {
-          id: "201",
-          type: "scholarship",
-          name: "Academic Scholarship",
-          amount: 5000,
-          status: "disbursed",
-        },
-        {
-          id: "202",
-          type: "grant",
-          name: "Federal Pell Grant",
-          amount: 2000,
-          status: "awarded",
-        },
-      ],
-      transactions: [
-        {
-          id: "301",
-          date: "2023-08-15",
-          description: "Tuition Payment",
-          type: "payment",
-          amount: -10000,
-        },
-        {
-          id: "302",
-          date: "2023-08-20",
-          description: "Academic Scholarship",
-          type: "financial aid",
-          amount: 5000,
-        },
-      ],
-    },
-    achievements: [
-      {
-        id: "401",
-        name: "Dean's List",
-        type: "academic",
-        description: "Fall 2022",
-        date: "2023-01-15",
-      },
-      {
-        id: "402",
-        name: "Volunteer of the Year",
-        type: "service",
-        description: "Habitat for Humanity",
-        date: "2023-04-20",
-      },
-    ],
+    ]
   },
   {
     id: "2",
     name: "Michael Chen",
     email: "michael.chen@acu.edu",
     studentId: "ACU002345",
-    major: "Computer Science",
-    minor: "Mathematics",
-    year: 2,
-    gpa: 3.9,
-    pillars: {
-      christCentered: {
-        score: 75,
-        subcategories: {
-          "Spiritual Formation Activities": 72,
-          "Scripture Engagement": 78,
-          "Mission & Outreach Involvement": 74,
-          "Character Development": 76
-        }
-      },
-      excellence: {
-        score: 94,
-        subcategories: {
-          "Academic Performance": 95,
-          "Professional Skills & Development": 93,
-          "Analytical & Problem-Solving Abilities": 96,
-          "Innovation & Creative Projects": 92
-        }
-      },
-      service: {
-        score: 82,
-        subcategories: {
-          "Direct Service Hours": 80,
-          "Leadership in Service Initiatives": 85,
-          "Promoting a Culture of Service": 81,
-          "Compassionate Action & Empathy": 82
-        }
-      },
-      community: {
-        score: 68,
-        subcategories: {
-          "Campus Engagement & Leadership": 65,
-          "Collaborative Contributions": 70,
-          "Positive Campus Citizenship": 68,
-          "Exploration of Vocation & Calling": 69
-        }
-      }
+    company: "Alpha Company",
+    companyRole: "Officer",
+    score: {
+      lionGames: 88,
+      attendance: 95,
+      leadershipRoles: 85,
+      serviceHours: 92,
+      apartmentChecks: 90,
+      eventExecution: 87,
+      grades: 3.9
     },
-    history: [
-      { date: "2023-01", christCentered: 70, excellence: 90, service: 78, community: 62 },
-      { date: "2023-02", christCentered: 72, excellence: 91, service: 79, community: 64 },
-      { date: "2023-03", christCentered: 73, excellence: 93, service: 80, community: 66 },
-      { date: "2023-04", christCentered: 75, excellence: 94, service: 82, community: 68 },
-    ],
-    academicRecords: {
-      academicStanding: "good" as const,
-      totalCredits: 55,
-      creditsAttempted: 60,
-      creditsEarned: 55,
-      gpa: 3.9,
-      courses: [
-        {
-          id: "104",
-          code: "CS101",
-          name: "Introduction to Computer Science",
-          semester: "Fall",
-          year: 2022,
-          credits: 3,
-          grade: "A",
-          status: "completed",
-        },
-        {
-          id: "105",
-          code: "MAT201",
-          name: "Calculus I",
-          semester: "Spring",
-          year: 2023,
-          credits: 4,
-          grade: "A",
-          status: "completed",
-        },
-        {
-          id: "106",
-          code: "CS201",
-          name: "Data Structures",
-          semester: "Fall",
-          year: 2023,
-          credits: 3,
-          status: "in-progress",
-        },
-      ],
-    },
-    financialStanding: {
-      tuitionTotal: 30000,
-      tuitionPaid: 30000,
-      accountBalance: 0,
-      financialAid: [
-        {
-          id: "203",
-          type: "scholarship",
-          name: "Merit Scholarship",
-          amount: 7000,
-          status: "disbursed",
-        },
-        {
-          id: "204",
-          type: "grant",
-          name: "State Grant",
-          amount: 3000,
-          status: "disbursed",
-        },
-      ],
-      transactions: [
-        {
-          id: "303",
-          date: "2023-08-15",
-          description: "Tuition Payment",
-          type: "payment",
-          amount: -15000,
-        },
-        {
-          id: "304",
-          date: "2023-08-20",
-          description: "Merit Scholarship",
-          type: "financial aid",
-          amount: 7000,
-        },
-      ],
-    },
-    achievements: [
+    scoreChangeHistory: [
       {
-        id: "403",
-        name: "Hackathon Winner",
-        type: "academic",
-        description: "Best Mobile App",
-        date: "2023-05-10",
-      },
-    ],
+        category: "serviceHours",
+        description: "Organized community food drive",
+        pointChange: 8,
+        date: "2024-02-12"
+      }
+    ]
   },
   {
     id: "3",
     name: "Sophia Martinez",
     email: "sophia.martinez@acu.edu",
     studentId: "ACU003456",
-    major: "Business Administration",
-    minor: "Communication",
-    year: 4,
-    gpa: 3.7,
-    pillars: {
-      christCentered: {
-        score: 88,
-        subcategories: {
-          "Spiritual Formation Activities": 90,
-          "Scripture Engagement": 85,
-          "Mission & Outreach Involvement": 89,
-          "Character Development": 88
-        }
-      },
-      excellence: {
-        score: 82,
-        subcategories: {
-          "Academic Performance": 80,
-          "Professional Skills & Development": 85,
-          "Analytical & Problem-Solving Abilities": 81,
-          "Innovation & Creative Projects": 82
-        }
-      },
-      service: {
-        score: 91,
-        subcategories: {
-          "Direct Service Hours": 90,
-          "Leadership in Service Initiatives": 92,
-          "Promoting a Culture of Service": 91,
-          "Compassionate Action & Empathy": 91
-        }
-      },
-      community: {
-        score: 85,
-        subcategories: {
-          "Campus Engagement & Leadership": 87,
-          "Collaborative Contributions": 84,
-          "Positive Campus Citizenship": 85,
-          "Exploration of Vocation & Calling": 84
-        }
-      }
+    company: "Alpha Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 82,
+      attendance: 90,
+      leadershipRoles: 78,
+      serviceHours: 85,
+      apartmentChecks: 88,
+      eventExecution: 80,
+      grades: 3.7
     },
-    history: [
-      { date: "2023-01", christCentered: 84, excellence: 78, service: 87, community: 80 },
-      { date: "2023-02", christCentered: 85, excellence: 79, service: 88, community: 82 },
-      { date: "2023-03", christCentered: 87, excellence: 81, service: 90, community: 83 },
-      { date: "2023-04", christCentered: 88, excellence: 82, service: 91, community: 85 },
-    ],
-    academicRecords: {
-      academicStanding: "good" as const,
-      totalCredits: 115,
-      creditsAttempted: 120,
-      creditsEarned: 115,
-      gpa: 3.7,
-      courses: [
-        {
-          id: "107",
-          code: "BUS301",
-          name: "Marketing Management",
-          semester: "Fall",
-          year: 2022,
-          credits: 3,
-          grade: "B",
-          status: "completed",
-        },
-        {
-          id: "108",
-          code: "COM201",
-          name: "Public Speaking",
-          semester: "Spring",
-          year: 2023,
-          credits: 3,
-          grade: "A",
-          status: "completed",
-        },
-        {
-          id: "109",
-          code: "BUS401",
-          name: "Strategic Management",
-          semester: "Fall",
-          year: 2023,
-          credits: 3,
-          status: "in-progress",
-        },
-      ],
-    },
-    financialStanding: {
-      tuitionTotal: 30000,
-      tuitionPaid: 30000,
-      accountBalance: 0,
-      financialAid: [
-        {
-          id: "205",
-          type: "scholarship",
-          name: "Leadership Scholarship",
-          amount: 6000,
-          status: "disbursed",
-        },
-      ],
-      transactions: [
-        {
-          id: "305",
-          date: "2023-08-15",
-          description: "Tuition Payment",
-          type: "payment",
-          amount: -15000,
-        },
-        {
-          id: "306",
-          date: "2023-08-20",
-          description: "Leadership Scholarship",
-          type: "financial aid",
-          amount: 6000,
-        },
-      ],
-    },
-    achievements: [
+    scoreChangeHistory: [
       {
-        id: "404",
-        name: "Student Government President",
-        type: "leadership",
-        description: "2022-2023",
-        date: "2023-05-01",
-      },
-    ],
+        category: "attendance",
+        description: "Perfect attendance for the month",
+        pointChange: 5,
+        date: "2024-02-01"
+      }
+    ]
   },
   {
     id: "4",
     name: "James Wilson",
     email: "james.wilson@acu.edu",
     studentId: "ACU004567",
-    major: "Engineering",
-    minor: "Physics",
-    year: 1,
-    gpa: 3.5,
-    pillars: {
-      christCentered: {
-        score: 65,
-        subcategories: {
-          "Spiritual Formation Activities": 62,
-          "Scripture Engagement": 68,
-          "Mission & Outreach Involvement": 64,
-          "Character Development": 66
-        }
-      },
-      excellence: {
-        score: 79,
-        subcategories: {
-          "Academic Performance": 75,
-          "Professional Skills & Development": 82,
-          "Analytical & Problem-Solving Abilities": 80,
-          "Innovation & Creative Projects": 79
-        }
-      },
-      service: {
-        score: 88,
-        subcategories: {
-          "Direct Service Hours": 85,
-          "Leadership in Service Initiatives": 90,
-          "Promoting a Culture of Service": 88,
-          "Compassionate Action & Empathy": 89
-        }
-      },
-      community: {
-        score: 72,
-        subcategories: {
-          "Campus Engagement & Leadership": 70,
-          "Collaborative Contributions": 73,
-          "Positive Campus Citizenship": 72,
-          "Exploration of Vocation & Calling": 73
-        }
-      }
+    company: "Alpha Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 85,
+      attendance: 88,
+      leadershipRoles: 75,
+      serviceHours: 82,
+      apartmentChecks: 85,
+      eventExecution: 78,
+      grades: 3.5
     },
-    history: [
-      { date: "2023-01", christCentered: 60, excellence: 74, service: 84, community: 67 },
-      { date: "2023-02", christCentered: 62, excellence: 76, service: 85, community: 69 },
-      { date: "2023-03", christCentered: 63, excellence: 77, service: 87, community: 70 },
-      { date: "2023-04", christCentered: 65, excellence: 79, service: 88, community: 72 },
-    ],
-    academicRecords: {
-      academicStanding: "good" as const,
-      totalCredits: 28,
-      creditsAttempted: 30,
-      creditsEarned: 28,
-      gpa: 3.5,
-      courses: [
-        {
-          id: "110",
-          code: "ENG101",
-          name: "Introduction to Engineering",
-          semester: "Fall",
-          year: 2022,
-          credits: 3,
-          grade: "C",
-          status: "completed",
-        },
-        {
-          id: "111",
-          code: "PHY101",
-          name: "Physics I",
-          semester: "Spring",
-          year: 2023,
-          credits: 4,
-          grade: "B",
-          status: "completed",
-        },
-        {
-          id: "112",
-          code: "MAT101",
-          name: "Calculus I",
-          semester: "Fall",
-          year: 2023,
-          credits: 4,
-          status: "in-progress",
-        },
-      ],
-    },
-    financialStanding: {
-      tuitionTotal: 30000,
-      tuitionPaid: 15000,
-      accountBalance: 15000,
-      financialAid: [],
-      transactions: [
-        {
-          id: "307",
-          date: "2023-08-15",
-          description: "Tuition Payment",
-          type: "payment",
-          amount: -15000,
-        },
-      ],
-    },
-    achievements: [],
+    scoreChangeHistory: []
   },
   {
     id: "5",
     name: "Olivia Thompson",
     email: "olivia.thompson@acu.edu",
     studentId: "ACU005678",
-    major: "Education",
-    minor: "Psychology",
-    year: 3,
-    gpa: 3.6,
-    pillars: {
-      christCentered: {
-        score: 93,
-        subcategories: {
-          "Spiritual Formation Activities": 95,
-          "Scripture Engagement": 92,
-          "Mission & Outreach Involvement": 93,
-          "Character Development": 92
-        }
-      },
-      excellence: {
-        score: 85,
-        subcategories: {
-          "Academic Performance": 83,
-          "Professional Skills & Development": 87,
-          "Analytical & Problem-Solving Abilities": 84,
-          "Innovation & Creative Projects": 86
-        }
-      },
-      service: {
-        score: 72,
-        subcategories: {
-          "Direct Service Hours": 70,
-          "Leadership in Service Initiatives": 75,
-          "Promoting a Culture of Service": 71,
-          "Compassionate Action & Empathy": 72
-        }
-      },
-      community: {
-        score: 91,
-        subcategories: {
-          "Campus Engagement & Leadership": 93,
-          "Collaborative Contributions": 90,
-          "Positive Campus Citizenship": 91,
-          "Exploration of Vocation & Calling": 90
-        }
-      }
+    company: "Alpha Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 80,
+      attendance: 92,
+      leadershipRoles: 76,
+      serviceHours: 84,
+      apartmentChecks: 87,
+      eventExecution: 79,
+      grades: 3.6
     },
-    history: [
-      { date: "2023-01", christCentered: 89, excellence: 80, service: 68, community: 86 },
-      { date: "2023-02", christCentered: 90, excellence: 82, service: 69, community: 88 },
-      { date: "2023-03", christCentered: 92, excellence: 83, service: 71, community: 89 },
-      { date: "2023-04", christCentered: 93, excellence: 85, service: 72, community: 91 },
-    ],
-    academicRecords: {
-      academicStanding: "good" as const,
-      totalCredits: 88,
-      creditsAttempted: 93,
-      creditsEarned: 88,
-      gpa: 3.6,
-      courses: [
-        {
-          id: "113",
-          code: "EDU201",
-          name: "Educational Psychology",
-          semester: "Fall",
-          year: 2022,
-          credits: 3,
-          grade: "B",
-          status: "completed",
-        },
-        {
-          id: "114",
-          code: "PSY201",
-          name: "Child Development",
-          semester: "Spring",
-          year: 2023,
-          credits: 3,
-          grade: "B",
-          status: "completed",
-        },
-        {
-          id: "115",
-          code: "EDU301",
-          name: "Curriculum Development",
-          semester: "Fall",
-          year: 2023,
-          credits: 3,
-          status: "in-progress",
-        },
-      ],
-    },
-    financialStanding: {
-      tuitionTotal: 30000,
-      tuitionPaid: 20000,
-      accountBalance: 10000,
-      financialAid: [
-        {
-          id: "206",
-          type: "loan",
-          name: "Federal Student Loan",
-          amount: 10000,
-          status: "disbursed",
-        },
-      ],
-      transactions: [
-        {
-          id: "308",
-          date: "2023-08-15",
-          description: "Tuition Payment",
-          type: "payment",
-          amount: -10000,
-        },
-        {
-          id: "309",
-          date: "2023-08-20",
-          description: "Federal Student Loan",
-          type: "financial aid",
-          amount: 10000,
-        },
-      ],
-    },
-    achievements: [
+    scoreChangeHistory: [
       {
-        id: "405",
-        name: "Tutor of the Year",
-        type: "service",
-        description: "Math Center",
-        date: "2023-04-28",
-      },
-    ],
+        category: "eventExecution",
+        description: "Helped organize company social",
+        pointChange: 3,
+        date: "2024-02-05"
+      }
+    ]
   },
+
+  // Bravo Company
+  {
+    id: "6",
+    name: "Daniel Kim",
+    email: "daniel.kim@acu.edu",
+    studentId: "ACU006789",
+    company: "Bravo Company",
+    companyRole: "President",
+    score: {
+      lionGames: 92,
+      attendance: 96,
+      leadershipRoles: 90,
+      serviceHours: 94,
+      apartmentChecks: 95,
+      eventExecution: 91,
+      grades: 3.9
+    },
+    scoreChangeHistory: [
+      {
+        category: "leadershipRoles",
+        description: "Led company to victory in campus competition",
+        pointChange: 8,
+        date: "2024-02-14"
+      }
+    ]
+  },
+  {
+    id: "7",
+    name: "Ava Rodriguez",
+    email: "ava.rodriguez@acu.edu",
+    studentId: "ACU007890",
+    company: "Bravo Company",
+    companyRole: "Officer",
+    score: {
+      lionGames: 87,
+      attendance: 94,
+      leadershipRoles: 86,
+      serviceHours: 90,
+      apartmentChecks: 92,
+      eventExecution: 88,
+      grades: 3.8
+    },
+    scoreChangeHistory: [
+      {
+        category: "serviceHours",
+        description: "Coordinated volunteer event",
+        pointChange: 6,
+        date: "2024-02-08"
+      }
+    ]
+  },
+  {
+    id: "8",
+    name: "Ethan Patel",
+    email: "ethan.patel@acu.edu",
+    studentId: "ACU008901",
+    company: "Bravo Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 84,
+      attendance: 89,
+      leadershipRoles: 80,
+      serviceHours: 86,
+      apartmentChecks: 88,
+      eventExecution: 82,
+      grades: 3.7
+    },
+    scoreChangeHistory: []
+  },
+  {
+    id: "9",
+    name: "Isabella Lee",
+    email: "isabella.lee@acu.edu",
+    studentId: "ACU009012",
+    company: "Bravo Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 81,
+      attendance: 91,
+      leadershipRoles: 78,
+      serviceHours: 84,
+      apartmentChecks: 86,
+      eventExecution: 80,
+      grades: 3.6
+    },
+    scoreChangeHistory: [
+      {
+        category: "grades",
+        description: "Improved semester GPA",
+        pointChange: 4,
+        date: "2024-02-01"
+      }
+    ]
+  },
+  {
+    id: "10",
+    name: "Noah Garcia",
+    email: "noah.garcia@acu.edu",
+    studentId: "ACU010123",
+    company: "Bravo Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 83,
+      attendance: 88,
+      leadershipRoles: 79,
+      serviceHours: 85,
+      apartmentChecks: 87,
+      eventExecution: 81,
+      grades: 3.5
+    },
+    scoreChangeHistory: []
+  },
+
+  // Charlie Company
+  {
+    id: "11",
+    name: "Mia Anderson",
+    email: "mia.anderson@acu.edu",
+    studentId: "ACU011234",
+    company: "Charlie Company",
+    companyRole: "President",
+    score: {
+      lionGames: 94,
+      attendance: 97,
+      leadershipRoles: 91,
+      serviceHours: 93,
+      apartmentChecks: 96,
+      eventExecution: 92,
+      grades: 3.9
+    },
+    scoreChangeHistory: [
+      {
+        category: "eventExecution",
+        description: "Successfully organized major campus event",
+        pointChange: 9,
+        date: "2024-02-16"
+      }
+    ]
+  },
+  {
+    id: "12",
+    name: "Lucas Taylor",
+    email: "lucas.taylor@acu.edu",
+    studentId: "ACU012345",
+    company: "Charlie Company",
+    companyRole: "Officer",
+    score: {
+      lionGames: 89,
+      attendance: 95,
+      leadershipRoles: 87,
+      serviceHours: 91,
+      apartmentChecks: 93,
+      eventExecution: 89,
+      grades: 3.8
+    },
+    scoreChangeHistory: [
+      {
+        category: "lionGames",
+        description: "Led team to second place in tournament",
+        pointChange: 7,
+        date: "2024-02-13"
+      }
+    ]
+  },
+  {
+    id: "13",
+    name: "Charlotte Brown",
+    email: "charlotte.brown@acu.edu",
+    studentId: "ACU013456",
+    company: "Charlie Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 86,
+      attendance: 90,
+      leadershipRoles: 82,
+      serviceHours: 87,
+      apartmentChecks: 89,
+      eventExecution: 84,
+      grades: 3.7
+    },
+    scoreChangeHistory: []
+  },
+  {
+    id: "14",
+    name: "William Clark",
+    email: "william.clark@acu.edu",
+    studentId: "ACU014567",
+    company: "Charlie Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 82,
+      attendance: 89,
+      leadershipRoles: 79,
+      serviceHours: 85,
+      apartmentChecks: 87,
+      eventExecution: 81,
+      grades: 3.6
+    },
+    scoreChangeHistory: [
+      {
+        category: "apartmentChecks",
+        description: "Perfect apartment check score",
+        pointChange: 5,
+        date: "2024-02-07"
+      }
+    ]
+  },
+  {
+    id: "15",
+    name: "Amelia White",
+    email: "amelia.white@acu.edu",
+    studentId: "ACU015678",
+    company: "Charlie Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 84,
+      attendance: 91,
+      leadershipRoles: 80,
+      serviceHours: 86,
+      apartmentChecks: 88,
+      eventExecution: 83,
+      grades: 3.5
+    },
+    scoreChangeHistory: []
+  },
+
+  // Delta Company
+  {
+    id: "16",
+    name: "Benjamin Harris",
+    email: "benjamin.harris@acu.edu",
+    studentId: "ACU016789",
+    company: "Delta Company",
+    companyRole: "President",
+    score: {
+      lionGames: 93,
+      attendance: 96,
+      leadershipRoles: 89,
+      serviceHours: 92,
+      apartmentChecks: 95,
+      eventExecution: 90,
+      grades: 3.9
+    },
+    scoreChangeHistory: [
+      {
+        category: "leadershipRoles",
+        description: "Implemented new company initiative",
+        pointChange: 8,
+        date: "2024-02-11"
+      }
+    ]
+  },
+  {
+    id: "17",
+    name: "Harper Lewis",
+    email: "harper.lewis@acu.edu",
+    studentId: "ACU017890",
+    company: "Delta Company",
+    companyRole: "Officer",
+    score: {
+      lionGames: 88,
+      attendance: 94,
+      leadershipRoles: 85,
+      serviceHours: 90,
+      apartmentChecks: 92,
+      eventExecution: 87,
+      grades: 3.8
+    },
+    scoreChangeHistory: [
+      {
+        category: "serviceHours",
+        description: "Organized successful fundraiser",
+        pointChange: 6,
+        date: "2024-02-09"
+      }
+    ]
+  },
+  {
+    id: "18",
+    name: "Henry Walker",
+    email: "henry.walker@acu.edu",
+    studentId: "ACU018901",
+    company: "Delta Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 85,
+      attendance: 90,
+      leadershipRoles: 81,
+      serviceHours: 87,
+      apartmentChecks: 89,
+      eventExecution: 84,
+      grades: 3.7
+    },
+    scoreChangeHistory: []
+  },
+  {
+    id: "19",
+    name: "Evelyn Hall",
+    email: "evelyn.hall@acu.edu",
+    studentId: "ACU019012",
+    company: "Delta Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 83,
+      attendance: 88,
+      leadershipRoles: 79,
+      serviceHours: 85,
+      apartmentChecks: 87,
+      eventExecution: 82,
+      grades: 3.6
+    },
+    scoreChangeHistory: [
+      {
+        category: "grades",
+        description: "Achieved Dean's List",
+        pointChange: 5,
+        date: "2024-02-01"
+      }
+    ]
+  },
+  {
+    id: "20",
+    name: "Sebastian Young",
+    email: "sebastian.young@acu.edu",
+    studentId: "ACU020123",
+    company: "Delta Company",
+    companyRole: "Member",
+    score: {
+      lionGames: 81,
+      attendance: 89,
+      leadershipRoles: 78,
+      serviceHours: 84,
+      apartmentChecks: 86,
+      eventExecution: 80,
+      grades: 3.5
+    },
+    scoreChangeHistory: []
+  }
 ]
 
 // User types with avatars
@@ -796,6 +531,10 @@ export function getStudentById(id: string) {
 
 export function getAllStudents() {
   return students
+}
+
+export function getStudentsByCompany(company: string) {
+  return students.filter((student) => student.studentId === company)
 }
 
 export function getUserTypeById(id: string) {
