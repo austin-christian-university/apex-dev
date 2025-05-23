@@ -22,8 +22,14 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
-import { Plus, Pencil, Trash2 } from "lucide-react"
+import { Plus, Trophy, Trash2 } from "lucide-react"
 
 // Helper function to split full name into first and last name
 function splitName(fullName: string): { firstName: string; lastName: string } {
@@ -204,7 +210,7 @@ export default function StudentsPage() {
                   <TableHead className={"w-[150px]"}>Phone</TableHead>
                   <TableHead className={"w-[100px]"}>Year</TableHead>
                   <TableHead className={"w-[150px]"}>Company Role</TableHead>
-                  <TableHead className={"w-[100px] text-right"}>Actions</TableHead>
+                  <TableHead className={"w-[100px] border-l text-center"}>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -218,23 +224,42 @@ export default function StudentsPage() {
                       <TableCell>{student.phoneNumber}</TableCell>
                       <TableCell>{student.year}</TableCell>
                       <TableCell>{student.companyRole}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setEditingStudent(student)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeletingStudent(student)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                      <TableCell className="border-l">
+                        <div className="flex gap-2">
+                          <TooltipProvider>
+                            <Tooltip delayDuration={200}>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingStudent(student)}
+                                >
+                                  <Trophy className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit Score</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+
+                          <TooltipProvider>
+                            <Tooltip delayDuration={200}>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setDeletingStudent(student)}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4 dark:text-foreground" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Delete Student</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -242,7 +267,7 @@ export default function StudentsPage() {
                 })}
                 {filteredStudents.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground border-l">
                       No students found in {selectedCompany}
                     </TableCell>
                   </TableRow>
