@@ -121,7 +121,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
           <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   {filteredNavigation.map((item) => (
