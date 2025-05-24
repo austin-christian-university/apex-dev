@@ -103,7 +103,7 @@ export function CompanyHistory({ companyStandings }: CompanyHistoryProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
     >
-      <Card className="overflow-hidden border-0 shadow-lg">
+      <Card className="overflow-hidden shadow-lg">
         <CardHeader>
           <CardTitle>Company Score History</CardTitle>
         </CardHeader>
