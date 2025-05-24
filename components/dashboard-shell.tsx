@@ -32,6 +32,14 @@ type UserData = {
   user: Student | Admin
 }
 
+// Add type for navigation items
+type NavigationItem = {
+  name: string
+  href: string
+  icon: React.ElementType
+  adminOnly?: boolean
+}
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
@@ -101,7 +109,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=random&textColor=fff&fontSize=50`
   }
 
-  const navigation = [
+  const navigation: NavigationItem[] = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Students", href: "/students", icon: Users},
     { name: "My Profile", href: "/my-profile", icon: User },
@@ -152,7 +160,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <SidebarMenu>
                   {filteredNavigation.map((item) => (
                     <SidebarMenuItem key={item.name}>
-                      <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.name}>
+                      <SidebarMenuButton 
+                        asChild 
+                        isActive={pathname === item.href} 
+                        tooltip={item.name}
+                        onClick={() => setIsCollapsed(true)} // Close sidebar after navigation
+                      >
                         <Link href={item.href}>
                           <item.icon className="h-7 w-7" />
                           <span>{item.name}</span>
@@ -169,8 +182,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="flex justify-end px-4 py-4">
               <ThemeToggle />
             </div>
-            <SidebarFooter className="border-t border-border">
-              <div className="p-4">
+            <SidebarFooter className="border-t border-border/50">
+              <div className="p-4 pb-24 md:pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
@@ -199,7 +212,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-10 flex h-20 items-center gap-6 border-b bg-background px-8">
-            <SidebarTrigger className="h-14 w-14" />
+            {/* Only show sidebar trigger on mobile */}
+            <div className="md:hidden">
+              <SidebarTrigger className="h-14 w-14" />
+            </div>
             <div className="flex-1" />
           </header>
 
