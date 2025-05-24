@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
 import { Plus, Trophy, Trash2 } from "lucide-react"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 // Helper function to split full name into first and last name
 function splitName(fullName: string): { firstName: string; lastName: string } {
@@ -222,10 +223,10 @@ export default function StudentsPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden border-0 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <Card className="overflow-hidden border-0 shadow-lg max-w-[90vw]">
+        <CardHeader className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 pb-4">
           <CardTitle>Student Directory</CardTitle>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:gap-4 md:space-y-0">
             {isNormalStudent ? (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Viewing:</span>
@@ -258,7 +259,7 @@ export default function StudentsPage() {
               </Select>
             )}
             {canEditStudents && (
-              <Button onClick={() => setIsAddModalOpen(true)}>
+              <Button onClick={() => setIsAddModalOpen(true)} className="w-full md:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Student
               </Button>
@@ -266,10 +267,11 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
+          <ScrollArea className="w-full whitespace-nowrap rounded-md">
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
                   <TableHead className={"w-[150px]"}>First Name</TableHead>
                   <TableHead className={"w-[150px]"}>Last Name</TableHead>
                   <TableHead className={"w-[250px]"}>Email</TableHead>
@@ -344,7 +346,9 @@ export default function StudentsPage() {
                 )}
               </TableBody>
             </Table>
-          </div>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
 
