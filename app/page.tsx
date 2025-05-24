@@ -69,7 +69,7 @@ export default function LoginPage() {
             </div>
             <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
             <CardDescription className="text-center">
-              Sign in to access your The Den
+              Sign in to access The Den
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
