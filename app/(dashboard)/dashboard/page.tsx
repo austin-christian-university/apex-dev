@@ -114,9 +114,9 @@ export default function DashboardPage() {
   const isNormalStudentView = userData?.type === "student" && hasNormalStudentRole(userData.user.companyRole)
 
   return (
-    <div className="w-[100vw] mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="w-[100vw] mx-auto p-4 sm:p-6 lg:p-8">
       {/* Company standings and history in a responsive grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 max-w-[90vw]">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 max-w-[90vw] md:max-w-[70vw]">
         <div className="lg:col-span-1 w-full">
           <CompanyStandings standings={companyStandings} />
         </div>
@@ -126,7 +126,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Student scores table with horizontal scroll */}
-      <div className="w-full mt-6 max-w-[90vw]">
+      <div className="w-full mt-6 max-w-[90vw] md:max-w-[70vw]">
         <StudentScoresTable
           students={filteredStudents}
           selectedCompany={selectedCompany}
