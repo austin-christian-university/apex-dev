@@ -14,7 +14,15 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "The Den",
   description: "Student progress tracking and analytics dashboard",
-  generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/favicon.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/favicon.png',
+  },
 }
 
 export default function RootLayout({
