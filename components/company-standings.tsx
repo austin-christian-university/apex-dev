@@ -44,7 +44,7 @@ export function CompanyStandings({ standings }: CompanyStandingsProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden border-0 shadow-lg">
+      <Card className="overflow-hidden shadow-lg">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">Company Standings</CardTitle>
         </CardHeader>
