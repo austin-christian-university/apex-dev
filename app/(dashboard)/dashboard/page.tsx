@@ -39,6 +39,11 @@ const isStudentLeader = (role: string) => {
   return role === "President" || role === "Officer"
 }
 
+// Helper function to check if user is a normal student
+const hasNormalStudentRole = (role: string): boolean => {
+  return role === "Member"
+}
+
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
@@ -86,8 +91,13 @@ export default function DashboardPage() {
   // Filter students based on user role
   const filteredStudents = students.filter(student => {
     if (userData?.type === "admin") return true
-    if (userData?.type === "student" && isStudentLeader(userData.user.companyRole)) {
-      return student.company === userData.user.company
+    if (userData?.type === "student") {
+      if (isStudentLeader(userData.user.companyRole)) {
+        return student.company === userData.user.company
+      }
+      if (hasNormalStudentRole(userData.user.companyRole)) {
+        return student.id === userData.user.id // Only show the logged-in student
+      }
     }
     return student.company === selectedCompany
   })
@@ -101,6 +111,7 @@ export default function DashboardPage() {
   }
 
   const isLeader = userData?.type === "student" && isStudentLeader(userData.user.companyRole)
+  const isNormalStudentView = userData?.type === "student" && hasNormalStudentRole(userData.user.companyRole)
 
   return (
     <div className="space-y-6">
@@ -118,6 +129,7 @@ export default function DashboardPage() {
           selectedCompany={selectedCompany}
           onCompanyChange={setSelectedCompany}
           isLeader={isLeader}
+          isNormalStudent={isNormalStudentView}
         />
       </div>
     </div>

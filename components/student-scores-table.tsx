@@ -12,13 +12,15 @@ interface StudentScoresTableProps {
   selectedCompany: string
   onCompanyChange: (company: string) => void
   isLeader?: boolean
+  isNormalStudent?: boolean
 }
 
 export function StudentScoresTable({ 
   students, 
   selectedCompany, 
   onCompanyChange,
-  isLeader = false 
+  isLeader = false,
+  isNormalStudent = false
 }: StudentScoresTableProps) {
   const companyStudents = students.filter(student => student.company === selectedCompany)
 
@@ -31,7 +33,11 @@ export function StudentScoresTable({
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Student Scores</CardTitle>
-          {isLeader ? (
+          {isNormalStudent ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Your Scores</span>
+            </div>
+          ) : isLeader ? (
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Viewing:</span>
               <Badge variant="secondary" className="text-sm px-2 py-1">

@@ -45,6 +45,11 @@ const isStudentLeader = (role: string) => {
   return role === "President" || role === "Officer"
 }
 
+// Helper function to check if user is a normal student
+const hasNormalStudentRole = (role: string): boolean => {
+  return role === "Member"
+}
+
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
@@ -93,13 +98,19 @@ export default function StudentsPage() {
   // Filter students based on user role
   const filteredStudents = students.filter(student => {
     if (userData?.type === "admin") return student.company === selectedCompany
-    if (userData?.type === "student" && isStudentLeader(userData.user.companyRole)) {
+    if (userData?.type === "student") {
+      if (isStudentLeader(userData.user.companyRole)) {
+        return student.company === userData.user.company
+      }
+      // Normal students can only see students from their own company
       return student.company === userData.user.company
     }
     return student.company === selectedCompany
   })
 
   const isLeader = userData?.type === "student" && isStudentLeader(userData.user.companyRole)
+  const isNormalStudent = userData?.type === "student" && hasNormalStudentRole(userData.user.companyRole)
+  const canEditStudents = userData?.type === "admin" || isLeader
 
   const generateStudentId = () => {
     const lastStudent = students[students.length - 1]
@@ -215,7 +226,14 @@ export default function StudentsPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Student Directory</CardTitle>
           <div className="flex items-center gap-4">
-            {isLeader ? (
+            {isNormalStudent ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Viewing:</span>
+                <Badge variant="secondary" className="text-lg px-3 py-1">
+                  {userData.user.company}
+                </Badge>
+              </div>
+            ) : isLeader ? (
               <div className="flex items-center gap-2">
                 <span className="text-muted-foreground">Viewing:</span>
                 <Badge variant="secondary" className="text-lg px-3 py-1">
@@ -239,10 +257,12 @@ export default function StudentsPage() {
                 </SelectContent>
               </Select>
             )}
-            <Button onClick={() => setIsAddModalOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Student
-            </Button>
+            {canEditStudents && (
+              <Button onClick={() => setIsAddModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -256,7 +276,9 @@ export default function StudentsPage() {
                   <TableHead className={"w-[150px]"}>Phone</TableHead>
                   <TableHead className={"w-[100px]"}>Year</TableHead>
                   <TableHead className={"w-[150px]"}>Company Role</TableHead>
-                  <TableHead className={"w-[100px] border-l text-center"}>Actions</TableHead>
+                  {canEditStudents && (
+                    <TableHead className={"w-[100px] border-l text-center"}>Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -270,51 +292,53 @@ export default function StudentsPage() {
                       <TableCell>{student.phoneNumber}</TableCell>
                       <TableCell>{student.year}</TableCell>
                       <TableCell>{student.companyRole}</TableCell>
-                      <TableCell className="border-l">
-                        <div className="flex gap-2">
-                          <TooltipProvider>
-                            <Tooltip delayDuration={200}>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setEditingStudent(student)}
-                                >
-                                  <Trophy className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Edit Score</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
+                      {canEditStudents && (
+                        <TableCell className="border-l">
+                          <div className="flex gap-2">
+                            <TooltipProvider>
+                              <Tooltip delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setEditingStudent(student)}
+                                  >
+                                    <Trophy className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Edit Score</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
 
-                          <TooltipProvider>
-                            <Tooltip delayDuration={200}>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => setDeletingStudent(student)}
-                                  className="text-destructive hover:text-destructive"
-                                >
-                                  <Trash2 className="h-4 w-4 dark:text-foreground" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Delete Student</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      </TableCell>
+                            <TooltipProvider>
+                              <Tooltip delayDuration={200}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setDeletingStudent(student)}
+                                    className="text-destructive hover:text-destructive"
+                                  >
+                                    <Trash2 className="h-4 w-4 dark:text-foreground" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Delete Student</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   )
                 })}
                 {filteredStudents.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground border-l">
-                      No students found in {isLeader ? userData.user.company : selectedCompany}
+                    <TableCell colSpan={canEditStudents ? 7 : 6} className="text-center text-muted-foreground border-l">
+                      No students found in {userData?.user.company || selectedCompany}
                     </TableCell>
                   </TableRow>
                 )}
@@ -324,30 +348,34 @@ export default function StudentsPage() {
         </CardContent>
       </Card>
 
-      <AddStudentModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
-        onSubmit={handleAddStudent}
-        isLeader={isLeader}
-        leaderCompany={isLeader ? userData.user.company : undefined}
-      />
+      {canEditStudents && (
+        <>
+          <AddStudentModal
+            isOpen={isAddModalOpen}
+            onClose={() => setIsAddModalOpen(false)}
+            onSubmit={handleAddStudent}
+            isLeader={isLeader}
+            leaderCompany={isLeader ? userData.user.company : undefined}
+          />
 
-      {editingStudent && (
-        <EditScoreModal
-          isOpen={!!editingStudent}
-          onClose={() => setEditingStudent(null)}
-          student={editingStudent}
-          onSubmit={handleEditScore}
-        />
-      )}
+          {editingStudent && (
+            <EditScoreModal
+              isOpen={!!editingStudent}
+              onClose={() => setEditingStudent(null)}
+              student={editingStudent}
+              onSubmit={handleEditScore}
+            />
+          )}
 
-      {deletingStudent && (
-        <DeleteStudentDialog
-          isOpen={!!deletingStudent}
-          onClose={() => setDeletingStudent(null)}
-          student={deletingStudent}
-          onConfirm={handleDeleteStudent}
-        />
+          {deletingStudent && (
+            <DeleteStudentDialog
+              isOpen={!!deletingStudent}
+              onClose={() => setDeletingStudent(null)}
+              student={deletingStudent}
+              onConfirm={handleDeleteStudent}
+            />
+          )}
+        </>
       )}
     </motion.div>
   )
