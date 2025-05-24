@@ -223,7 +223,8 @@ export default function StudentsPage() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <Card className="overflow-hidden shadow-lg max-w-[90vw]">
+      <div className="w-[100vw] mx-auto p-4 sm:p-6 lg:p-8">
+      <Card className="overflow-hidden shadow-lg max-w-[90vw] md:max-w-[70vw]">
         <CardHeader className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0 pb-4">
           <CardTitle>Student Directory</CardTitle>
           <div className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:gap-4 md:space-y-0">
@@ -381,6 +382,7 @@ export default function StudentsPage() {
           )}
         </>
       )}
+      </div>
     </motion.div>
   )
 }
