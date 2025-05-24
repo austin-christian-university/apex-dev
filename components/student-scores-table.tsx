@@ -3,7 +3,7 @@
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Student } from "@/lib/data"
 
@@ -30,7 +30,7 @@ export function StudentScoresTable({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <Card className="overflow-hidden border-0 shadow-lg">
+      <Card className="shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Student Scores</CardTitle>
           {isNormalStudent ? (
@@ -59,8 +59,8 @@ export function StudentScoresTable({
           )}
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full">
-            <div className="min-w-[800px]">
+          <ScrollArea className="w-full whitespace-nowrap rounded-md">
+            <div className="min-w-[800px] p-4">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
@@ -92,9 +92,17 @@ export function StudentScoresTable({
                       </tr>
                     )
                   })}
+                  {companyStudents.length === 0 && (
+                    <tr>
+                      <td colSpan={9} className="p-4 text-center text-muted-foreground">
+                        No students found in {selectedCompany}.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </CardContent>
       </Card>
