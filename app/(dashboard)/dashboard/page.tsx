@@ -5,6 +5,7 @@ import { getAllStudents, type Student } from "@/lib/data"
 import { CompanyStandings } from "@/components/company-standings"
 import { CompanyHistory } from "@/components/company-history"
 import { StudentScoresTable } from "@/components/student-scores-table"
+import { Badge } from "@/components/ui/badge"
 
 interface CompanyStanding {
   name: string
@@ -33,12 +34,38 @@ const calculateCompanyStandings = (students: Student[]): CompanyStanding[] => {
   }).sort((a, b) => b.totalScore - a.totalScore)
 }
 
+// Helper function to check if user is a student leader
+const isStudentLeader = (role: string) => {
+  return role === "President" || role === "Officer"
+}
+
 export default function DashboardPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
   const [companyStandings, setCompanyStandings] = useState<CompanyStanding[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [userData, setUserData] = useState<{ type: string; user: Student | any } | null>(null)
 
+  useEffect(() => {
+    // Get user data from localStorage
+    const storedUserType = localStorage.getItem("userType")
+    const storedUserData = localStorage.getItem("userData")
+    
+    if (storedUserType && storedUserData) {
+      try {
+        const userType = storedUserType
+        const user = JSON.parse(storedUserData)
+        setUserData({ type: userType, user })
+
+        // If user is a student leader, set their company as selected
+        if (userType === "student" && isStudentLeader(user.companyRole)) {
+          setSelectedCompany(user.company)
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -56,6 +83,15 @@ export default function DashboardPage() {
     fetchStudents()
   }, [])
 
+  // Filter students based on user role
+  const filteredStudents = students.filter(student => {
+    if (userData?.type === "admin") return true
+    if (userData?.type === "student" && isStudentLeader(userData.user.companyRole)) {
+      return student.company === userData.user.company
+    }
+    return student.company === selectedCompany
+  })
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[80vh]">
@@ -63,6 +99,8 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+  const isLeader = userData?.type === "student" && isStudentLeader(userData.user.companyRole)
 
   return (
     <div className="space-y-6">
@@ -74,11 +112,14 @@ export default function DashboardPage() {
           <CompanyHistory companyStandings={companyStandings} />
         </div>
       </div>
-      <StudentScoresTable
-        students={students}
-        selectedCompany={selectedCompany}
-        onCompanyChange={setSelectedCompany}
-      />
+      <div className="space-y-4">
+        <StudentScoresTable
+          students={filteredStudents}
+          selectedCompany={selectedCompany}
+          onCompanyChange={setSelectedCompany}
+          isLeader={isLeader}
+        />
+      </div>
     </div>
   )
 }

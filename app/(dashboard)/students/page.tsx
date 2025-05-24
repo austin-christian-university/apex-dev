@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Tooltip,
   TooltipContent,
@@ -39,6 +40,11 @@ function splitName(fullName: string): { firstName: string; lastName: string } {
   return { firstName, lastName }
 }
 
+// Helper function to check if user is a student leader
+const isStudentLeader = (role: string) => {
+  return role === "President" || role === "Officer"
+}
+
 export default function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([])
   const [selectedCompany, setSelectedCompany] = useState<string>("Alpha Company")
@@ -46,6 +52,28 @@ export default function StudentsPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingStudent, setEditingStudent] = useState<Student | null>(null)
   const [deletingStudent, setDeletingStudent] = useState<Student | null>(null)
+  const [userData, setUserData] = useState<{ type: string; user: Student | any } | null>(null)
+
+  useEffect(() => {
+    // Get user data from localStorage
+    const storedUserType = localStorage.getItem("userType")
+    const storedUserData = localStorage.getItem("userData")
+    
+    if (storedUserType && storedUserData) {
+      try {
+        const userType = storedUserType
+        const user = JSON.parse(storedUserData)
+        setUserData({ type: userType, user })
+
+        // If user is a student leader, set their company as selected
+        if (userType === "student" && isStudentLeader(user.companyRole)) {
+          setSelectedCompany(user.company)
+        }
+      } catch (error) {
+        console.error("Error parsing user data:", error)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -62,7 +90,16 @@ export default function StudentsPage() {
     fetchStudents()
   }, [])
 
-  const filteredStudents = students.filter(student => student.company === selectedCompany)
+  // Filter students based on user role
+  const filteredStudents = students.filter(student => {
+    if (userData?.type === "admin") return student.company === selectedCompany
+    if (userData?.type === "student" && isStudentLeader(userData.user.companyRole)) {
+      return student.company === userData.user.company
+    }
+    return student.company === selectedCompany
+  })
+
+  const isLeader = userData?.type === "student" && isStudentLeader(userData.user.companyRole)
 
   const generateStudentId = () => {
     const lastStudent = students[students.length - 1]
@@ -80,7 +117,7 @@ export default function StudentsPage() {
         email: data.email,
         phoneNumber: `(${data.phoneNumber.slice(0, 3)}) ${data.phoneNumber.slice(3, 6)}-${data.phoneNumber.slice(6)}`,
         year: data.year,
-        company: data.company,
+        company: isLeader ? userData.user.company : data.company,
         companyRole: data.companyRole,
         score: {
           lionGames: 80,
@@ -178,21 +215,30 @@ export default function StudentsPage() {
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <CardTitle>Student Directory</CardTitle>
           <div className="flex items-center gap-4">
-            <Select
-              value={selectedCompany}
-              onValueChange={setSelectedCompany}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select company" />
-              </SelectTrigger>
-              <SelectContent>
-                {companies.map((company) => (
-                  <SelectItem key={company} value={company}>
-                    {company}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isLeader ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Viewing:</span>
+                <Badge variant="secondary" className="text-lg px-3 py-1">
+                  {userData.user.company}
+                </Badge>
+              </div>
+            ) : (
+              <Select
+                value={selectedCompany}
+                onValueChange={setSelectedCompany}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map((company) => (
+                    <SelectItem key={company} value={company}>
+                      {company}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button onClick={() => setIsAddModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add Student
@@ -268,7 +314,7 @@ export default function StudentsPage() {
                 {filteredStudents.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center text-muted-foreground border-l">
-                      No students found in {selectedCompany}
+                      No students found in {isLeader ? userData.user.company : selectedCompany}
                     </TableCell>
                   </TableRow>
                 )}
@@ -282,6 +328,8 @@ export default function StudentsPage() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddStudent}
+        isLeader={isLeader}
+        leaderCompany={isLeader ? userData.user.company : undefined}
       />
 
       {editingStudent && (

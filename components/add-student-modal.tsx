@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -36,30 +37,34 @@ import { Button } from "@/components/ui/button"
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
-  phoneNumber: z.string()
-    .min(10, "Phone number must be 10 digits")
-    .max(10, "Phone number must be 10 digits")
-    .regex(/^\d+$/, "Phone number must contain only digits"),
-  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+  phoneNumber: z.string().length(10, "Phone number must be 10 digits"),
   year: z.enum(["Freshman", "Sophomore", "Junior", "Senior"]),
-  company: z.enum(["Alpha Company", "Bravo Company", "Charlie Company", "Delta Company"]),
-  companyRole: z.enum(["President", "Officer", "Member"]),
-  password: z.string().optional(),
+  company: z.string().optional(),
+  companyRole: z.enum(["Member", "Officer", "President"]),
+  password: z.string().optional()
 })
 
-type FormData = z.infer<typeof formSchema> & { password?: string }
+type FormData = z.infer<typeof formSchema>
 
-interface AddStudentModalProps {
+export interface AddStudentModalProps {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: FormData) => Promise<void>
+  isLeader?: boolean
+  leaderCompany?: string
 }
 
 // Add this CSS class to style the inputs and form messages
 const inputStyles = "placeholder:text-muted-foreground/50 dark:placeholder:text-muted-foreground/50 dark:text-foreground"
 const formMessageStyles = "text-destructive dark:text-destructive dark:text-foreground"
 
-export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalProps) {
+export function AddStudentModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLeader = false,
+  leaderCompany
+}: AddStudentModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [generatedPassword, setGeneratedPassword] = useState("")
 
@@ -69,11 +74,11 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
       name: "",
       email: "",
       phoneNumber: "",
-      dateOfBirth: "",
       year: "Freshman",
-      company: "Alpha Company",
+      company: leaderCompany,
       companyRole: "Member",
-    },
+      password: ""
+    }
   })
 
   // Update generated password when name changes
@@ -113,6 +118,9 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add New Student</DialogTitle>
+          <DialogDescription>
+            Enter the student's information below. All fields are required.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
@@ -170,23 +178,6 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
             />
             <FormField
               control={form.control}
-              name="dateOfBirth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="dark:text-foreground">Date of Birth</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="date"
-                      {...field}
-                      className={inputStyles}
-                    />
-                  </FormControl>
-                  <FormMessage className={formMessageStyles} />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
               name="year"
               render={({ field }) => (
                 <FormItem>
@@ -208,29 +199,31 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="company"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="dark:text-foreground">Company</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="dark:text-foreground">
-                        <SelectValue placeholder="Select company" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Alpha Company">Alpha Company</SelectItem>
-                      <SelectItem value="Bravo Company">Bravo Company</SelectItem>
-                      <SelectItem value="Charlie Company">Charlie Company</SelectItem>
-                      <SelectItem value="Delta Company">Delta Company</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className={formMessageStyles} />
-                </FormItem>
-              )}
-            />
+            {!isLeader && (
+              <FormField
+                control={form.control}
+                name="company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-foreground">Company</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="dark:text-foreground">
+                          <SelectValue placeholder="Select company" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Alpha Company">Alpha Company</SelectItem>
+                        <SelectItem value="Bravo Company">Bravo Company</SelectItem>
+                        <SelectItem value="Charlie Company">Charlie Company</SelectItem>
+                        <SelectItem value="Delta Company">Delta Company</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className={formMessageStyles} />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="companyRole"
@@ -244,11 +237,24 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="President">President</SelectItem>
-                      <SelectItem value="Officer">Officer</SelectItem>
                       <SelectItem value="Member">Member</SelectItem>
+                      <SelectItem value="Officer">Officer</SelectItem>
+                      <SelectItem value="President">President</SelectItem>
                     </SelectContent>
                   </Select>
+                  <FormMessage className={formMessageStyles} />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="dark:text-foreground">Password (Optional)</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Leave blank for default" {...field} />
+                  </FormControl>
                   <FormMessage className={formMessageStyles} />
                 </FormItem>
               )}

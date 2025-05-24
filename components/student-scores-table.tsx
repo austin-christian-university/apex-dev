@@ -4,15 +4,22 @@ import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
 import { Student } from "@/lib/data"
 
 interface StudentScoresTableProps {
   students: Student[]
   selectedCompany: string
   onCompanyChange: (company: string) => void
+  isLeader?: boolean
 }
 
-export function StudentScoresTable({ students, selectedCompany, onCompanyChange }: StudentScoresTableProps) {
+export function StudentScoresTable({ 
+  students, 
+  selectedCompany, 
+  onCompanyChange,
+  isLeader = false 
+}: StudentScoresTableProps) {
   const companyStudents = students.filter(student => student.company === selectedCompany)
 
   return (
@@ -24,17 +31,26 @@ export function StudentScoresTable({ students, selectedCompany, onCompanyChange 
       <Card className="overflow-hidden border-0 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Student Scores</CardTitle>
-          <Select value={selectedCompany} onValueChange={onCompanyChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select company" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Alpha Company">Alpha Company</SelectItem>
-              <SelectItem value="Bravo Company">Bravo Company</SelectItem>
-              <SelectItem value="Charlie Company">Charlie Company</SelectItem>
-              <SelectItem value="Delta Company">Delta Company</SelectItem>
-            </SelectContent>
-          </Select>
+          {isLeader ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Viewing:</span>
+              <Badge variant="secondary" className="text-sm px-2 py-1">
+                {selectedCompany}
+              </Badge>
+            </div>
+          ) : (
+            <Select value={selectedCompany} onValueChange={onCompanyChange}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Select company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alpha Company">Alpha Company</SelectItem>
+                <SelectItem value="Bravo Company">Bravo Company</SelectItem>
+                <SelectItem value="Charlie Company">Charlie Company</SelectItem>
+                <SelectItem value="Delta Company">Delta Company</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] w-full">

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { BookOpen, Calendar, CreditCard, LayoutDashboard, LogOut, Settings, User, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -23,86 +23,112 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { useUserRole } from "@/lib/auth"
 import { useTheme } from "next-themes"
+import type { Student, Admin } from "@/lib/data"
+
+// Add type for user data
+type UserData = {
+  type: "student" | "admin"
+  user: Student | Admin
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const userRole = useUserRole()
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
+  const [userData, setUserData] = useState<UserData | null>(null)
 
-  // Get user name based on role
+  // Handle mounting and load user data
+  useEffect(() => {
+    setMounted(true)
+    
+    // Get user data from localStorage
+    const storedUserType = localStorage.getItem("userType")
+    const storedUserData = localStorage.getItem("userData")
+    
+    if (!storedUserType || !storedUserData) {
+      // If no user data, redirect to login
+      router.push("/")
+      return
+    }
+
+    try {
+      const userType = storedUserType as "student" | "admin"
+      const user = JSON.parse(storedUserData) as Student | Admin
+      setUserData({ type: userType, user })
+    } catch (error) {
+      console.error("Error parsing user data:", error)
+      router.push("/")
+    }
+  }, [router])
+
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("userType")
+    localStorage.removeItem("userData")
+    router.push("/")
+  }
+
+  // Get user name from user data
   const getUserName = () => {
-    switch (userRole) {
-      case "admin":
-        return "Administrator"
-      case "leader":
-        return "Student Leader"
-      case "student":
-        return "Emma Johnson"
-      default:
-        return "User"
-    }
+    return userData?.user.name || "User"
   }
 
-  // Get user email based on role
+  // Get user email from user data
   const getUserEmail = () => {
-    switch (userRole) {
-      case "admin":
-        return "admin@acu.edu"
-      case "leader":
-        return "leader@acu.edu"
-      case "student":
-        return "emma.johnson@acu.edu"
-      default:
-        return "user@acu.edu"
-    }
+    return userData?.user.email || "user@acu.edu"
   }
 
-  // Get avatar fallback based on user role
+  // Get avatar fallback based on user name
   const getAvatarFallback = () => {
-    switch (userRole) {
-      case "admin":
-        return "AD"
-      case "leader":
-        return "SL"
-      case "student":
-        return "JD"
-      default:
-        return "U"
-    }
+    if (!userData?.user.name) return "U"
+    return userData.user.name
+      .split(" ")
+      .map(part => part[0])
+      .join("")
+      .toUpperCase()
   }
 
-  // Get avatar image based on role
+  // Get avatar image based on user data
   const getAvatarImage = () => {
-    const seed = userRole === "student" ? "John Doe" : userRole
-    return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`
+    if (userData?.user.avatarUrl) {
+      return userData.user.avatarUrl
+    }
+    // Fallback to DiceBear with initials
+    const initials = getAvatarFallback()
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(initials)}&backgroundColor=random&textColor=fff&fontSize=50`
   }
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Students", href: "/students", icon: Users },
+    { name: "Students", href: "/students", icon: Users},
     { name: "My Profile", href: "/my-profile", icon: User },
-    // { name: "Course Records", href: "/course-records", icon: BookOpen },
-    // { name: "Financial Overview", href: "/financial-overview", icon: CreditCard },
-    // { name: "Calendar", href: "/calendar", icon: Calendar },
-    // { name: "Settings", href: "/settings", icon: Settings },
   ]
 
-  // Only show Dashboard for student leader
-  const filteredNavigation = userRole === "leader"
-    ? navigation.filter((item) => item.name === "Dashboard")
-    : navigation
-
-  // Handle mounting
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  // Filter navigation based on user type
+  const filteredNavigation = navigation.filter((item) => {
+    if (item.adminOnly) {
+      return userData?.type === "admin"
+    }
+    return true
+  })
 
   // Update logo based on theme
   const logoSrc = mounted && theme === "dark" ? "/acu-logo-white.png" : "/acu-logo-bronze.png"
+
+  // If not mounted or no user data, show loading state
+  if (!mounted || !userData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <SidebarProvider defaultOpen={!isCollapsed} onOpenChange={setIsCollapsed}>
@@ -156,10 +182,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                       <p className="text-sm md:text-base text-muted-foreground">{getUserEmail()}</p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                    <Link href="/">
-                      <LogOut className="h-5 w-5" />
-                    </Link>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-10 w-10" 
+                    onClick={handleLogout}
+                    title="Log out"
+                  >
+                    <LogOut className="h-5 w-5" />
                   </Button>
                 </div>
               </div>

@@ -4,17 +4,16 @@ import path from "path"
 // Types for our data model
 export interface Student {
   id: string
+  studentId: string
   name: string
   email: string
-  password: string // First name + last name, no space
-  studentId: string
   phoneNumber: string
-  year: "Freshman" | "Sophomore" | "Junior" | "Senior"
+  year: string
   company: string
-  companyRole: "President" | "Officer" | "Member"
-  bio: string
-  dateOfBirth: string // Format: YYYY-MM-DD
-  avatarUrl?: string // Optional path to custom avatar image
+  companyRole: string
+  password?: string
+  bio?: string
+  dateOfBirth?: string
   score: {
     lionGames: number
     attendance: number
@@ -24,7 +23,13 @@ export interface Student {
     eventExecution: number
     grades: number
   }
-  scoreChangeHistory: ScoreChangeHistoryEntry[]
+  scoreChangeHistory: Array<{
+    date: string
+    category: ScoreCategory
+    oldScore: number
+    newScore: number
+    reason: string
+  }>
 }
 
 export interface Admin {
