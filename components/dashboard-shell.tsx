@@ -211,7 +211,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </Sidebar>
 
         <div className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 flex h-20 items-center gap-6 border-b bg-background px-8">
+          <header className="sticky top-0 z-10 flex h-20 items-center gap-6 border-b bg-background px-4 sm:px-6 lg:px-8">
             {/* Only show sidebar trigger on mobile */}
             <div className="md:hidden">
               <SidebarTrigger className="h-14 w-14" />
@@ -219,8 +219,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1" />
           </header>
 
-          <main className="flex-1 p-8">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+          <main className="flex-1 overflow-x-hidden">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ duration: 0.3 }}
+              className="w-full"
+            >
               {children}
             </motion.div>
           </main>
