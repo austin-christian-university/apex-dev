@@ -1,14 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, ChevronsUpDown, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
 import { getAllStudents, type Student } from "@/lib/data"
 import { useUserRole } from "@/lib/auth"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface StudentSelectorProps {
   selectedStudentId: string
@@ -16,31 +12,40 @@ interface StudentSelectorProps {
 }
 
 export function StudentSelector({ selectedStudentId, onStudentChange }: StudentSelectorProps) {
-  const [open, setOpen] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const userRole = useUserRole()
 
   // Load students
   useEffect(() => {
-    const allStudents = getAllStudents()
-    setStudents(allStudents)
+    const loadStudents = async () => {
+      try {
+        setIsLoading(true)
+        const allStudents = await getAllStudents()
+        setStudents(allStudents)
 
-    // Set the selected student
-    const student = allStudents.find((s) => s.id === selectedStudentId)
-    if (student) {
-      setSelectedStudent(student)
-    } else if (allStudents.length > 0) {
-      setSelectedStudent(allStudents[0])
-      onStudentChange(allStudents[0].id)
+        // Set the selected student
+        const student = allStudents.find((s) => s.id === selectedStudentId)
+        if (student) {
+          setSelectedStudent(student)
+        } else if (allStudents.length > 0) {
+          setSelectedStudent(allStudents[0])
+          onStudentChange(allStudents[0].id)
+        }
+      } catch (error) {
+        console.error("Error loading students:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
+
+    loadStudents()
   }, [selectedStudentId, onStudentChange])
 
   // If user is a student, they can only see their own profile
   useEffect(() => {
-    if (userRole === "student") {
-      // In a real app, we would get the current user's ID from auth context
-      // For now, we'll use a mock student ID from environment or config
+    if (userRole === "student" && students.length > 0) {
       const mockStudentId = process.env.NEXT_PUBLIC_MOCK_STUDENT_ID || "1"
       const student = students.find((s) => s.id === mockStudentId)
       if (student) {
@@ -50,9 +55,7 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
     }
   }, [userRole, students, onStudentChange])
 
-  // Replace getStudentAvatar to use DiceBear
   function getStudentAvatar(id: string, name?: string) {
-    // Use initials if name is provided, otherwise use id
     const seed = name ? encodeURIComponent(name) : id
     return `https://api.dicebear.com/7.x/initials/svg?seed=${seed}`
   }
@@ -70,82 +73,63 @@ export function StudentSelector({ selectedStudentId, onStudentChange }: StudentS
             {selectedStudent?.name?.charAt(0) || "S"}
           </AvatarFallback>
         </Avatar>
-        <span className="font-medium text-foreground">{selectedStudent?.name || "Loading..."}</span>
+        <span className="font-medium text-foreground">
+          {isLoading ? "Loading..." : selectedStudent?.name || "Student not found"}
+        </span>
       </div>
     )
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[300px] justify-between"
-        >
-          {selectedStudent ? (
+    <Select
+      value={selectedStudentId}
+      onValueChange={(value) => {
+        const student = students.find((s) => s.id === value)
+        if (student) {
+          setSelectedStudent(student)
+          onStudentChange(value)
+        }
+      }}
+      disabled={isLoading}
+    >
+      <SelectTrigger className="w-[300px]">
+        {isLoading ? (
+          "Loading students..."
+        ) : selectedStudent ? (
+          <div className="flex items-center space-x-2">
+            <Avatar className="h-6 w-6 border border-primary/10">
+              <AvatarImage
+                src={getStudentAvatar(selectedStudent.id, selectedStudent.name)}
+                alt={selectedStudent.name}
+              />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                {selectedStudent.name.charAt(0)}
+              </AvatarFallback>
+            </Avatar>
+            <span>{selectedStudent.name}</span>
+          </div>
+        ) : (
+          "Select student..."
+        )}
+      </SelectTrigger>
+      <SelectContent>
+        {students.map((student) => (
+          <SelectItem key={student.id} value={student.id}>
             <div className="flex items-center space-x-2">
               <Avatar className="h-6 w-6 border border-primary/10">
                 <AvatarImage
-                  src={getStudentAvatar(selectedStudent.id, selectedStudent.name)}
-                  alt={selectedStudent.name}
+                  src={getStudentAvatar(student.id, student.name)}
+                  alt={student.name}
                 />
                 <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                  {selectedStudent.name.charAt(0)}
+                  {student.name.charAt(0)}
                 </AvatarFallback>
               </Avatar>
-              <span>{selectedStudent.name}</span>
+              <span>{student.name}</span>
             </div>
-          ) : (
-            "Select student..."
-          )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
-        <Command>
-          <div className="flex items-center border-b px-3">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-            <CommandInput placeholder="Search students..." />
-          </div>
-          <CommandList>
-            <CommandEmpty>No student found.</CommandEmpty>
-            <CommandGroup>
-              {students.map((student) => (
-                <CommandItem
-                  key={student.id}
-                  value={student.id}
-                  onSelect={() => {
-                    setSelectedStudent(student)
-                    onStudentChange(student.id)
-                    setOpen(false)
-                  }}
-                >
-                  <div className="flex items-center space-x-2">
-                    <Avatar className="h-6 w-6 border border-primary/10">
-                      <AvatarImage
-                        src={getStudentAvatar(student.id, student.name)}
-                        alt={student.name}
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                        {student.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{student.name}</span>
-                  </div>
-                  <Check
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      selectedStudent?.id === student.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   )
 }

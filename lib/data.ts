@@ -11,6 +11,9 @@ export interface Student {
   year: "Freshman" | "Sophomore" | "Junior" | "Senior"
   company: string
   companyRole: "President" | "Officer" | "Member"
+  bio: string
+  dateOfBirth: string // Format: YYYY-MM-DD
+  avatarUrl?: string // Optional path to custom avatar image
   score: {
     lionGames: number
     attendance: number

@@ -8,6 +8,8 @@
     "year": "Senior",
     "company": "Alpha Company",
     "companyRole": "President",
+    "dateOfBirth": "2003-08-15",
+    "bio": "Emma is a passionate senior at ACU pursuing a degree in Business Administration. As President of Alpha Company, she has demonstrated exceptional leadership skills and a commitment to service. Emma enjoys playing intramural sports, particularly basketball, and maintains an impressive academic record. Originally from Austin, Texas, she hopes to pursue a career in corporate leadership after graduation.",
     "score": {
       "lionGames": 100,
       "attendance": 99,
@@ -15,7 +17,8 @@
       "serviceHours": 88,
       "apartmentChecks": 96,
       "eventExecution": 94,
-      "grades": 3.8
+      "grades": 3.8,
+      "undefined": null
     },
     "scoreChangeHistory": [
       {
@@ -42,7 +45,8 @@
         "pointChange": 5,
         "date": "2024-02-10"
       }
-    ]
+    ],
+    "avatarUrl": null
   },
   {
     "id": "2",
@@ -53,6 +57,8 @@
     "year": "Junior",
     "company": "Alpha Company",
     "companyRole": "Officer",
+    "dateOfBirth": "2004-11-23",
+    "bio": "Michael is a junior Computer Science major with a minor in Mathematics. As an officer in Alpha Company, he combines his technical skills with leadership abilities to drive innovation in company projects. He's particularly interested in AI and machine learning, and has led several tech-focused initiatives on campus. In his free time, he enjoys coding, playing chess, and mentoring younger students in programming.",
     "score": {
       "lionGames": 88,
       "attendance": 95,
@@ -80,6 +86,8 @@
     "year": "Sophomore",
     "company": "Alpha Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-03-07",
+    "bio": "Sophia is a sophomore Nursing major with a passion for healthcare and community service. She actively participates in medical mission trips and volunteers at local clinics. Her dedication to service and academic excellence has made her a valuable member of Alpha Company. She enjoys hiking, photography, and spending time with her family in San Antonio.",
     "score": {
       "lionGames": 82,
       "attendance": 90,
@@ -107,6 +115,8 @@
     "year": "Freshman",
     "company": "Alpha Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-09-30",
+    "bio": "James is a freshman Engineering major who brings enthusiasm and fresh perspectives to Alpha Company. He's particularly interested in sustainable engineering and renewable energy solutions. Outside of academics, he's an accomplished pianist and enjoys participating in intramural sports. Originally from Dallas, he's excited to contribute to campus life at ACU.",
     "score": {
       "lionGames": 85,
       "attendance": 88,
@@ -127,6 +137,8 @@
     "year": "Sophomore",
     "company": "Alpha Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-12-14",
+    "bio": "Olivia is a sophomore Psychology major with a focus on child development. She's actively involved in research projects and volunteers at local schools. Her warm personality and organizational skills make her an asset to Alpha Company's social events. She enjoys painting, reading, and spending time with her younger siblings.",
     "score": {
       "lionGames": 80,
       "attendance": 92,
@@ -154,6 +166,8 @@
     "year": "Senior",
     "company": "Bravo Company",
     "companyRole": "President",
+    "dateOfBirth": "2003-05-21",
+    "bio": "Daniel is a senior Finance major and President of Bravo Company. His strategic thinking and natural leadership abilities have helped Bravo Company achieve numerous successes. He's interned at several major financial institutions and plans to pursue a career in investment banking. An avid runner, he's completed several marathons and leads the company's fitness initiatives.",
     "score": {
       "lionGames": 92,
       "attendance": 96,
@@ -181,6 +195,8 @@
     "year": "Junior",
     "company": "Bravo Company",
     "companyRole": "Officer",
+    "dateOfBirth": "2004-07-18",
+    "bio": "Ava is a junior Marketing major with a creative flair and strong communication skills. As an officer in Bravo Company, she's responsible for organizing major events and maintaining company social media presence. She's passionate about digital marketing and has helped several local businesses improve their online presence. She enjoys photography, graphic design, and salsa dancing.",
     "score": {
       "lionGames": 87,
       "attendance": 94,
@@ -208,6 +224,8 @@
     "year": "Freshman",
     "company": "Bravo Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-02-28",
+    "bio": "Ethan is a freshman Biology major with aspirations of becoming a medical researcher. His curiosity and dedication to learning make him a promising addition to Bravo Company. He's involved in various science clubs and volunteers at the campus health center. In his free time, he enjoys playing tennis and experimenting with new cooking recipes.",
     "score": {
       "lionGames": 84,
       "attendance": 89,
@@ -228,6 +246,8 @@
     "year": "Sophomore",
     "company": "Bravo Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-10-05",
+    "bio": "Isabella is a sophomore Education major with a focus on early childhood development. Her patience and nurturing personality make her a natural teacher and valuable member of Bravo Company. She's involved in various tutoring programs and hopes to make a difference in children's lives through education. She enjoys playing the violin and participating in community theater.",
     "score": {
       "lionGames": 81,
       "attendance": 91,
@@ -255,6 +275,8 @@
     "year": "Freshman",
     "company": "Bravo Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-04-12",
+    "bio": "Noah is a freshman Architecture major with a passion for sustainable design. His creative thinking and attention to detail have quickly made him a valued member of Bravo Company. He's involved in various campus design projects and enjoys exploring different architectural styles. In his free time, he sketches buildings, plays guitar, and participates in intramural soccer.",
     "score": {
       "lionGames": 83,
       "attendance": 88,
@@ -275,6 +297,8 @@
     "year": "Senior",
     "company": "Charlie Company",
     "companyRole": "President",
+    "dateOfBirth": "2003-12-03",
+    "bio": "Mia is a senior Political Science major and President of Charlie Company. Her strong leadership skills and commitment to community service have helped Charlie Company thrive. She's interned at the state capitol and plans to pursue a career in public policy. She's an accomplished debater and enjoys mentoring younger students in public speaking.",
     "score": {
       "lionGames": 94,
       "attendance": 97,
@@ -302,6 +326,8 @@
     "year": "Junior",
     "company": "Charlie Company",
     "companyRole": "Officer",
+    "dateOfBirth": "2004-06-25",
+    "bio": "Lucas is a junior Criminal Justice major with a minor in Psychology. As an officer in Charlie Company, he brings organization and enthusiasm to company activities. He's involved in various campus safety initiatives and plans to pursue a career in law enforcement. He enjoys playing basketball, hiking, and participating in community service projects.",
     "score": {
       "lionGames": 89,
       "attendance": 95,
@@ -329,6 +355,8 @@
     "year": "Sophomore",
     "company": "Charlie Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-08-19",
+    "bio": "Charlotte is a sophomore Journalism major with a passion for storytelling. Her writing skills and creativity make her a valuable contributor to Charlie Company's communications. She's involved in the campus newspaper and various writing workshops. She enjoys photography, creative writing, and exploring new coffee shops around town.",
     "score": {
       "lionGames": 86,
       "attendance": 90,
@@ -349,6 +377,8 @@
     "year": "Freshman",
     "company": "Charlie Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-01-17",
+    "bio": "William is a freshman Environmental Science major with a focus on conservation. His passion for sustainability and environmental protection makes him a great addition to Charlie Company. He's involved in various eco-friendly initiatives on campus and enjoys outdoor activities. In his free time, he gardens, hikes, and participates in environmental clean-up projects.",
     "score": {
       "lionGames": 82,
       "attendance": 89,
@@ -376,6 +406,8 @@
     "year": "Sophomore",
     "company": "Charlie Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-11-08",
+    "bio": "Amelia is a sophomore Music major with a focus on vocal performance. Her musical talents and positive energy contribute to Charlie Company's vibrant atmosphere. She's involved in various campus choirs and musical productions. She enjoys songwriting, playing the piano, and teaching music to children in the community.",
     "score": {
       "lionGames": 84,
       "attendance": 91,
@@ -396,6 +428,8 @@
     "year": "Senior",
     "company": "Delta Company",
     "companyRole": "President",
+    "dateOfBirth": "2003-09-22",
+    "bio": "Benjamin is a senior Mechanical Engineering major and President of Delta Company. His technical expertise and leadership abilities have helped Delta Company excel in various competitions. He's interned at several engineering firms and plans to pursue a career in renewable energy. He enjoys building robots, playing chess, and mentoring younger engineering students.",
     "score": {
       "lionGames": 93,
       "attendance": 96,
@@ -423,6 +457,8 @@
     "year": "Junior",
     "company": "Delta Company",
     "companyRole": "Officer",
+    "dateOfBirth": "2004-04-30",
+    "bio": "Harper is a junior Social Work major with a passion for community service. As an officer in Delta Company, she organizes various outreach programs and volunteer opportunities. Her empathy and organizational skills make her an effective leader. She enjoys yoga, reading, and spending time with her therapy dog on campus.",
     "score": {
       "lionGames": 88,
       "attendance": 94,
@@ -450,6 +486,8 @@
     "year": "Freshman",
     "company": "Delta Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-07-14",
+    "bio": "Henry is a freshman Computer Science major with a focus on game development. His technical skills and creativity make him a promising addition to Delta Company. He's involved in various coding clubs and game development projects. He enjoys playing video games, creating digital art, and participating in hackathons.",
     "score": {
       "lionGames": 85,
       "attendance": 90,
@@ -470,6 +508,8 @@
     "year": "Sophomore",
     "company": "Delta Company",
     "companyRole": "Member",
+    "dateOfBirth": "2005-02-26",
+    "bio": "Evelyn is a sophomore Chemistry major with aspirations of becoming a research scientist. Her analytical thinking and dedication to learning make her a valuable member of Delta Company. She's involved in various research projects and science clubs. She enjoys playing the cello, hiking, and experimenting with new recipes in her free time.",
     "score": {
       "lionGames": 83,
       "attendance": 88,
@@ -497,6 +537,8 @@
     "year": "Freshman",
     "company": "Delta Company",
     "companyRole": "Member",
+    "dateOfBirth": "2006-12-09",
+    "bio": "Sebastian is a freshman Business Administration major with an interest in entrepreneurship. His innovative thinking and enthusiasm make him a great addition to Delta Company. He's involved in various business clubs and startup competitions. He enjoys playing the guitar, participating in intramural sports, and learning about new business trends.",
     "score": {
       "lionGames": 81,
       "attendance": 89,
