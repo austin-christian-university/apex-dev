@@ -183,7 +183,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <ThemeToggle />
             </div>
             <SidebarFooter className="border-t border-border/50">
-              <div className="p-4 pb-24 md:pb-4">
+              <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
