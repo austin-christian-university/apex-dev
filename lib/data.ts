@@ -14,6 +14,7 @@ export interface Student {
   password?: string
   bio?: string
   dateOfBirth?: string
+  avatarUrl?: string
   score: {
     lionGames: number
     attendance: number
