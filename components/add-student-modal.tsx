@@ -1,11 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { motion, AnimatePresence } from "framer-motion"
 import { formatPhoneNumber } from "@/lib/utils"
+import { generatePasswordFromName } from "@/lib/data"
 
 import {
   Dialog,
@@ -39,12 +40,14 @@ const formSchema = z.object({
     .min(10, "Phone number must be 10 digits")
     .max(10, "Phone number must be 10 digits")
     .regex(/^\d+$/, "Phone number must contain only digits"),
+  dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
   year: z.enum(["Freshman", "Sophomore", "Junior", "Senior"]),
   company: z.enum(["Alpha Company", "Bravo Company", "Charlie Company", "Delta Company"]),
   companyRole: z.enum(["President", "Officer", "Member"]),
+  password: z.string().optional(),
 })
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema> & { password?: string }
 
 interface AddStudentModalProps {
   isOpen: boolean
@@ -58,6 +61,7 @@ const formMessageStyles = "text-destructive dark:text-destructive dark:text-fore
 
 export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [generatedPassword, setGeneratedPassword] = useState("")
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -65,11 +69,22 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
       name: "",
       email: "",
       phoneNumber: "",
+      dateOfBirth: "",
       year: "Freshman",
       company: "Alpha Company",
       companyRole: "Member",
     },
   })
+
+  // Update generated password when name changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "name" && value.name) {
+        setGeneratedPassword(generatePasswordFromName(value.name))
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [form.watch])
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "")
@@ -81,8 +96,10 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
   const handleSubmit = async (data: FormData) => {
     try {
       setIsSubmitting(true)
-      await onSubmit(data)
+      // Add the generated password to the form data
+      await onSubmit({ ...data, password: generatedPassword })
       form.reset()
+      setGeneratedPassword("")
       onClose()
     } catch (error) {
       console.error("Error submitting form:", error)
@@ -144,6 +161,23 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
                       placeholder="(512) 555-0123"
                       value={formatPhoneNumber(field.value)}
                       onChange={handlePhoneChange}
+                      className={inputStyles}
+                    />
+                  </FormControl>
+                  <FormMessage className={formMessageStyles} />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="dateOfBirth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="dark:text-foreground">Date of Birth</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="date"
+                      {...field}
                       className={inputStyles}
                     />
                   </FormControl>
@@ -219,6 +253,18 @@ export function AddStudentModal({ isOpen, onClose, onSubmit }: AddStudentModalPr
                 </FormItem>
               )}
             />
+
+            {generatedPassword && (
+              <div className="p-3 bg-muted rounded-md">
+                <p className="text-sm text-muted-foreground">
+                  Generated password: <span className="font-mono font-medium">{generatedPassword}</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This password will be automatically set for the student.
+                </p>
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel

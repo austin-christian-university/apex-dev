@@ -6,6 +6,7 @@ export interface Student {
   id: string
   name: string
   email: string
+  password: string // First name + last name, no space
   studentId: string
   phoneNumber: string
   year: "Freshman" | "Sophomore" | "Junior" | "Senior"
@@ -24,6 +25,19 @@ export interface Student {
     grades: number
   }
   scoreChangeHistory: ScoreChangeHistoryEntry[]
+}
+
+export interface Admin {
+  id: string
+  name: string
+  email: string
+  password: string
+  phoneNumber: string
+  role: "admin"
+  bio: string
+  company: "admin"
+  companyRole: "admin"
+  avatarUrl?: string
 }
 
 export type ScoreCategory = "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
@@ -115,4 +129,49 @@ export function getUserTypeById(id: string) {
 export function useUserRole() {
   // In a real app, this would come from an auth context
   return "admin"
+}
+
+// Helper function to generate password from name
+export function generatePasswordFromName(name: string): string {
+  const [firstName, lastName] = name.toLowerCase().split(" ")
+  return `${firstName}${lastName}`
+}
+
+// Helper function to validate credentials
+export async function validateCredentials(email: string, password: string): Promise<{ type: "student" | "admin", user: Student | Admin } | null> {
+  try {
+    console.log("Validating credentials for:", email)
+
+    // Check students
+    const studentsResponse = await fetch("/api/students")
+    if (studentsResponse.ok) {
+      const students: Student[] = await studentsResponse.json()
+      const student = students.find(s => s.email === email && s.password === password)
+      if (student) {
+        console.log("Found matching student account")
+        return { type: "student", user: student }
+      }
+    }
+
+    // Check admins
+    console.log("Checking admin credentials...")
+    const adminsResponse = await fetch("/api/admins")
+    if (adminsResponse.ok) {
+      const admins: Admin[] = await adminsResponse.json()
+      console.log("Found admins:", admins.map(a => ({ email: a.email, password: a.password })))
+      const admin = admins.find(a => a.email === email && a.password === password)
+      if (admin) {
+        console.log("Found matching admin account")
+        return { type: "admin", user: admin }
+      }
+    } else {
+      console.error("Failed to fetch admins:", adminsResponse.status, adminsResponse.statusText)
+    }
+
+    console.log("No matching credentials found")
+    return null
+  } catch (error) {
+    console.error("Error validating credentials:", error)
+    return null
+  }
 }

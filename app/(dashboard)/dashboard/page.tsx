@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const [companyStandings, setCompanyStandings] = useState<CompanyStanding[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
+
   useEffect(() => {
     const fetchStudents = async () => {
       try {

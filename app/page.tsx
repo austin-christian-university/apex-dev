@@ -11,10 +11,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
+import { validateCredentials } from "@/lib/data"
 import { userTypes } from "@/lib/data"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -24,15 +27,54 @@ export default function LoginPage() {
     setIsDark(document.documentElement.classList.contains("dark"))
   }, [])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate login
+    try {
+      const result = await validateCredentials(email, password)
+      
+      if (result) {
+        // Store user info in localStorage
+        localStorage.setItem("userType", result.type)
+        localStorage.setItem("userData", JSON.stringify(result.user))
+        
+        toast({
+          title: "Welcome back!",
+          description: `Signed in as ${result.user.name}`,
+        })
+
+        // Redirect to dashboard
+        router.push("/dashboard")
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Invalid credentials",
+          description: "Please check your email and password and try again.",
+        })
+      }
+    } catch (error) {
+      console.error("Login error:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An error occurred during login. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleQuickLogin = (type: typeof userTypes[0]) => {
+    setIsLoading(true)
+    localStorage.setItem("userType", type.id)
+    localStorage.setItem("userName", type.name)
+    localStorage.setItem("userEmail", `${type.id}@acu.edu`)
+    
     setTimeout(() => {
       setIsLoading(false)
       router.push("/dashboard")
-    }, 1500)
+    }, 1000)
   }
 
   return (
@@ -156,16 +198,7 @@ export default function LoginPage() {
                   key={type.id}
                   variant="outline"
                   className="flex flex-col items-center justify-center h-auto py-2 hover:bg-muted/50"
-                  onClick={() => {
-                    setIsLoading(true)
-                    localStorage.setItem("userRole", type.id)
-                    localStorage.setItem("userName", type.name)
-                    localStorage.setItem("userEmail", `${type.id}@acu.edu`)
-                    setTimeout(() => {
-                      setIsLoading(false)
-                      router.push("/dashboard")
-                    }, 1000)
-                  }}
+                  onClick={() => handleQuickLogin(type)}
                 >
                   <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mb-1">
                     <span className="text-xs font-medium">{type.name.charAt(0)}</span>
