@@ -104,7 +104,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center w-[90vw] h-[90vh]">
+      <div className="flex items-center justify-center w-[100vw] h-[100vh]">
         <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     )
