@@ -261,6 +261,7 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
   })
 
   const selectedCategory = form.watch("category")
+  const selectedSubcategory = form.watch("subcategory")
 
   const calculatePoints = (data: FormData): number => {
     if (isLionGamesData(data)) {
@@ -268,6 +269,9 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
     }
     
     if (isAttendanceData(data)) {
+      if (data.subcategory === "ACU Hangs" || data.subcategory === "Company Hangs") {
+        return data.status === "present" ? 10 : 0
+      }
       return attendanceStatus.find(s => s.value === data.status)?.points ?? 0
     }
     
@@ -303,7 +307,11 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
     }
     
     if (isAttendanceData(data)) {
-      return `${data.subcategory}: ${attendanceStatus.find(s => s.value === data.status)?.label}`
+      const status = attendanceStatus.find(s => s.value === data.status)
+      if ((data.subcategory === "ACU Hangs" || data.subcategory === "Company Hangs") && data.status !== "present") {
+        return `${data.subcategory}: ${status?.label} (no points)`
+      }
+      return `${data.subcategory}: ${status?.label}`
     }
     
     if (isServiceHoursData(data)) {
@@ -450,11 +458,18 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {attendanceStatus.map((status) => (
-                              <SelectItem key={status.value} value={status.value}>
-                                {status.label} ({status.points > 0 ? '+' : ''}{status.points} points)
-                              </SelectItem>
-                            ))}
+                            {attendanceStatus.map((status) => {
+                              const isSpecialCase = selectedSubcategory === "ACU Hangs" || selectedSubcategory === "Company Hangs"
+                              const pointsDisplay = isSpecialCase && status.value !== "present" 
+                                ? "(no points)" 
+                                : `(${status.points > 0 ? '+' : ''}${status.points} points)`
+                              
+                              return (
+                                <SelectItem key={status.value} value={status.value}>
+                                  {status.label} {pointsDisplay}
+                                </SelectItem>
+                              )
+                            })}
                           </SelectContent>
                         </Select>
                         <FormMessage className={formMessageStyles} />
