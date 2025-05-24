@@ -5,6 +5,8 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import type { Student } from "@/lib/data"
+import { History } from "lucide-react"
+import { ScoreHistoryModal } from "./score-history-modal"
 
 import {
   Dialog,
@@ -248,6 +250,7 @@ const formatCategoryName = (category: string) => {
 
 export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScoreModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false)
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -348,207 +351,156 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit Score for {student.name}</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="dark:text-foreground">Score Category</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="dark:text-foreground">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {scoreCategories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {formatCategoryName(category)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage className={formMessageStyles} />
-                </FormItem>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Score for {student.name}</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-foreground">Score Category</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="dark:text-foreground">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {scoreCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {formatCategoryName(category)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className={formMessageStyles} />
+                  </FormItem>
+                )}
+              />
+
+              {selectedCategory === "lionGames" && (
+                <FormField
+                  control={form.control}
+                  name="placement"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-foreground">Placement</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="dark:text-foreground">
+                            <SelectValue placeholder="Select placement" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lionGamesPlacements.map((placement) => (
+                            <SelectItem key={placement.value} value={placement.value}>
+                              {placement.value} Place (+{placement.points} points)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className={formMessageStyles} />
+                    </FormItem>
+                  )}
+                />
               )}
-            />
 
-            {selectedCategory === "lionGames" && (
-              <FormField
-                control={form.control}
-                name="placement"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-foreground">Placement</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+              {selectedCategory === "attendance" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="subcategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="dark:text-foreground">Event Type</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="dark:text-foreground">
+                              <SelectValue placeholder="Select event type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {attendanceSubcategories.map((subcategory) => (
+                              <SelectItem key={subcategory} value={subcategory}>
+                                {subcategory}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className={formMessageStyles} />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="dark:text-foreground">Attendance</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="dark:text-foreground">
+                              <SelectValue placeholder="Select attendance status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {attendanceStatus.map((status) => (
+                              <SelectItem key={status.value} value={status.value}>
+                                {status.label} ({status.points > 0 ? '+' : ''}{status.points} points)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className={formMessageStyles} />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {selectedCategory === "serviceHours" && (
+                <FormField
+                  control={form.control}
+                  name="hours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-foreground">Number of Hours</FormLabel>
                       <FormControl>
-                        <SelectTrigger className="dark:text-foreground">
-                          <SelectValue placeholder="Select placement" />
-                        </SelectTrigger>
+                        <Input
+                          type="number"
+                          placeholder="Enter number of hours"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className={inputStyles}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        {lionGamesPlacements.map((placement) => (
-                          <SelectItem key={placement.value} value={placement.value}>
-                            {placement.value} Place (+{placement.points} points)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className={formMessageStyles} />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {selectedCategory === "attendance" && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="subcategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-foreground">Event Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="dark:text-foreground">
-                            <SelectValue placeholder="Select event type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {attendanceSubcategories.map((subcategory) => (
-                            <SelectItem key={subcategory} value={subcategory}>
-                              {subcategory}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                       <FormMessage className={formMessageStyles} />
                     </FormItem>
                   )}
                 />
+              )}
+
+              {selectedCategory === "apartmentChecks" && (
                 <FormField
                   control={form.control}
-                  name="status"
+                  name="cleanliness"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="dark:text-foreground">Attendance</FormLabel>
+                      <FormLabel className="dark:text-foreground">Cleanliness</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger className="dark:text-foreground">
-                            <SelectValue placeholder="Select attendance status" />
+                            <SelectValue placeholder="Select cleanliness level" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {attendanceStatus.map((status) => (
-                            <SelectItem key={status.value} value={status.value}>
-                              {status.label} ({status.points > 0 ? '+' : ''}{status.points} points)
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className={formMessageStyles} />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
-            {selectedCategory === "serviceHours" && (
-              <FormField
-                control={form.control}
-                name="hours"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-foreground">Number of Hours</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter number of hours"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className={inputStyles}
-                      />
-                    </FormControl>
-                    <FormMessage className={formMessageStyles} />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {selectedCategory === "apartmentChecks" && (
-              <FormField
-                control={form.control}
-                name="cleanliness"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-foreground">Cleanliness</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="dark:text-foreground">
-                          <SelectValue placeholder="Select cleanliness level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {apartmentCleanliness.map((level) => (
-                          <SelectItem key={level.value} value={level.value}>
-                            {level.label} ({level.points > 0 ? '+' : ''}{level.points} points)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className={formMessageStyles} />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {selectedCategory === "eventExecution" && (
-              <>
-                <FormField
-                  control={form.control}
-                  name="subcategory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-foreground">Event</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="dark:text-foreground">
-                            <SelectValue placeholder="Select event" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {eventSubcategories.map((subcategory) => (
-                            <SelectItem key={subcategory} value={subcategory}>
-                              {subcategory}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className={formMessageStyles} />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="performance"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="dark:text-foreground">Performance</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="dark:text-foreground">
-                            <SelectValue placeholder="Select performance level" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {eventPerformance.map((level) => (
+                          {apartmentCleanliness.map((level) => (
                             <SelectItem key={level.value} value={level.value}>
                               {level.label} ({level.points > 0 ? '+' : ''}{level.points} points)
                             </SelectItem>
@@ -559,85 +511,153 @@ export function EditScoreModal({ isOpen, onClose, student, onSubmit }: EditScore
                     </FormItem>
                   )}
                 />
-              </>
-            )}
-
-            {selectedCategory === "grades" && (
-              <FormField
-                control={form.control}
-                name="gpa"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-foreground">GPA</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="4"
-                        placeholder="Enter GPA (0.00 - 4.00)"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className={inputStyles}
-                      />
-                    </FormControl>
-                    <FormMessage className={formMessageStyles} />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {selectedCategory === "leadershipRoles" && (
-              <FormField
-                control={form.control}
-                name="pointChange"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="dark:text-foreground">Point Change</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Enter point change"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                        className={inputStyles}
-                      />
-                    </FormControl>
-                    <FormMessage className={formMessageStyles} />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="dark:text-foreground">Date</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      className={inputStyles}
-                    />
-                  </FormControl>
-                  <FormMessage className={formMessageStyles} />
-                </FormItem>
               )}
-            />
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Updating..." : "Update Score"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              {selectedCategory === "eventExecution" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="subcategory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="dark:text-foreground">Event</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="dark:text-foreground">
+                              <SelectValue placeholder="Select event" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {eventSubcategories.map((subcategory) => (
+                              <SelectItem key={subcategory} value={subcategory}>
+                                {subcategory}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className={formMessageStyles} />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="performance"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="dark:text-foreground">Performance</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger className="dark:text-foreground">
+                              <SelectValue placeholder="Select performance level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {eventPerformance.map((level) => (
+                              <SelectItem key={level.value} value={level.value}>
+                                {level.label} ({level.points > 0 ? '+' : ''}{level.points} points)
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className={formMessageStyles} />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {selectedCategory === "grades" && (
+                <FormField
+                  control={form.control}
+                  name="gpa"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-foreground">GPA</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          max="4"
+                          placeholder="Enter GPA (0.00 - 4.00)"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className={inputStyles}
+                        />
+                      </FormControl>
+                      <FormMessage className={formMessageStyles} />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {selectedCategory === "leadershipRoles" && (
+                <FormField
+                  control={form.control}
+                  name="pointChange"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="dark:text-foreground">Point Change</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Enter point change"
+                          {...field}
+                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          className={inputStyles}
+                        />
+                      </FormControl>
+                      <FormMessage className={formMessageStyles} />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="dark:text-foreground">Date</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        {...field}
+                        className={inputStyles}
+                      />
+                    </FormControl>
+                    <FormMessage className={formMessageStyles} />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter className="flex-col gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Updating..." : "Update Score"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setIsHistoryModalOpen(true)}
+                >
+                  <History className="h-4 w-4 mr-2" />
+                  Edit History
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <ScoreHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        student={student}
+      />
+    </>
   )
 } 

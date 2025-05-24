@@ -20,12 +20,17 @@ export interface Student {
     eventExecution: number
     grades: number
   }
-  scoreChangeHistory: {
-    category: "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
+  scoreChangeHistory: ScoreChangeHistoryEntry[]
+}
+
+export type ScoreCategory = "lionGames" | "attendance" | "leadershipRoles" | "serviceHours" | "apartmentChecks" | "eventExecution" | "grades"
+
+export type ScoreChangeHistoryEntry = {
+  id: string
+  category: ScoreCategory
   description: string
-    pointChange: number
+  pointChange: number
   date: string
-  }[]
 }
 
 // User types with avatars
