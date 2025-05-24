@@ -365,7 +365,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 w-[100vw] h-[100vh] mx-auto p-4 sm:p-6 lg:p-8">
         <div>
           <h1 className="text-2xl font-bold text-primary-900">My Profile</h1>
         </div>
@@ -406,13 +406,13 @@ export default function ProfilePage() {
   const [firstName, lastName] = user.name.split(' ')
 
   return (
-    <div className="space-y-6">
+    <div className="w-[100vw] mx-auto p-4 sm:p-6 lg:p-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
         <p className="text-muted-foreground">Manage your profile information{isStudent ? " and view performance metrics" : ""}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:max-w-[70vw]">
         {/* Profile Overview Card */}
         <div className="md:col-span-1 space-y-6">
           <Card className="shadow-card border border-border/60 overflow-hidden">
