@@ -6,7 +6,7 @@ import * as React from "react"
 import type {
   ToastActionElement,
   ToastProps,
-} from "@/components/ui/toast"
+} from "./toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -187,7 +187,13 @@ function useToast() {
   return {
     ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss: (toastId?: string) => {
+      if (toastId !== undefined) {
+        dispatch({ type: "DISMISS_TOAST", toastId })
+      } else {
+        dispatch({ type: "DISMISS_TOAST" })
+      }
+    },
   }
 }
 
