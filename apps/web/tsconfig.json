@@ -1,9 +1,11 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es6"
+    ],
     "allowJs": true,
-    "target": "ES6",
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
@@ -19,13 +21,30 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
-      "@acu-apex/ui": ["../../packages/ui/src"],
-      "@acu-apex/utils": ["../../packages/utils/src"],
-      "@acu-apex/types": ["../../packages/types/src"]
-    }
+      "@/*": [
+        "./src/*"
+      ],
+      "@acu-apex/ui": [
+        "../../packages/ui/src"
+      ],
+      "@acu-apex/types": [
+        "../../packages/types/src"
+      ],
+      "@acu-apex/utils": [
+        "../../packages/utils/src"
+      ]
+    },
+    "target": "ES2017"
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-} 
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
