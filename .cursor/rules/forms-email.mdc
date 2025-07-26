@@ -1,0 +1,280 @@
+# Forms & Email Handling Guidelines
+
+## Email Service: Resend
+
+### Setup & Configuration
+```bash
+npm install resend
+```
+
+```env
+# .env.local
+RESEND_API_KEY=your_resend_api_key_here
+```
+
+### Basic Resend Usage
+```tsx
+// lib/resend.ts
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  from = 'hello@021.now'
+}: {
+  to: string
+  subject: string
+  html: string
+  from?: string
+}) {
+  try {
+    const data = await resend.emails.send({
+      from,
+      to,
+      subject,
+      html,
+    })
+    return { success: true, data }
+  } catch (error) {
+    return { success: false, error }
+  }
+}
+```
+
+## Form Handling with Server Actions
+
+### Server Action Pattern
+```tsx
+// app/actions/contact.ts
+'use server'
+
+import { sendEmail } from '@/lib/resend'
+import { z } from 'zod'
+
+const contactSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+})
+
+export async function submitContactForm(formData: FormData) {
+  const validatedFields = contactSchema.safeParse({
+    name: formData.get('name'),
+    email: formData.get('email'),
+    message: formData.get('message'),
+  })
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+    }
+  }
+
+  const { name, email, message } = validatedFields.data
+
+  // Send email
+  const result = await sendEmail({
+    to: 'team@021.now',
+    subject: `New contact from ${name}`,
+    html: `
+      <h2>New Contact Form Submission</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Message:</strong> ${message}</p>
+    `,
+  })
+
+  if (!result.success) {
+    return {
+      errors: { submit: ['Failed to send message. Please try again.'] },
+    }
+  }
+
+  return { success: true }
+}
+```
+
+### Client Component with Server Action
+```tsx
+'use client'
+
+import { useFormState, useFormStatus } from 'react-dom'
+import { submitContactForm } from '@/app/actions/contact'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  
+  return (
+    <Button type="submit" disabled={pending}>
+      {pending ? 'Sending...' : 'Schedule Intro Call'}
+    </Button>
+  )
+}
+
+export default function ContactForm() {
+  const [state, formAction] = useFormState(submitContactForm, null)
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <div>
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          required
+        />
+        {state?.errors?.name && (
+          <p className="text-red-500 text-sm">{state.errors.name[0]}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          required
+        />
+        {state?.errors?.email && (
+          <p className="text-red-500 text-sm">{state.errors.email[0]}</p>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="message">Message</Label>
+        <Textarea
+          id="message"
+          name="message"
+          required
+        />
+        {state?.errors?.message && (
+          <p className="text-red-500 text-sm">{state.errors.message[0]}</p>
+        )}
+      </div>
+
+      {state?.success && (
+        <p className="text-green-500">Message sent successfully!</p>
+      )}
+
+      {state?.errors?.submit && (
+        <p className="text-red-500">{state.errors.submit[0]}</p>
+      )}
+
+      <SubmitButton />
+    </form>
+  )
+}
+```
+
+## Email Templates
+
+### HTML Email Template
+```tsx
+// lib/email-templates.ts
+export function contactEmailTemplate({
+  name,
+  email,
+  message,
+}: {
+  name: string
+  email: string
+  message: string
+}) {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <title>New Contact - 021</title>
+      </head>
+      <body style="font-family: Inter, sans-serif; line-height: 1.6; color: #2d3748;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #3b82f6; font-family: 'Zen Dots', cursive;">021</h1>
+          <h2>New Contact Form Submission</h2>
+          
+          <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Name:</strong> ${name}</p>
+            <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+            <p><strong>Message:</strong></p>
+            <p style="white-space: pre-wrap;">${message}</p>
+          </div>
+          
+          <p>Best regards,<br>021 Website</p>
+        </div>
+      </body>
+    </html>
+  `
+}
+```
+
+## Calendly Integration
+
+### Embed Calendly Widget
+```tsx
+// components/CalendlyEmbed.tsx
+'use client'
+
+import { useEffect } from 'react'
+
+declare global {
+  interface Window {
+    Calendly: any
+  }
+}
+
+export default function CalendlyEmbed() {
+  useEffect(() => {
+    const script = document.createElement('script')
+    script.src = 'https://assets.calendly.com/assets/external/widget.js'
+    script.async = true
+    document.body.appendChild(script)
+
+    return () => {
+      document.body.removeChild(script)
+    }
+  }, [])
+
+  return (
+    <div
+      className="calendly-inline-widget"
+      data-url="https://calendly.com/your-username/intro-call"
+      style={{ minWidth: '320px', height: '630px' }}
+    />
+  )
+}
+```
+
+## Best Practices
+
+### Form Validation
+- Use **Zod** for schema validation
+- Validate on both client and server
+- Provide clear error messages
+- Handle loading states
+
+### Email Security
+- Never expose API keys client-side
+- Use environment variables
+- Validate all inputs before sending
+- Implement rate limiting for production
+
+### User Experience
+- Show loading states during submission
+- Provide success/error feedback
+- Make forms accessible (labels, ARIA attributes)
+- Progressive enhancement with JavaScript
+
+### Error Handling
+- Graceful fallbacks for failed submissions
+- Log errors for debugging
+- User-friendly error messages
+- Retry mechanisms where appropriate

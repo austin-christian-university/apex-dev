@@ -1,0 +1,75 @@
+---
+description: Use this rule when creating UI components
+globs: 
+alwaysApply: false
+---
+# Next.js & Shadcn/ui Guidelines
+
+## Next.js Best Practices
+- **Use App Router** (Next.js 13+) for new features
+- **Optimize Images**: Always use `next/image` component
+- **Font Optimization**: Use `next/font` for Google Fonts
+- **SEO**: Include proper meta tags and structured data
+
+### Font Implementation
+```tsx
+import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
+
+const inter = Inter({ subsets: ['latin'] })
+const zenDots = localFont({
+  src: './ZenDots-Regular.woff2',
+  variable: '--font-zen-dots'
+})
+```
+
+## Shadcn/ui Component Usage
+- **Installation**: Use `npx shadcn-ui@latest add [component]`
+- **Customization**: Modify components in `components/ui/` directory
+- **Consistent Styling**: Follow existing design tokens
+
+### Common Components
+- `Button` for all CTAs
+- `Card` for content sections
+- `Input` and `Label` for forms
+- `Separator` for section dividers
+
+### Example Button Usage
+```tsx
+import { Button } from "@/components/ui/button"
+
+<Button 
+  className="bg-blue-500 hover:bg-blue-600" 
+  size="lg"
+>
+  Schedule Intro Call
+</Button>
+```
+
+## Component Structure
+```
+components/
+├── ui/           # Shadcn components
+├── sections/     # Page sections (Hero, Problem, etc.)
+├── layout/       # Header, Footer, Layout
+└── common/       # Reusable components
+```
+
+## Styling Guidelines
+- **Tailwind First**: Use Tailwind classes for styling
+- **Custom CSS**: Only for complex animations or brand-specific styles
+- **Responsive**: Mobile-first approach with `sm:`, `md:`, `lg:` breakpoints
+- **Consistency**: Use design tokens for spacing, colors, typography
+
+## Performance Optimizations
+- **Dynamic Imports**: For heavy components
+- **Image Optimization**: Proper sizing and formats
+- **Bundle Analysis**: Regular bundle size monitoring
+- **Core Web Vitals**: Aim for green scores
+
+## Code Organization
+- **Atomic Design**: Build from smallest to largest components
+- **Single Responsibility**: One component, one purpose
+- **TypeScript**: Proper typing for all props and state
+- **Error Boundaries**: Implement for production resilience
+

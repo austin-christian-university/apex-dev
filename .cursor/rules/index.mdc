@@ -1,0 +1,99 @@
+---
+description: Index of all cursor rules for the apex-dev project
+globs: **/*
+alwaysApply: true
+---
+
+# Cursor Rules Index
+
+## **Core Development Rules**
+
+### **[cursor-rules.mdc](mdc:.cursor/rules/cursor-rules.mdc)**
+- **Purpose**: Rule formatting and structure guidelines
+- **Scope**: All cursor rules
+- **Key Topics**: Rule structure, file references, code examples, maintenance guidelines
+
+### **[project-structure.mdc](mdc:.cursor/rules/project-structure.mdc)**
+- **Purpose**: Monorepo organization and file structure
+- **Scope**: Project-wide file organization
+- **Key Topics**: Apps, packages, services, naming conventions, import patterns
+
+### **[tech-stack.mdc](mdc:.cursor/rules/tech-stack.mdc)**
+- **Purpose**: Technology stack documentation and best practices
+- **Scope**: Next.js, Supabase, TypeScript, Tailwind CSS
+- **Key Topics**: App Router, authentication, data fetching, performance optimization
+
+## **UI & Component Rules**
+
+### **[nextjs-shadcn.mdc](mdc:.cursor/rules/nextjs-shadcn.mdc)**
+- **Purpose**: Shadcn/ui component library guidelines
+- **Scope**: UI component development
+- **Key Topics**: Component patterns, styling, accessibility, responsive design
+
+## **Feature-Specific Rules**
+
+### **[forms-email.mdc](mdc:.cursor/rules/forms-email.mdc)**
+- **Purpose**: Form handling and email functionality
+- **Scope**: Form validation, email services, user interactions
+- **Key Topics**: Form validation, email templates, error handling
+
+## **Development Workflow Rules**
+
+### **[task-list.mdc](mdc:.cursor/rules/task-list.mdc)**
+- **Purpose**: Task management and development workflow
+- **Scope**: Project planning and execution
+- **Key Topics**: Task organization, progress tracking, development phases
+
+### **[general-reminders.mdc](mdc:.cursor/rules/general-reminders.mdc)**
+- **Purpose**: General development reminders and best practices
+- **Scope**: Overall development guidelines
+- **Key Topics**: Code quality, testing, documentation, security
+
+## **Self-Improvement Rules**
+
+### **[self_improve.mdc](mdc:.cursor/rules/self_improve.mdc)**
+- **Purpose**: Rule improvement and maintenance guidelines
+- **Scope**: Rule evolution and updates
+- **Key Topics**: Pattern recognition, rule updates, continuous improvement
+
+## **Rule Usage Guidelines**
+
+### **When to Apply Each Rule**
+- **Always Apply**: `cursor-rules.mdc`, `project-structure.mdc`, `tech-stack.mdc`
+- **UI Development**: `nextjs-shadcn.mdc`
+- **Form/Email Features**: `forms-email.mdc`
+- **Project Planning**: `task-list.mdc`
+- **Code Quality**: `general-reminders.mdc`
+- **Rule Maintenance**: `self_improve.mdc`
+
+### **Rule Dependencies**
+- All rules depend on `cursor-rules.mdc` for proper formatting
+- `project-structure.mdc` provides foundation for file organization
+- `tech-stack.mdc` builds on project structure with technology specifics
+- `nextjs-shadcn.mdc` extends tech stack with UI-specific guidelines
+
+### **Cross-References**
+- Rules reference each other using `[filename](mdc:path)` format
+- Related rules are linked for easy navigation
+- Examples reference actual code files when possible
+
+## **Rule Maintenance**
+
+### **Update Triggers**
+- New code patterns not covered by existing rules
+- Technology stack changes
+- Project structure modifications
+- Common development questions or issues
+
+### **Quality Standards**
+- Rules must be actionable and specific
+- Examples should come from actual codebase
+- References must be up-to-date
+- Patterns should be consistently enforced
+
+---
+
+**Related Rules:**
+- All rules in `.cursor/rules/` directory
+- Project documentation in `README.md`
+- Configuration files in root and package directories

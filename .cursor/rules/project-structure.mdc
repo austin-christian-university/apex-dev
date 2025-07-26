@@ -1,0 +1,132 @@
+---
+description: Project structure and organization rules for the apex-dev monorepo
+globs: **/*
+alwaysApply: true
+---
+
+# Project Structure Rules
+
+## **Monorepo Organization**
+- **Root Level**: Contains workspace configuration, shared tooling, and top-level documentation
+  - `package.json` - Root workspace configuration
+  - `turbo.json` - Turborepo configuration for build orchestration
+  - `pnpm-workspace.yaml` - PNPM workspace configuration
+  - `components.json` - Shadcn/ui configuration
+  - `env.template` - Environment variables template
+
+## **Apps Directory Structure**
+- **Location**: `apps/`
+- **Purpose**: Contains all application code (web, mobile, etc.)
+
+### **Web App Structure** (`apps/web/`)
+- **App Router**: Uses Next.js 13+ App Router with route groups
+  - `app/page.tsx` - Landing/home page
+  - `app/layout.tsx` - Root layout
+  - `app/globals.css` - Global styles
+  - `app/(dashboard)/` - Route group for authenticated dashboard pages
+    - `layout.tsx` - Dashboard layout wrapper
+    - `dashboard/page.tsx` - Main dashboard
+    - `students/page.tsx` - Student management
+    - `financial-overview/page.tsx` - Financial data
+    - `my-profile/page.tsx` - User profile
+    - `settings/page.tsx` - App settings
+    - `calendar/page.tsx` - Calendar view
+    - `course-records/page.tsx` - Course management
+  - `app/api/` - API routes
+    - `students/` - Student-related endpoints
+    - `admins/` - Admin-related endpoints
+    - `upload/` - File upload endpoints
+
+- **Components**: `components/` - App-specific components
+  - Business logic components (modals, dialogs, forms)
+  - Data visualization components (charts, tables)
+  - Layout components (shell, selectors)
+
+- **Supporting Directories**:
+  - `lib/` - Utility functions and configurations
+  - `hooks/` - Custom React hooks
+  - `data/` - Static data files (JSON)
+  - `styles/` - Additional styling files
+  - `public/` - Static assets
+
+### **Mobile App Structure** (`apps/mobile/`)
+- **Purpose**: React Native/Expo mobile application
+- **Configuration**: `app.json`, `package.json`
+
+## **Packages Directory Structure**
+- **Location**: `packages/`
+- **Purpose**: Shared libraries and configurations
+
+### **UI Package** (`packages/ui/`)
+- **Purpose**: Shared UI components using Shadcn/ui
+- **Structure**:
+  - `src/ui/` - All UI components (accordion, button, card, etc.)
+  - `src/lib/utils.ts` - Utility functions
+  - `src/index.ts` - Main export file
+  - `components.json` - Shadcn configuration
+  - `tailwind.config.js` - Tailwind CSS configuration
+
+### **Config Package** (`packages/config/`)
+- **Purpose**: Shared configuration files
+- **Structure**:
+  - `eslint/` - ESLint configuration
+  - `tailwind/` - Tailwind CSS configuration
+  - `typescript/` - TypeScript configuration
+
+### **Types Package** (`packages/types/`)
+- **Purpose**: Shared TypeScript type definitions
+- **Structure**:
+  - `src/index.ts` - Type exports
+
+### **Utils Package** (`packages/utils/`)
+- **Purpose**: Shared utility functions
+- **Structure**:
+  - `src/index.ts` - Utility exports
+
+## **Services Directory Structure**
+- **Location**: `services/`
+- **Purpose**: Backend services and APIs
+
+### **Lambda Services** (`services/lambdas/`)
+- **Structure**: Each service follows the same pattern
+  - `package.json` - Service dependencies
+  - `serverless.yml` - Serverless Framework configuration
+  - `tsconfig.json` - TypeScript configuration
+  - `src/handlers/` - Lambda function handlers
+  - `src/utils/` - Service-specific utilities
+
+### **API Services** (`services/`)
+- **auth-api/`** - Authentication service
+- **scores-api/`** - Scoring service
+
+## **Tools Directory**
+- **Location**: `tools/`
+- **Purpose**: Development tools and scripts
+
+## **File Naming Conventions**
+- **Components**: kebab-case (e.g., `student-scores-table.tsx`)
+- **Pages**: kebab-case (e.g., `financial-overview/page.tsx`)
+- **API Routes**: kebab-case (e.g., `course-records/route.ts`)
+- **Handlers**: camelCase (e.g., `getStudent.ts`)
+- **Utilities**: kebab-case (e.g., `use-toast.ts`)
+
+## **Import Patterns**
+- **UI Components**: Import from `@/components/ui/` or `@/ui/`
+- **Shared Utils**: Import from `@/lib/utils`
+- **Custom Hooks**: Import from `@/hooks/`
+- **Types**: Import from `@/types` or `@/lib/types`
+
+## **Configuration Files**
+- **Root Level**: `package.json`, `turbo.json`, `pnpm-workspace.yaml`
+- **Apps**: Individual `package.json`, `tsconfig.json`, `tailwind.config.js`
+- **Packages**: Individual `package.json`, `tsconfig.json`
+- **Services**: Individual `package.json`, `serverless.yml`, `tsconfig.json`
+
+## **Best Practices**
+- **Route Groups**: Use parentheses for route groups in Next.js (e.g., `(dashboard)`)
+- **API Routes**: Follow RESTful conventions in `app/api/`
+- **Component Organization**: Group related components in feature folders
+- **Type Safety**: Use TypeScript throughout the monorepo
+- **Styling**: Use Tailwind CSS with Shadcn/ui components
+- **State Management**: Use React hooks and context for state
+- **Data Fetching**: Use server-side rendering and API routes

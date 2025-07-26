@@ -1,0 +1,376 @@
+---
+description: Core development guidelines for Next.js App Router, Supabase integration, and monorepo best practices
+globs: apps/**/*.{ts,tsx,js,jsx}, packages/**/*.{ts,tsx,js,jsx}, services/**/*.{ts,tsx,js,jsx}
+alwaysApply: true
+---
+
+# Next.js App Router Best Practices
+
+## **Server Components First**
+- Use server components by default for better performance and SEO
+- Implement client components only when necessary (interactivity, hooks, browser APIs)
+- Leverage the new file-based routing system in the `app` directory
+
+## **File Conventions & Structure**
+```typescript
+// ✅ DO: Use proper file conventions
+app/
+  layout.tsx          // Root layout (replaces _app.js and _document.js)
+  page.tsx            // Home page
+  loading.tsx         // Loading UI for route segments
+  error.tsx           // Error UI for route segments
+  not-found.tsx       // 404 page
+  globals.css         // Global styles
+  lib/
+    utils.ts          // Utility functions
+  components/         // Shared components
+```
+
+## **Data Fetching Patterns**
+```typescript
+// ✅ DO: Use native fetch with caching strategies
+export default async function Page() {
+  // Static data (similar to getStaticProps)
+  const staticData = await fetch('https://api.example.com/data', { 
+    cache: 'force-cache' 
+  })
+  
+  // Dynamic data (similar to getServerSideProps)
+  const dynamicData = await fetch('https://api.example.com/data', { 
+    cache: 'no-store' 
+  })
+  
+  // Time-based revalidation
+  const revalidatedData = await fetch('https://api.example.com/data', {
+    next: { revalidate: 60 }
+  })
+}
+```
+
+## **Metadata & SEO**
+```typescript
+// ✅ DO: Use built-in metadata API
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Page Title',
+  description: 'Page description',
+  openGraph: {
+    title: 'Open Graph Title',
+    description: 'Open Graph Description',
+  }
+}
+```
+
+# Supabase Integration Best Practices
+
+## **Client Setup**
+```typescript
+// ✅ DO: Use @supabase/ssr for Next.js integration
+import { createBrowserClient } from '@supabase/ssr'
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+}
+```
+
+```typescript
+// ✅ DO: Server-side client with cookie management
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+
+export async function createClient() {
+  const cookieStore = await cookies()
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Ignore if called from Server Component
+          }
+        }
+      }
+    }
+  )
+}
+```
+
+## **Authentication Patterns**
+```typescript
+// ✅ DO: Server Actions for auth
+'use server'
+
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+
+export async function login(formData: FormData) {
+  const supabase = await createClient()
+  
+  const { error } = await supabase.auth.signInWithPassword({
+    email: formData.get('email') as string,
+    password: formData.get('password') as string,
+  })
+  
+  if (error) redirect('/error')
+  
+  revalidatePath('/', 'layout')
+  redirect('/dashboard')
+}
+```
+
+## **Route Protection**
+```typescript
+// ✅ DO: Protect routes with server-side auth check
+import { redirect } from 'next/navigation'
+import { createClient } from '@/utils/supabase/server'
+
+export default async function ProtectedPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    redirect('/login')
+  }
+  
+  return <div>Protected content for {user.email}</div>
+}
+```
+
+# Monorepo Structure Guidelines
+
+## **Project Organization**
+```
+apex-dev/
+├── apps/                    # Applications
+│   ├── web/                # Next.js web app
+│   └── mobile/             # React Native app
+├── packages/               # Shared packages
+│   ├── ui/                 # Shadcn UI components
+│   ├── types/              # Shared TypeScript types
+│   ├── config/             # Shared configurations
+│   └── utils/              # Shared utilities
+└── services/               # Backend services
+    ├── auth-api/           # Authentication API
+    ├── scores-api/         # Scores API
+    └── students-api/       # Students API
+```
+
+## **Package Dependencies**
+```json
+// ✅ DO: Use workspace dependencies
+{
+  "dependencies": {
+    "@apex-dev/ui": "workspace:*",
+    "@apex-dev/types": "workspace:*",
+    "@apex-dev/utils": "workspace:*"
+  }
+}
+```
+
+# UI Component Standards
+
+## **Shadcn Integration**
+- Use Shadcn component library and follow Shadcn best practices
+- Prefer Shadcn components over custom implementations when available
+- Follow established component patterns in [nextjs-shadcn.mdc](mdc:.cursor/rules/nextjs-shadcn.mdc)
+
+## **Component Structure**
+```typescript
+// ✅ DO: Proper component organization
+'use client'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface ComponentProps {
+  title: string
+  children: React.ReactNode
+}
+
+export function MyComponent({ title, children }: ComponentProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {children}
+      </CardContent>
+    </Card>
+  )
+}
+```
+
+# Performance Optimization
+
+## **Image Optimization**
+```typescript
+// ✅ DO: Use Next.js Image component
+import Image from 'next/image'
+
+export function OptimizedImage() {
+  return (
+    <Image
+      src="/hero.jpg"
+      alt="Hero image"
+      width={1200}
+      height={600}
+      priority
+      className="rounded-lg"
+    />
+  )
+}
+```
+
+## **Loading States**
+```typescript
+// ✅ DO: Implement proper loading states
+export default function Loading() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  )
+}
+```
+
+# Error Handling
+
+## **Error Boundaries**
+```typescript
+// ✅ DO: Use error.tsx for route-level error handling
+'use client'
+
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px]">
+      <h2 className="text-xl font-semibold mb-4">Something went wrong!</h2>
+      <Button onClick={reset}>Try again</Button>
+    </div>
+  )
+}
+```
+
+# Environment Configuration
+
+## **Environment Variables**
+```bash
+# ✅ DO: Use proper environment variable naming
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
+```
+
+## **Type Safety**
+- Use TypeScript for all new code
+- Generate Supabase types: `npx supabase gen types typescript --project-id your-project-id > types/supabase.ts`
+- Follow existing ESLint and TypeScript configurations
+
+# Testing Guidelines
+
+## **Test Coverage**
+- Write tests for critical functionality
+- Use established testing patterns in the project
+- Ensure good test coverage for API endpoints
+- Test both server and client components
+
+## **Component Testing**
+```typescript
+// ✅ DO: Test components with proper setup
+import { render, screen } from '@testing-library/react'
+import { MyComponent } from './MyComponent'
+
+describe('MyComponent', () => {
+  it('renders correctly', () => {
+    render(<MyComponent title="Test" />)
+    expect(screen.getByText('Test')).toBeInTheDocument()
+  })
+})
+```
+
+# Code Style & Standards
+
+## **Import Organization**
+```typescript
+// ✅ DO: Organize imports properly
+// 1. React and Next.js imports
+import { useState } from 'react'
+import Link from 'next/link'
+
+// 2. Third-party libraries
+import { Button } from '@/components/ui/button'
+
+// 3. Local imports
+import { MyComponent } from './MyComponent'
+```
+
+## **Naming Conventions**
+- Use PascalCase for components: `UserProfile.tsx`
+- Use camelCase for functions and variables: `getUserData`
+- Use kebab-case for files: `user-profile.tsx`
+- Use UPPER_SNAKE_CASE for constants: `API_ENDPOINTS`
+
+# Security Best Practices
+
+## **Authentication**
+- Always validate user sessions server-side
+- Use Row Level Security (RLS) in Supabase
+- Implement proper error handling without exposing sensitive information
+- Use environment variables for all sensitive configuration
+
+## **Data Validation**
+```typescript
+// ✅ DO: Validate data on both client and server
+import { z } from 'zod'
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+})
+
+export async function createUser(data: unknown) {
+  const validatedData = UserSchema.parse(data)
+  // Process validated data
+}
+```
+
+# Deployment & CI/CD
+
+## **Build Optimization**
+- Use Next.js build optimization features
+- Implement proper caching strategies
+- Optimize bundle size with dynamic imports
+- Use proper environment variable management
+
+## **Monitoring**
+- Implement error tracking (Sentry integration available)
+- Monitor performance metrics
+- Set up proper logging for debugging
+- Use Supabase analytics for database performance
+
+---
+
+**Related Rules:**
+- [nextjs-shadcn.mdc](mdc:.cursor/rules/nextjs-shadcn.mdc) - UI component guidelines
+- [tech-stack.mdc](mdc:.cursor/rules/tech-stack.mdc) - Technology stack details
+- [forms-email.mdc](mdc:.cursor/rules/forms-email.mdc) - Form and email handling 

@@ -1,0 +1,188 @@
+---
+description: Layout of files/folders for next.js app tech stack.
+globs: 
+alwaysApply: false
+---
+# 021 Tech Stack Guidelines
+
+## Core Framework: Next.js App Router (v13.4+)
+
+**CRITICAL: This project uses Next.js App Router exclusively, NOT Pages Router**
+
+### App Router Structure
+```
+app/
+├── layout.tsx          # Root layout (required)
+├── page.tsx           # Home page (/)
+├── globals.css        # Global styles
+├── components/        # Shared components
+├── sections/          # Page sections
+└── api/              # API routes (optional)
+```
+
+### App Router Key Concepts
+- **Server Components by default** - components run on server unless marked with `'use client'`
+- **File-based routing** - `app/page.tsx` = `/`, `app/about/page.tsx` = `/about`
+- **Layouts** - shared UI that wraps multiple pages
+- **Data Fetching** - use `fetch()` with caching strategies in async components
+
+### Essential App Router Patterns
+
+#### 1. Root Layout (Required)
+```tsx
+// app/layout.tsx
+import { Inter } from 'next/font/google'
+import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
+    </html>
+  )
+}
+```
+
+#### 2. Page Component
+```tsx
+// app/page.tsx
+export default function Page() {
+  return (
+    <main>
+      <h1>021 Landing Page</h1>
+    </main>
+  )
+}
+```
+
+#### 3. Client Components (when needed)
+```tsx
+'use client' // Required for interactivity/hooks
+
+import { useState } from 'react'
+
+export default function InteractiveComponent() {
+  const [state, setState] = useState(false)
+  return <button onClick={() => setState(!state)}>Toggle</button>
+}
+```
+
+#### 4. Server-Side Data Fetching
+```tsx
+// Server Component with data fetching
+export default async function DataComponent() {
+  const data = await fetch('https://api.example.com/data', {
+    cache: 'no-store' // or 'force-cache' for static
+  })
+  const result = await data.json()
+  
+  return <div>{result.message}</div>
+}
+```
+
+## Complete Tech Stack
+
+### Frontend Framework
+- **Next.js 13.4+** with App Router
+- **React 18+** with Server Components
+- **TypeScript** for type safety
+
+### Styling & UI
+- **Tailwind CSS** for utility-first styling
+- **Shadcn/ui** for high-quality components
+- **CSS Modules** for component-scoped styles (when needed)
+
+### Fonts & Assets
+- **Google Fonts** via `next/font` optimization
+  - **Zen Dots** for brand name "021" only
+  - **Inter** for body text
+- **Next.js Image** for optimized images
+
+### Forms & Email
+- **Resend** for email functionality
+- **React Hook Form** (if complex forms needed)
+- **Server Actions** for form handling
+
+### Development Tools
+- **ESLint** + **Prettier** for code quality
+- **TypeScript** strict mode
+- **Tailwind CSS IntelliSense**
+
+### Deployment & Hosting
+- **Vercel** for deployment (optimized for Next.js)
+- **Domain**: 021.now
+
+## App Router Migration Notes
+
+### DON'T Use (Pages Router patterns):
+- ❌ `pages/` directory
+- ❌ `getServerSideProps`
+- ❌ `getStaticProps`
+- ❌ `_app.js` or `_document.js`
+- ❌ `useRouter` from `next/router`
+
+### DO Use (App Router patterns):
+- ✅ `app/` directory
+- ✅ `fetch()` with caching options
+- ✅ `layout.tsx` for layouts
+- ✅ `useRouter` from `next/navigation`
+- ✅ Server Components by default
+- ✅ `'use client'` when client features needed
+
+## Component Architecture
+
+### Component Organization
+```
+components/
+├── ui/              # Shadcn components (Button, Input, etc.)
+├── sections/        # Page sections (Hero, Problem, Solution)
+├── layout/          # Layout components (Header, Footer)
+└── common/          # Reusable utilities
+```
+
+### Naming Conventions
+- **Components**: PascalCase (`HeroSection.tsx`)
+- **Files**: kebab-case for non-components (`tech-stack.mdc`)
+- **Props**: camelCase with TypeScript interfaces
+
+### Performance Patterns
+- **Server Components** for static content
+- **Client Components** only when needed (forms, interactions)
+- **Dynamic imports** for heavy components
+- **Image optimization** with `next/image`
+- **Font optimization** with `next/font`
+
+## Integration Specifics
+
+### Shadcn/ui Setup
+```bash
+npx shadcn-ui@latest init
+npx shadcn-ui@latest add button card input label
+```
+
+### Tailwind Configuration
+```js
+// tailwind.config.js
+module.exports = {
+  content: [
+    './app/**/*.{js,ts,jsx,tsx,mdx}', // App Router
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  // ... rest of config
+}
+```
+
+### Environment Variables
+```env
+# .env.local
+RESEND_API_KEY=your_key_here
+NEXT_PUBLIC_DOMAIN=021.now
+```
+
+This stack prioritizes performance, developer experience, and modern React patterns through Next.js App Router.
