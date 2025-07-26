@@ -1,0 +1,73 @@
+service: acu-apex-students-api
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    STAGE: ${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/acu-apex-students-${self:provider.stage}"
+
+functions:
+  getStudents:
+    handler: src/handlers/getStudents.handler
+    events:
+      - http:
+          path: /students
+          method: get
+          cors: true
+
+  getStudent:
+    handler: src/handlers/getStudent.handler
+    events:
+      - http:
+          path: /students/{id}
+          method: get
+          cors: true
+
+  createStudent:
+    handler: src/handlers/createStudent.handler
+    events:
+      - http:
+          path: /students
+          method: post
+          cors: true
+
+  updateStudent:
+    handler: src/handlers/updateStudent.handler
+    events:
+      - http:
+          path: /students/{id}
+          method: put
+          cors: true
+
+  deleteStudent:
+    handler: src/handlers/deleteStudent.handler
+    events:
+      - http:
+          path: /students/{id}
+          method: delete
+          cors: true
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 3001
+    noPrependStageInUrl: true 
