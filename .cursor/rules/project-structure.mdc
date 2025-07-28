@@ -6,6 +6,34 @@ alwaysApply: true
 
 # Project Structure Rules
 
+## **Monorepo Reusability Principles**
+- **Always Consider Cross-App Reusability**: Before implementing any feature, component, or utility, evaluate if it could be useful across multiple apps
+- **Package-First Approach**: When creating new functionality, consider if it belongs in a shared package rather than app-specific code
+- **Shared Dependencies**: Use workspace dependencies (`workspace:*`) to share code between apps and packages
+- **Consistent Patterns**: Maintain consistent patterns across all apps for easier maintenance and developer experience
+
+### **When to Extract to Packages**
+- **UI Components**: Any component used in 2+ apps should be in `packages/ui/`
+- **Utilities**: Common utility functions should be in `packages/utils/`
+- **Types**: Shared TypeScript interfaces and types belong in `packages/types/`
+- **Configurations**: ESLint, TypeScript, and other configs should be in `packages/config/`
+- **Business Logic**: Domain-specific logic used across apps should be extracted to packages
+
+### **Import Strategy**
+```typescript
+// ✅ DO: Use workspace dependencies
+{
+  "dependencies": {
+    "@apex-dev/ui": "workspace:*",
+    "@apex-dev/types": "workspace:*",
+    "@apex-dev/utils": "workspace:*"
+  }
+}
+
+// ❌ DON'T: Duplicate code across apps
+// Avoid copying components or utilities between apps
+```
+
 ## **Monorepo Organization**
 - **Root Level**: Contains workspace configuration, shared tooling, and top-level documentation
   - `package.json` - Root workspace configuration
