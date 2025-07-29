@@ -12,71 +12,74 @@
     --brand-white: 0 0% 100%;       /* #FFFFFF Pantone Cool Gray 1 C */
     --brand-green: 146 100% 17%;    /* #005600 Pantone 2427 C */
     --brand-maroon: 350 77% 22%;    /* #6b0e18 Pantone 1955 C */
+    --apex-black: #0A0D11;
+    --apex-white: #FFFAF0;
+    --apex-blue: #A1C6E9;
 
     /* Typography (Branding) */
     --font-subtitle: Superior Text, sans-serif; /* Superior Text for subtitles and smaller portions of text */
 
-    /* Semantic Colors (Light) */
-    --background: var(--brand-white);
-    --foreground: var(--brand-black);
+    /* Semantic Colors (Light) - Using Apex colors */
+    --background: var(--apex-white);
+    --foreground: var(--apex-black);  
 
-    --card: var(--brand-white);
-    --card-foreground: var(--brand-black);
+    --card: var(--apex-white);
+    --card-foreground: var(--apex-black);
 
-    --popover: var(--brand-white);
-    --popover-foreground: var(--brand-black);
+    --popover: var(--apex-white);
+    --popover-foreground: var(--apex-black);
 
-    --primary: var(--brand-black);
-    --primary-foreground: var(--brand-white);
+    --primary: var(--apex-black);
+    --primary-foreground: var(--apex-white);
 
-    --secondary: var(--brand-navy);
-    --secondary-foreground: var(--brand-white);
+    --secondary: var(--apex-blue);
+    --secondary-foreground: var(--apex-black);
 
     --muted: var(--brand-bronze);
     --muted-foreground: var(--brand-black);
 
-    --accent: var(--brand-green);
-    --accent-foreground: var(--brand-white);
+    --accent: var(--apex-blue);
+    --accent-foreground: var(--apex-black);
 
     --destructive: var(--brand-maroon);
     --destructive-foreground: var(--brand-white);
 
     --border: var(--brand-navy);
     --input: var(--brand-navy);
-    --ring: var(--brand-bronze);
+    --ring: var(--apex-blue);
 
     --radius: 0.5rem;
   }
 
   .dark {
-    /* Semantic Colors (Dark) */
-    --background: var(--brand-navy);
-    --foreground: var(--brand-white);
+    /* Semantic Colors (Dark) - Using Apex colors */
+    --background: var(--apex-black);
+    --foreground: var(--apex-white);
 
-    --card: var(--brand-navy);
-    --card-foreground: var(--brand-white);
+    --card: var(--apex-black);
+    --card-foreground: var(--apex-white);
 
-    --popover: var(--brand-navy);
-    --popover-foreground: var(--brand-white);
+    --popover: var(--apex-black);
+    --popover-foreground: var(--apex-white);
 
-    --primary: var(--brand-white);
-    --primary-foreground: var(--brand-black);
+    --primary: var(--apex-white);
+    --primary-foreground: var(--apex-black);
 
-    --secondary: var(--brand-bronze);
-    --secondary-foreground: var(--brand-black);
+    --secondary: var(--apex-blue);
+    --secondary-foreground: var(--apex-black);
 
     --muted: var(--brand-black);
     --muted-foreground: var(--brand-white);
 
-    --accent: var(--brand-green);
-    --accent-foreground: var(--brand-white);
+    --accent: var(--apex-blue);
+    --accent-foreground: var(--apex-black);
 
     --destructive: var(--brand-maroon);
     --destructive-foreground: var(--brand-white);
 
     --border: var(--brand-bronze);
     --input: var(--brand-bronze);
-    --ring: var(--brand-green);
+    --ring: var(--apex-blue);
   }
 }
 
