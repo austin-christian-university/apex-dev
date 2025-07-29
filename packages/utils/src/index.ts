@@ -6,6 +6,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function formatPhoneNumber(value: string): string {
+  // Remove all non-digits
+  const phoneNumber = value.replace(/\D/g, '')
+  
+  // Format as (XXX) XXX-XXXX
+  if (phoneNumber.length === 10) {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6)}`
+  }
+  
+  // Return original if not 10 digits
+  return value
+}
+
 // Date formatting utilities
 export function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString('en-US', {

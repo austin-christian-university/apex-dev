@@ -1,0 +1,14 @@
+[
+  {
+    "id": "admin1",
+    "name": "admin",
+    "email": "admin@acu.edu",
+    "password": "admin",
+    "phoneNumber": "(512) 555-0001",
+    "role": "admin",
+    "bio": "Administrator of The Den dashboard system. Responsible for managing student records, company assignments, and system maintenance.",
+    "company": "admin",
+    "companyRole": "admin",
+    "avatarUrl": null
+  }
+] 
