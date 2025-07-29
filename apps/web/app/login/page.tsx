@@ -2,23 +2,13 @@
 
 import { LoginDialog } from "@/components/auth/login-dialog"
 import { Button } from "@acu-apex/ui"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useEffect } from "react"
 
 export default function LoginPage() {
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
   const { user, loading } = useAuth()
-  const router = useRouter()
-  
-  // Redirect to dashboard if user is already authenticated
-  useEffect(() => {
-    if (!loading && user) {
-      const redirectPath = localStorage.getItem('authRedirectPath') || '/dashboard'
-      router.push(redirectPath as any)
-    }
-  }, [user, loading, router])
   
   // Show loading while checking auth state
   if (loading) {
@@ -30,6 +20,7 @@ export default function LoginPage() {
   }
   
   // Don't show login page if user is already authenticated
+  // AuthProvider will handle the redirect automatically
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

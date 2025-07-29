@@ -128,8 +128,7 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
           // Success - close dialog and let auth provider handle state change
           setIsOpen(false)
           if (onLoginSuccess) onLoginSuccess()
-          // Auth provider will automatically update user state
-          // The dashboard will handle redirect based on auth state
+          // Auth provider will automatically handle redirect based on auth state change
         }
       }
     }
