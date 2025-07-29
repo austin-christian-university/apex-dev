@@ -84,10 +84,34 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInScale {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+@keyframes gentleGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(161, 198, 233, 0.1); }
+  50% { text-shadow: 0 0 30px rgba(161, 198, 233, 0.2); }
 }
 
 .animate-fade-in {
   animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 1.2s ease-out forwards;
+}
+
+.animate-gentle-glow {
+  animation: gentleGlow 3s ease-in-out infinite;
 } 
