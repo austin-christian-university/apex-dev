@@ -3,11 +3,9 @@
 import { Button } from "@acu-apex/ui"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@acu-apex/ui"
 import { useAuth } from "@/components/auth/auth-provider"
-import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
   const { user, loading, signOut } = useAuth()
-  const router = useRouter()
   
   if (loading) {
     return (
@@ -17,9 +15,8 @@ export default function DashboardPage() {
     )
   }
   
+  // AuthProvider will handle redirect if user is not authenticated
   if (!user) {
-    // Redirect to login if not authenticated
-    router.push('/login')
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div>Redirecting to login...</div>
