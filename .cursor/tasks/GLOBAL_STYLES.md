@@ -28,6 +28,12 @@ A comprehensive global styling system for the ACU Apex dashboard that enables ea
 - [x] Set up component-specific global styles
 - [x] Update Tailwind configuration to work with global variables
 - [x] Document the global styling system
+- [x] Update brand colors to soft black primary, almost white secondary, faded blue accent
+- [x] Switch to Google Roboto font family for modern sans-serif styling
+- [x] Configure dark-first theme approach
+- [x] Update documentation with new brand strategy
+- [x] Fix CSS custom property references to use direct RGB values consistently
+- [x] Resolve red background issue by correcting variable definitions
 
 ## Future Tasks
 

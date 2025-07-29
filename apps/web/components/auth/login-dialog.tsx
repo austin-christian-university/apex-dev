@@ -41,7 +41,9 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
   // Save current path to localStorage when dialog opens
   useEffect(() => {
     if (isOpen) {
-      localStorage.setItem('authRedirectPath', pathname || '/')
+      // Don't save login or root paths as redirect destination
+      const redirectPath = pathname === '/login' || pathname === '/' ? '/dashboard' : pathname
+      localStorage.setItem('authRedirectPath', redirectPath)
     }
   }, [isOpen, pathname])
 

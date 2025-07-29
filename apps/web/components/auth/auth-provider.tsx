@@ -39,23 +39,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       const newUser = session?.user ?? null
+      console.log('Auth state changed:', { newUser: !!newUser, pathname })
       setUser(newUser)
       
-              // Handle redirects based on auth state
-        if (newUser) {
-          // User is authenticated
-          if (pathname === '/login') {
-            // Redirect from login to dashboard or saved path
-            const redirectPath = localStorage.getItem('authRedirectPath') || '/dashboard'
+      // Handle redirects based on auth state
+      if (newUser) {
+        // User is authenticated
+        console.log('User authenticated, checking if on login page:', pathname === '/login')
+        if (pathname === '/login') {
+          // Redirect from login to dashboard or saved path
+          const redirectPath = localStorage.getItem('authRedirectPath') || '/dashboard'
+          console.log('Attempting redirect to:', redirectPath)
+          
+          // Use setTimeout to avoid potential race conditions
+          setTimeout(() => {
             router.push(redirectPath as any)
-          }
-        } else {
-          // User is not authenticated
-          if (pathname.startsWith('/dashboard')) {
-            // Redirect from protected routes to login
-            router.push('/login')
-          }
+          }, 100)
         }
+      } else {
+        // User is not authenticated
+        console.log('User not authenticated, checking if on protected route:', pathname.startsWith('/dashboard'))
+        if (pathname.startsWith('/dashboard')) {
+          // Redirect from protected routes to login
+          console.log('Redirecting to login from protected route')
+          router.push('/login')
+        }
+      }
     })
 
     return () => subscription.unsubscribe()

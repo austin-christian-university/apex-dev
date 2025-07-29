@@ -1,12 +1,18 @@
 import type { Metadata } from "next"
-import { Mona_Sans as FontSans } from "next/font/google"
+import { Roboto, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { cn } from "@acu-apex/utils"
 import { AuthProvider } from "@/components/auth/auth-provider"
 
-const fontSans = FontSans({
+const roboto = Roboto({
   subsets: ["latin"],
-  variable: "--font-sans",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
+})
+
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
 })
 
 export const metadata: Metadata = {
@@ -29,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+      <body className={cn("min-h-screen bg-background font-primary antialiased", roboto.variable, robotoMono.variable)}>
         <AuthProvider>
           {children}
         </AuthProvider>
