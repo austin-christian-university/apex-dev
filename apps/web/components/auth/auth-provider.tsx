@@ -47,8 +47,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // User is authenticated
         console.log('User authenticated, checking if on login page:', pathname === '/login')
         if (pathname === '/login') {
-          // Redirect from login to dashboard or saved path
-          const redirectPath = localStorage.getItem('authRedirectPath') || '/dashboard'
+          // Redirect from login to home or saved path
+          const redirectPath = localStorage.getItem('authRedirectPath') || '/home'
           console.log('Attempting redirect to:', redirectPath)
           
           // Use setTimeout to avoid potential race conditions
@@ -58,8 +58,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         // User is not authenticated
-        console.log('User not authenticated, checking if on protected route:', pathname.startsWith('/dashboard'))
-        if (pathname.startsWith('/dashboard')) {
+        const isProtectedRoute = pathname === '/home' || pathname.startsWith('/company') || pathname.startsWith('/profile')
+        console.log('User not authenticated, checking if on protected route:', isProtectedRoute)
+        if (isProtectedRoute) {
           // Redirect from protected routes to login
           console.log('Redirecting to login from protected route')
           router.push('/login')

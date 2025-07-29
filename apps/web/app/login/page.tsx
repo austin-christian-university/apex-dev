@@ -24,7 +24,7 @@ export default function LoginPage() {
   if (user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div>Redirecting to dashboard...</div>
+        <div>Redirecting to home...</div>
       </div>
     )
   }
