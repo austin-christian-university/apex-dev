@@ -37,65 +37,35 @@ const mockUpcomingEvents = [
   }
 ]
 
-const mockUserCompany = {
-  name: "Alpha Company",
-  rank: 1,
-  score: 3.85,
-  userScore: 3.92
-}
-
 export default function HomePage() {
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
-      {/* User's Company Status */}
-      <Card className="border-secondary/20 bg-gradient-to-br from-secondary/5 to-secondary/10">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{mockUserCompany.name}</CardTitle>
-            <Badge variant="secondary" className="bg-secondary/20">
-              #{mockUserCompany.rank}
-            </Badge>
+      {/* Action Required */}
+      {mockUpcomingEvents.filter(event => event.urgent).length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <CalendarDays className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold">Action Required</h2>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold">{mockUserCompany.score}</p>
-              <p className="text-xs text-muted-foreground">Company Holistic GPA</p>
-            </div>
-            <div className="text-right">
-              <p className="text-lg font-semibold text-secondary">{mockUserCompany.userScore}</p>
-              <p className="text-xs text-muted-foreground">Your GPA</p>
-            </div>
-          </div>
-          <Progress value={mockUserCompany.score * 25} className="h-2" />
-        </CardContent>
-      </Card>
-
-      {/* Urgent Events */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <CalendarDays className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Action Required</h2>
-        </div>
-        
-        {mockUpcomingEvents.filter(event => event.urgent).map((event, index) => (
-          <Card key={index} className="border-destructive/20 bg-destructive/5">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-medium mb-1">{event.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                  <p className="text-xs font-medium text-destructive">{event.dueDate}</p>
+          
+          {mockUpcomingEvents.filter(event => event.urgent).map((event, index) => (
+            <Card key={index} className="border-destructive/20 bg-destructive/5">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-medium mb-1">{event.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
+                    <p className="text-xs font-medium text-destructive">{event.dueDate}</p>
+                  </div>
+                  <Badge variant="destructive" className="text-xs">
+                    Urgent
+                  </Badge>
                 </div>
-                <Badge variant="destructive" className="text-xs">
-                  Urgent
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {/* Company Standings */}
       <div className="space-y-3">
