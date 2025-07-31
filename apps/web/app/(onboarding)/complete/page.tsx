@@ -220,12 +220,33 @@ export default function CompletePage() {
                 <p className="text-sm font-medium text-muted-foreground">Phone</p>
                 <p className="text-base">{onboardingData.phone_number}</p>
               </div>
+
+              {onboardingData.date_of_birth && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Date of Birth</p>
+                  <p className="text-base">{new Date(onboardingData.date_of_birth).toLocaleDateString()}</p>
+                </div>
+              )}
+
+              {onboardingData.photo && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Profile Photo</p>
+                  <div className="flex items-center space-x-2">
+                    <img 
+                      src={onboardingData.photo} 
+                      alt="Profile preview" 
+                      className="w-8 h-8 rounded-full object-cover border"
+                    />
+                    <span className="text-sm text-muted-foreground">Uploaded</span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {onboardingData.company_id && (
+            {onboardingData.company_name && (
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Company</p>
-                <p className="text-base capitalize">{onboardingData.company_id} Company</p>
+                <p className="text-base">{onboardingData.company_name}</p>
               </div>
             )}
 

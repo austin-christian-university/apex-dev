@@ -156,6 +156,7 @@ export interface OnboardingData {
   date_of_birth?: string;
   photo?: string;
   company_id?: string;
+  company_name?: string; // Store company name for display purposes
   disc_profile?: string;
   myers_briggs_profile?: string;
   enneagram_profile?: string;

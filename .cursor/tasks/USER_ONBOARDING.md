@@ -22,6 +22,9 @@ Complete user onboarding flow for new users to fill in USERS table information i
 - [x] Add date of birth field to personal info form with validation
 - [x] Update onboarding flow to include photo upload step
 - [x] Fix routing flow: personal info → photo upload → company selection (students) / personality assessments (staff)
+- [x] Add company_name field to OnboardingData type for display purposes
+- [x] Update company selection to save both company_id and company_name
+- [x] Update complete page to display company name and additional profile information
 
 ## In Progress Tasks
 

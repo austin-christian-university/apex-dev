@@ -126,8 +126,14 @@ export default function CompanySelectionPage() {
     setIsLoading(true)
 
     try {
+      // Find the selected company to get its name
+      const selectedCompany = companies.find(company => company.id === selectedCompanyId)
+      
       // Save company selection to local storage
-      saveOnboardingData({ company_id: selectedCompanyId })
+      saveOnboardingData({ 
+        company_id: selectedCompanyId,
+        company_name: selectedCompany?.name || ''
+      })
 
       // Navigate to personality assessments
       router.push('/personality-assessments')
@@ -139,7 +145,7 @@ export default function CompanySelectionPage() {
   }
 
   const handleGoBack = () => {
-    router.push('/personal-info')
+    router.push('/photo-upload')
   }
 
   if (isLoadingCompanies) {
