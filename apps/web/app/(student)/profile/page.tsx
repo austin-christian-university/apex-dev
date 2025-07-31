@@ -5,21 +5,37 @@ import { Badge } from "@acu-apex/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@acu-apex/ui"
 import { Progress } from "@acu-apex/ui"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acu-apex/ui"
-import { User, GraduationCap, DollarSign, Calendar, TrendingUp, BookOpen } from "lucide-react"
+import { Button } from "@acu-apex/ui"
+import { Input } from "@acu-apex/ui"
+import { Label } from "@acu-apex/ui"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/ui"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@acu-apex/ui"
+import { User, GraduationCap, DollarSign, Calendar, TrendingUp, BookOpen, Pencil, ChevronDown, ChevronUp } from "lucide-react"
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
+import { useState } from "react"
 
 // Mock data - will be replaced with real data later
 const mockUserProfile = {
-  name: "Alex Morgan",
+  id: "1",
+  first_name: "Alex",
+  last_name: "Morgan",
   email: "alex.morgan@acu.edu",
+  phone_number: "+1 (555) 123-4567",
+  date_of_birth: "2002-03-15",
+  photo: null,
+  disc_profile: "D - Dominance",
+  myers_briggs: "INTJ",
+  enneagram: "Type 5 - The Investigator",
   studentId: "ACU2024001",
-  dateOfBirth: "March 15, 2002",
   major: "Computer Science",
   year: "Junior",
   expectedGraduation: "May 2025",
   company: "Alpha Company",
   avatar: null,
   holisticGPA: 3.92,
-  cumulativeGPA: 3.88
+  cumulativeGPA: 3.88,
+  get name() { return `${this.first_name} ${this.last_name}` }
 }
 
 const mockFourPillarsDetailed = [
@@ -94,6 +110,37 @@ const mockAcademicRecord = [
   }
 ]
 
+// Radar chart data for Four Pillars
+const radarChartData = [
+  {
+    pillar: "Spiritual",
+    score: 3.95,
+    fullScore: 4.0
+  },
+  {
+    pillar: "Professional", 
+    score: 3.85,
+    fullScore: 4.0
+  },
+  {
+    pillar: "Academic",
+    score: 3.88,
+    fullScore: 4.0
+  },
+  {
+    pillar: "Team",
+    score: 4.0,
+    fullScore: 4.0
+  }
+]
+
+const chartConfig = {
+  score: {
+    label: "Score",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig
+
 const mockRecentActivity = [
   {
     date: "2 days ago",
@@ -122,36 +169,157 @@ const mockRecentActivity = [
 ]
 
 export default function ProfilePage() {
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
+  const [selectedPillar, setSelectedPillar] = useState<string | null>(null)
+  const [editableProfile, setEditableProfile] = useState(mockUserProfile)
+
+  const handleProfileUpdate = (field: string, value: string) => {
+    setEditableProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handlePillarClick = (pillarName: string) => {
+    const pillar = mockFourPillarsDetailed.find(p => p.name.includes(pillarName))
+    if (pillar) {
+      setSelectedPillar(pillar.name)
+    }
+  }
+
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
-      {/* Profile Header */}
-      <Card className="border-secondary/20 bg-gradient-to-br from-secondary/5 to-secondary/10">
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={mockUserProfile.avatar || ""} />
-              <AvatarFallback className="text-lg">
-                {mockUserProfile.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold">{mockUserProfile.name}</h1>
-              <p className="text-sm text-muted-foreground">{mockUserProfile.email}</p>
-              <p className="text-sm text-secondary font-medium">{mockUserProfile.company}</p>
-            </div>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold">{mockUserProfile.holisticGPA}</p>
-              <p className="text-xs text-muted-foreground">Holistic GPA</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{mockUserProfile.cumulativeGPA}</p>
-              <p className="text-xs text-muted-foreground">Academic GPA</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Expandable Profile Header */}
+      <Collapsible open={isHeaderExpanded} onOpenChange={setIsHeaderExpanded}>
+        <Card className="border-secondary/20 bg-gradient-to-br from-secondary/5 to-secondary/10">
+          <CollapsibleTrigger asChild>
+            <CardContent className="p-6 cursor-pointer">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={editableProfile.avatar || editableProfile.photo || ""} />
+                    <AvatarFallback className="text-lg">
+                      {editableProfile.first_name[0]}{editableProfile.last_name[0]}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full p-0"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex-1">
+                  <h1 className="text-xl font-bold">{editableProfile.name}</h1>
+                  <p className="text-sm text-muted-foreground">{editableProfile.email}</p>
+                  <p className="text-sm text-secondary font-medium">{editableProfile.company}</p>
+                </div>
+                <div className="ml-auto">
+                  {isHeaderExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-1 gap-4 text-center">
+                <div>
+                  <p className="text-2xl font-bold">{mockUserProfile.holisticGPA}</p>
+                  <p className="text-xs text-muted-foreground">Holistic GPA</p>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent>
+            <CardContent className="px-6 pb-6 pt-0">
+              <div className="space-y-4 border-t pt-4">
+                <h3 className="text-lg font-semibold">Edit Profile</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name">First Name</Label>
+                    <Input
+                      id="first_name"
+                      value={editableProfile.first_name}
+                      onChange={(e) => handleProfileUpdate('first_name', e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name">Last Name</Label>
+                    <Input
+                      id="last_name"
+                      value={editableProfile.last_name}
+                      onChange={(e) => handleProfileUpdate('last_name', e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editableProfile.email}
+                    onChange={(e) => handleProfileUpdate('email', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={editableProfile.phone_number}
+                    onChange={(e) => handleProfileUpdate('phone_number', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dob">Date of Birth</Label>
+                  <Input
+                    id="dob"
+                    type="date"
+                    value={editableProfile.date_of_birth}
+                    onChange={(e) => handleProfileUpdate('date_of_birth', e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="disc">DISC Profile</Label>
+                    <Input
+                      id="disc"
+                      value={editableProfile.disc_profile || ''}
+                      onChange={(e) => handleProfileUpdate('disc_profile', e.target.value)}
+                      placeholder="e.g., D - Dominance"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="myers_briggs">Myers-Briggs</Label>
+                    <Input
+                      id="myers_briggs"
+                      value={editableProfile.myers_briggs || ''}
+                      onChange={(e) => handleProfileUpdate('myers_briggs', e.target.value)}
+                      placeholder="e.g., INTJ"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="enneagram">Enneagram</Label>
+                    <Input
+                      id="enneagram"
+                      value={editableProfile.enneagram || ''}
+                      onChange={(e) => handleProfileUpdate('enneagram', e.target.value)}
+                      placeholder="e.g., Type 5 - The Investigator"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsHeaderExpanded(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => {
+                    // Here you would save the changes
+                    console.log('Saving profile changes:', editableProfile)
+                    setIsHeaderExpanded(false)
+                  }}>
+                    Save Changes
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {/* Tabs for different sections */}
       <Tabs defaultValue="overview" className="w-full">
@@ -164,65 +332,42 @@ export default function ProfilePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4 mt-6">
-          {/* Personal Info */}
+          {/* Interactive Radar Chart */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span>Personal Information</span>
-              </CardTitle>
+            <CardHeader className="items-center">
+              <CardTitle>Holistic GPA Breakdown</CardTitle>
+              <CardDescription>
+                Tap any pillar to see detailed breakdown
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Student ID</p>
-                  <p className="font-medium">{mockUserProfile.studentId}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Date of Birth</p>
-                  <p className="font-medium">{mockUserProfile.dateOfBirth}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Major</p>
-                  <p className="font-medium">{mockUserProfile.major}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Year</p>
-                  <p className="font-medium">{mockUserProfile.year}</p>
-                </div>
-              </div>
-              <div className="pt-2">
-                <p className="text-muted-foreground text-sm">Expected Graduation</p>
-                <p className="font-medium">{mockUserProfile.expectedGraduation}</p>
-              </div>
+            <CardContent className="pb-0">
+              <ChartContainer
+                config={chartConfig}
+                className="mx-auto aspect-square max-h-[250px]"
+              >
+                <RadarChart data={radarChartData}>
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                  <PolarAngleAxis dataKey="pillar" />
+                  <PolarGrid />
+                  <Radar
+                    dataKey="score"
+                    fill="var(--color-score)"
+                    fillOpacity={0.6}
+                    dot={{
+                      r: 6,
+                      fillOpacity: 1,
+                      cursor: "pointer",
+                    }}
+                    onClick={(data: any) => {
+                      if (data && data.payload) {
+                        handlePillarClick(data.payload.pillar)
+                      }
+                    }}
+                  />
+                </RadarChart>
+              </ChartContainer>
             </CardContent>
           </Card>
-
-          {/* Four Pillars Breakdown */}
-          <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Holistic GPA Breakdown</h2>
-            {mockFourPillarsDetailed.map((pillar) => (
-              <Card key={pillar.name}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{pillar.name}</CardTitle>
-                    <span className="text-lg font-bold">{pillar.score}</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {pillar.components.map((component) => (
-                    <div key={component.name} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>{component.name}</span>
-                        <span className="font-medium">{component.score}</span>
-                      </div>
-                      <Progress value={component.score * 25} className="h-1" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </TabsContent>
 
         {/* Academic Tab */}
@@ -342,6 +487,52 @@ export default function ProfilePage() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Pillar Detail Modal */}
+      <Dialog open={!!selectedPillar} onOpenChange={() => setSelectedPillar(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {selectedPillar} - Detailed Breakdown
+            </DialogTitle>
+            <DialogDescription>
+              Components that make up your {selectedPillar?.toLowerCase()} score
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPillar && (() => {
+            const pillar = mockFourPillarsDetailed.find(p => p.name === selectedPillar)
+            if (!pillar) return null
+            
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-lg font-semibold">Overall Score:</span>
+                  <span className="text-2xl font-bold">{pillar.score}/4.0</span>
+                </div>
+                <div className="space-y-3">
+                  {pillar.components.map((component) => (
+                    <div key={component.name} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{component.name}</span>
+                        <div className="text-right">
+                          <span className="font-bold">{component.score}/4.0</span>
+                          <span className="text-muted-foreground ml-2">({component.weight}%)</span>
+                        </div>
+                      </div>
+                      <Progress value={(component.score / 4.0) * 100} className="h-2" />
+                    </div>
+                  ))}
+                </div>
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    This score is calculated based on the weighted average of the components above.
+                  </p>
+                </div>
+              </div>
+            )
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
