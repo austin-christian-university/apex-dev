@@ -12,19 +12,19 @@ import { useAuth } from "@/components/auth/auth-provider"
 const navigation = [
   {
     name: "Home",
-    href: "/home",
+    href: "/home" as const,
     icon: Home,
     description: "Company standings & events"
   },
   {
     name: "Company",
-    href: "/company", 
+    href: "/company" as const, 
     icon: Users,
     description: "Team overview & achievements"
   },
   {
     name: "Profile",
-    href: "/profile",
+    href: "/profile" as const,
     icon: User,
     description: "Personal stats & records"
   }
@@ -74,7 +74,7 @@ export default function StudentLayout({
                     return (
                       <Link
                         key={item.name}
-                        href={item.href as any}
+                        href={item.href}
                         onClick={() => setIsOpen(false)}
                         className={cn(
                           "flex items-center space-x-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors",
