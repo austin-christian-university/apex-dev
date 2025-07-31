@@ -94,25 +94,25 @@ export default function CompanySelectionPage() {
       id: 'alpha',
       name: 'Alpha Company',
       description: 'Leadership and excellence through innovation',
-      member_count: 24
+      is_active: true
     },
     {
       id: 'beta', 
       name: 'Beta Company',
       description: 'Building tomorrow\'s leaders today',
-      member_count: 26
+      is_active: true
     },
     {
       id: 'gamma',
       name: 'Gamma Company', 
       description: 'Growth through collaboration and service',
-      member_count: 23
+      is_active: true
     },
     {
       id: 'delta',
       name: 'Delta Company',
       description: 'Dedication to academic and personal excellence',
-      member_count: 25
+      is_active: true
     }
   ]
 
@@ -223,13 +223,6 @@ export default function CompanySelectionPage() {
                     <div className="flex items-center space-x-3">
                       <div>
                         <CardTitle className="text-lg">{company.name}</CardTitle>
-                        {company.member_count && (
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {company.member_count} members
-                            </Badge>
-                          </div>
-                        )}
                       </div>
                     </div>
                     

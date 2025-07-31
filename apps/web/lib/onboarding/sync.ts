@@ -154,11 +154,15 @@ export async function checkOnboardingStatus(authUserId: string): Promise<{
   try {
     const supabase = createClient()
 
+    console.log('authUserId', authUserId)
+
+
     const { data: user, error } = await supabase
       .from('users')
       .select('id, has_completed_onboarding, role, first_name, last_name')
       .eq('id', authUserId)
       .single()
+
 
     if (error && error.code !== 'PGRST116') {
       throw new Error(`Failed to check onboarding status: ${error.message}`)

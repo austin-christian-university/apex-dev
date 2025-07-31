@@ -14,8 +14,8 @@ import { DISC_PROFILES, MYERS_BRIGGS_TYPES, ENNEAGRAM_TYPES } from '@/lib/onboar
 
 interface AssessmentData {
   disc_profile: string
-  myers_briggs: string
-  enneagram: string
+  myers_briggs_profile: string
+  enneagram_profile: string
 }
 
 export default function PersonalityAssessmentsPage() {
@@ -26,8 +26,8 @@ export default function PersonalityAssessmentsPage() {
 
   const [assessments, setAssessments] = useState<AssessmentData>({
     disc_profile: '',
-    myers_briggs: '',
-    enneagram: ''
+    myers_briggs_profile: '',
+    enneagram_profile: ''
   })
 
   useEffect(() => {
@@ -55,8 +55,8 @@ export default function PersonalityAssessmentsPage() {
     // Load existing assessment data
     setAssessments({
       disc_profile: onboardingData.disc_profile || '',
-      myers_briggs: onboardingData.myers_briggs || '',
-      enneagram: onboardingData.enneagram || ''
+      myers_briggs_profile: onboardingData.myers_briggs_profile || '',
+      enneagram_profile: onboardingData.enneagram_profile || ''
     })
   }, [router])
 
@@ -84,8 +84,8 @@ export default function PersonalityAssessmentsPage() {
       // Save assessment data to local storage
       const dataToSave: any = {}
       if (assessments.disc_profile) dataToSave.disc_profile = assessments.disc_profile
-      if (assessments.myers_briggs) dataToSave.myers_briggs = assessments.myers_briggs
-      if (assessments.enneagram) dataToSave.enneagram = assessments.enneagram
+      if (assessments.myers_briggs_profile) dataToSave.myers_briggs_profile = assessments.myers_briggs_profile
+      if (assessments.enneagram_profile) dataToSave.enneagram_profile = assessments.enneagram_profile
 
       saveOnboardingData(dataToSave)
 
@@ -112,8 +112,8 @@ export default function PersonalityAssessmentsPage() {
     // Save empty assessment data and continue
     saveOnboardingData({
       disc_profile: assessments.disc_profile || undefined,
-      myers_briggs: assessments.myers_briggs || undefined,
-      enneagram: assessments.enneagram || undefined
+      myers_briggs_profile: assessments.myers_briggs_profile || undefined,
+      enneagram_profile: assessments.enneagram_profile || undefined
     })
     
     router.push('/complete')
@@ -220,7 +220,7 @@ export default function PersonalityAssessmentsPage() {
               <div>
                 <CardTitle className="flex items-center space-x-2">
                   <span>Myers-Briggs Type</span>
-                  {assessments.myers_briggs && (
+                  {assessments.myers_briggs_profile && (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   )}
                 </CardTitle>
@@ -234,8 +234,8 @@ export default function PersonalityAssessmentsPage() {
             <div className="space-y-2">
               <Label htmlFor="mbti-select">Select your Myers-Briggs type</Label>
               <Select 
-                value={assessments.myers_briggs} 
-                onValueChange={(value) => handleAssessmentChange('myers_briggs', value)}
+                value={assessments.myers_briggs_profile} 
+                onValueChange={(value) => handleAssessmentChange('myers_briggs_profile', value)}
               >
                 <SelectTrigger id="mbti-select">
                   <SelectValue placeholder="Choose your Myers-Briggs type..." />
@@ -271,7 +271,7 @@ export default function PersonalityAssessmentsPage() {
               <div>
                 <CardTitle className="flex items-center space-x-2">
                   <span>Enneagram Type</span>
-                  {assessments.enneagram && (
+                  {assessments.enneagram_profile && (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   )}
                 </CardTitle>
@@ -285,8 +285,8 @@ export default function PersonalityAssessmentsPage() {
             <div className="space-y-2">
               <Label htmlFor="enneagram-select">Select your Enneagram type</Label>
               <Select 
-                value={assessments.enneagram} 
-                onValueChange={(value) => handleAssessmentChange('enneagram', value)}
+                value={assessments.enneagram_profile} 
+                onValueChange={(value) => handleAssessmentChange('enneagram_profile', value)}
               >
                 <SelectTrigger id="enneagram-select">
                   <SelectValue placeholder="Choose your Enneagram type..." />

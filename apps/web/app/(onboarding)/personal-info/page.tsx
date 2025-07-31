@@ -94,7 +94,7 @@ export default function PersonalInfoPage() {
     } else {
       const birthDate = new Date(formData.date_of_birth)
       const today = new Date()
-      const age = today.getFullYear() - birthDate.getFullYear()
+      let age = today.getFullYear() - birthDate.getFullYear()
       const monthDiff = today.getMonth() - birthDate.getMonth()
       
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -138,13 +138,11 @@ export default function PersonalInfoPage() {
       let nextStep: string
       if (role === 'staff') {
         // Staff skip company selection
-        nextStep = '/photo-upload'
+        router.push('/photo-upload')
       } else {
         // Students and student leaders go to photo upload
-        nextStep = '/photo-upload'
+        router.push('/company-selection')
       }
-
-      router.push(nextStep)
     } catch (error) {
       console.error('Failed to save personal info:', error)
     } finally {

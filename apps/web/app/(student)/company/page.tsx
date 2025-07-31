@@ -25,7 +25,7 @@ const mockTeamMembers = [
     name: "Sarah Johnson",
     role: "Company Captain",
     email: "sarah.johnson@acu.edu",
-    phone: "(555) 123-4567",
+    phone_number: "(555) 123-4567",
     holisticGPA: 3.95,
     avatar: null,
     isOfficer: true
@@ -35,7 +35,7 @@ const mockTeamMembers = [
     name: "Michael Chen",
     role: "Vice Captain",
     email: "michael.chen@acu.edu",
-    phone: "(555) 234-5678",
+    phone_number: "(555) 234-5678",
     holisticGPA: 3.89,
     avatar: null,
     isOfficer: true
@@ -45,7 +45,7 @@ const mockTeamMembers = [
     name: "Emily Rodriguez",
     role: "Secretary",
     email: "emily.rodriguez@acu.edu", 
-    phone: "(555) 345-6789",
+    phone_number: "(555) 345-6789",
     holisticGPA: 3.82,
     avatar: null,
     isOfficer: true
@@ -55,7 +55,7 @@ const mockTeamMembers = [
     name: "David Park",
     role: "Member",
     email: "david.park@acu.edu",
-    phone: "(555) 456-7890",
+    phone_number: "(555) 456-7890",
     holisticGPA: 3.76,
     avatar: null,
     isOfficer: false
@@ -65,7 +65,7 @@ const mockTeamMembers = [
     name: "Jessica Williams",
     role: "Member",
     email: "jessica.williams@acu.edu",
-    phone: "(555) 567-8901",
+    phone_number: "(555) 567-8901",
     holisticGPA: 3.91,
     avatar: null,
     isOfficer: false
@@ -186,8 +186,8 @@ export default function CompanyPage() {
                         <span>{member.email}</span>
                       </div>
                       <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <Phone className="h-3 w-3" />
-                        <span>{member.phone}</span>
+                                        <Phone className="h-3 w-3" />
+                <span>{member.phone_number}</span>
                       </div>
                     </div>
                   </div>

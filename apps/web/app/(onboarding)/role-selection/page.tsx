@@ -9,7 +9,7 @@ import { Users, Shield, UserCog } from 'lucide-react'
 import { cn } from '@acu-apex/utils'
 import { saveOnboardingData } from '@/lib/onboarding/storage'
 
-type Role = 'student' | 'student_leader' | 'staff'
+type Role = 'student' | 'officer' | 'staff'
 
 interface RoleOption {
   value: Role
@@ -28,8 +28,8 @@ const ROLE_OPTIONS: RoleOption[] = [
     badge: 'Most Common'
   },
   {
-    value: 'student_leader',
-    title: 'Student Leader',
+    value: 'officer',
+    title: 'Company Officer',
     description: 'I am a student with leadership responsibilities in my company',
     icon: Shield
   },
@@ -63,17 +63,17 @@ export default function RoleSelectionPage() {
       let nextStep: string
       switch (selectedRole) {
         case 'student':
-          nextStep = '/personal-info'
+          router.push('/personal-info')
           break
-        case 'student_leader':
+        case 'officer':
+          router.push('/pending-approval')
+          break
         case 'staff':
-          nextStep = '/pending-approval'
+          router.push('/pending-approval')
           break
         default:
-          nextStep = '/personal-info'
+          router.push('/personal-info')
       }
-
-      router.push(nextStep)
     } catch (error) {
       console.error('Failed to save role selection:', error)
     } finally {

@@ -98,8 +98,8 @@ export default function CompletePage() {
   const getCompletedAssessments = () => {
     const assessments = []
     if (onboardingData.disc_profile) assessments.push('DISC')
-    if (onboardingData.myers_briggs) assessments.push('Myers-Briggs')
-    if (onboardingData.enneagram) assessments.push('Enneagram')
+    if (onboardingData.myers_briggs_profile) assessments.push('Myers-Briggs')
+    if (onboardingData.enneagram_profile) assessments.push('Enneagram')
     return assessments
   }
 
