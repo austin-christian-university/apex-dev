@@ -37,12 +37,44 @@ export interface StudentWithDetails extends Student {
   scores?: Score[];
 }
 
+// Utility types for different user roles
+export type StudentUser = User & { role: 'student' };
+export type OfficerUser = User & { role: 'officer' };
+export type StaffUser = User & { role: 'staff' };
+export type AdminUser = User & { role: 'admin' };
+
+// Complete student profile (user + student data)
+export interface StudentProfile {
+  user: StudentUser;
+  student: Student;
+  company: Company;
+  scores?: Score[];
+}
+
+// Staff profile (user only, no student data)
+export interface StaffProfile {
+  user: StaffUser | AdminUser;
+}
+
+// Union type for any user profile
+export type UserProfile = StudentProfile | StaffProfile;
+
+// Type guard to check if user is a student
+export function isStudent(user: User): user is StudentUser {
+  return user.role === 'student';
+}
+
+// Type guard to check if user is staff/admin
+export function isStaff(user: User): user is StaffUser | AdminUser {
+  return user.role === 'staff' || user.role === 'admin';
+}
+
 // Company types - matches Supabase companies table
 export interface Company {
   id: string;
   name: string;
   description: string | null;
-  created_at: string | null;
+  created_at?: string | null; // Made optional since it's nullable and not always selected
   is_active: boolean | null;
 }
 
@@ -76,7 +108,7 @@ export interface ApiResponse<T> {
 export interface DashboardStats {
   totalStudents: number;
   averageScore: number;
-  topPerformers: StudentWithDetails[];
+  topPerformers: StudentProfile[];
   recentActivity: Activity[];
 }
 
