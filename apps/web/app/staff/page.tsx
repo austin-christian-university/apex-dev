@@ -1,9 +1,17 @@
+'use client'
+
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Construction, Users, BarChart3, Settings, ArrowLeft } from 'lucide-react'
+import { Sheet, SheetContent, SheetTrigger } from '@acu-apex/ui'
+import { Construction, Users, BarChart3, Settings, ArrowLeft, Menu } from 'lucide-react'
+import { useAuth } from "@/components/auth/auth-provider"
 
 export default function StaffPage() {
+  const [isOpen, setIsOpen] = useState(false)
+  const { user, signOut } = useAuth()
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -13,6 +21,48 @@ export default function StaffPage() {
             <h1 className="text-lg font-semibold">ACU Apex - Staff Portal</h1>
             <Badge variant="secondary">Coming Soon</Badge>
           </div>
+          
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="flex flex-col h-full">
+                {/* Header */}
+                <div className="flex items-center space-x-2 pb-4 border-b">
+                  <div className="flex-1">
+                    <h2 className="text-lg font-semibold">Staff Portal</h2>
+                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                <nav className="flex-1 py-6 space-y-2">
+                  <div className="px-3 py-3 text-sm text-muted-foreground">
+                    <div className="font-medium">Staff Portal</div>
+                    <div className="text-xs text-muted-foreground">Coming Soon</div>
+                  </div>
+                </nav>
+
+                {/* Footer */}
+                <div className="border-t pt-4">
+                  <Button 
+                    variant="outline" 
+                    className="w-full" 
+                    onClick={() => {
+                      setIsOpen(false)
+                      signOut()
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
