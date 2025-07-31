@@ -180,16 +180,13 @@ export default function PhotoUploadPage() {
       })
 
       // Determine next step based on role
-      let nextStep: string
       if (role === 'staff') {
         // Staff skip company selection
-        nextStep = '/personality-assessments'
+        router.push('/personality-assessments')
       } else {
         // Students and student leaders go to company selection
-        nextStep = '/company-selection'
+        router.push('/company-selection')
       }
-
-      router.push(nextStep)
     } catch (error) {
       console.error('Failed to save photo data:', error)
       setError('Failed to save photo. Please try again.')
@@ -209,14 +206,11 @@ export default function PhotoUploadPage() {
     })
     
     // Determine next step based on role
-    let nextStep: string
     if (role === 'staff') {
-      nextStep = '/personality-assessments'
+      router.push('/personality-assessments')
     } else {
-      nextStep = '/company-selection'
+      router.push('/company-selection')
     }
-
-    router.push(nextStep)
   }
 
   return (

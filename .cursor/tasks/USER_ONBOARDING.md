@@ -21,6 +21,7 @@ Complete user onboarding flow for new users to fill in USERS table information i
 - [x] Create photo upload page with drag-and-drop functionality
 - [x] Add date of birth field to personal info form with validation
 - [x] Update onboarding flow to include photo upload step
+- [x] Fix routing flow: personal info → photo upload → company selection (students) / personality assessments (staff)
 
 ## In Progress Tasks
 

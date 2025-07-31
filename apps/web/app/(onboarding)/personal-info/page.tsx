@@ -134,15 +134,8 @@ export default function PersonalInfoPage() {
         date_of_birth: formData.date_of_birth.trim()
       })
 
-      // Determine next step based on role
-      let nextStep: string
-      if (role === 'staff') {
-        // Staff skip company selection
-        router.push('/photo-upload')
-      } else {
-        // Students and student leaders go to photo upload
-        router.push('/company-selection')
-      }
+      // All users go to photo upload next
+      router.push('/photo-upload')
     } catch (error) {
       console.error('Failed to save personal info:', error)
     } finally {

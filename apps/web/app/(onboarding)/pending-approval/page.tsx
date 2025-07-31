@@ -36,7 +36,7 @@ export default function PendingApprovalPage() {
 
   const getRoleInfo = () => {
     switch (role) {
-      case 'student_leader':
+      case 'officer':
         return {
           title: 'Student Leader Role Pending',
           icon: Shield,

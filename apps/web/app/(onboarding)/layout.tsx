@@ -6,6 +6,7 @@ import { Progress } from '@acu-apex/ui'
 import { CheckCircle, Circle } from 'lucide-react'
 import { cn } from '@acu-apex/utils'
 import type { OnboardingStep } from '@/lib/onboarding/types'
+import { STUDENT_STEPS, STUDENT_LEADER_STEPS, STAFF_STEPS } from '@/lib/onboarding/types'
 import { getOnboardingData } from '@/lib/onboarding/storage'
 
 interface OnboardingLayoutProps {
@@ -32,11 +33,13 @@ function getStepsForRole(role?: string): OnboardingStep[] {
   
   switch (role) {
     case 'student':
-      return ['role-selection', 'personal-info', 'photo-upload', 'company-selection', 'personality-assessments', 'complete']
-    case 'student_leader':
-      return ['role-selection', 'pending-approval', 'personal-info', 'photo-upload', 'company-selection', 'personality-assessments', 'complete']
+      return STUDENT_STEPS
+    case 'officer': // student_leader is now officer
+      return STUDENT_LEADER_STEPS
     case 'staff':
-      return ['role-selection', 'pending-approval', 'personal-info', 'photo-upload', 'personality-assessments', 'complete']
+      return STAFF_STEPS
+    case 'admin':
+      return STAFF_STEPS // admins follow same flow as staff
     default:
       return ['role-selection']
   }
