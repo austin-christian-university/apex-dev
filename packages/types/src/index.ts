@@ -1,15 +1,52 @@
-// Student types
-export interface Student {
+// User types - matches Supabase users table
+export interface User {
   id: string;
-  name: string;
+  role: 'student' | 'officer' | 'staff' | 'admin';
+  first_name: string | null;
+  last_name: string | null;
   email: string;
-  avatar?: string;
-  scores: Score[];
-  createdAt: string;
-  updatedAt: string;
+  phone: string | null;
+  phone_number: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  disc_profile: string | null;
+  myers_briggs_profile: string | null;
+  enneagram_profile: string | null;
+  has_completed_onboarding: boolean | null;
+  date_of_birth: string | null; // Date string
+  photo: string | null; // Base64 encoded photo
 }
 
-// Score types
+// Student types - matches Supabase students table
+export interface Student {
+  id: string; // References users.id
+  company_id: string; // References companies.id
+  academic_role: string | null; // e.g., "Freshman", "Sophomore"
+  company_role: string | null; // Student role within their company
+  academic_year_start: number; // e.g., 2024 for 2024-2025
+  academic_year_end: number; // e.g., 2025 for 2024-2025
+  created_at: string | null;
+  updated_at: string | null;
+  student_id: number | null; // Unique 6-digit identifier (100000-999999)
+}
+
+// Extended Student type with user and company data
+export interface StudentWithDetails extends Student {
+  user: User;
+  company: Company;
+  scores?: Score[];
+}
+
+// Company types - matches Supabase companies table
+export interface Company {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string | null;
+  is_active: boolean | null;
+}
+
+// Score types (keeping existing structure as it may be used elsewhere)
 export interface Score {
   id: string;
   value: number;
@@ -18,7 +55,7 @@ export interface Score {
   notes?: string;
 }
 
-// Admin types
+// Admin types (keeping for backward compatibility)
 export interface Admin {
   id: string;
   name: string;
@@ -39,7 +76,7 @@ export interface ApiResponse<T> {
 export interface DashboardStats {
   totalStudents: number;
   averageScore: number;
-  topPerformers: Student[];
+  topPerformers: StudentWithDetails[];
   recentActivity: Activity[];
 }
 
@@ -76,4 +113,52 @@ export interface ChartConfig {
   title: string;
   data: ChartData[];
   type: 'line' | 'bar' | 'pie' | 'area';
-} 
+}
+
+// Onboarding types - updated to match User interface
+export interface OnboardingData {
+  role: 'student' | 'officer' | 'staff' | 'admin';
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  date_of_birth?: string;
+  photo?: string;
+  company_id?: string;
+  disc_profile?: string;
+  myers_briggs_profile?: string;
+  enneagram_profile?: string;
+}
+
+// Supabase Database types (for direct database operations)
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: User;
+        Insert: Omit<User, 'id' | 'created_at' | 'updated_at'> & {
+          id: string;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<Omit<User, 'id'>>;
+      };
+      students: {
+        Row: Student;
+        Insert: Omit<Student, 'created_at' | 'updated_at'> & {
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: Partial<Omit<Student, 'id'>>;
+      };
+      companies: {
+        Row: Company;
+        Insert: Omit<Company, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string | null;
+        };
+        Update: Partial<Omit<Company, 'id'>>;
+      };
+    };
+  };
+}; 
