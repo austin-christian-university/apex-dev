@@ -64,8 +64,8 @@ export async function syncOnboardingDataToSupabase(
       throw new Error(`Failed to sync user data: ${result.error.message}`)
     }
 
-    // If user is a student, also create/update student record
-    if (onboardingData.role === 'student' && onboardingData.company_id) {
+    // If user is a student or officer, also create/update student record
+    if ((onboardingData.role === 'student' || onboardingData.role === 'officer') && onboardingData.company_id) {
       const studentResult = await syncStudentData(authUserId, onboardingData.company_id)
       if (!studentResult.success) {
         throw new Error(`Failed to sync student data: ${studentResult.error}`)

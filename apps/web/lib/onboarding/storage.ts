@@ -75,8 +75,8 @@ export function validateOnboardingData(data: Partial<OnboardingData>): {
     }
   }
 
-  // Company is required for students
-  if (data.role === 'student' && !data.company_id) {
+  // Company is required for students and officers
+  if ((data.role === 'student' || data.role === 'officer') && !data.company_id) {
     missingFields.push('company_id')
   }
 

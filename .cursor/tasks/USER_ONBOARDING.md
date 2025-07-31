@@ -25,6 +25,7 @@ Complete user onboarding flow for new users to fill in USERS table information i
 - [x] Add company_name field to OnboardingData type for display purposes
 - [x] Update company selection to save both company_id and company_name
 - [x] Update complete page to display company name and additional profile information
+- [x] Fix officers not being added to students table (officers are students too)
 
 ## In Progress Tasks
 
