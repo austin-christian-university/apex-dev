@@ -4,7 +4,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@acu-
 import { Badge } from "@acu-apex/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@acu-apex/ui"
 import { Progress } from "@acu-apex/ui"
-import { Users, Mail, Phone, Award, TrendingUp, Target } from "lucide-react"
+import { Input } from "@acu-apex/ui"
+import { Users, Mail, Phone, Target, Search } from "lucide-react"
+import { useState } from "react"
 
 // Mock data - will be replaced with real data later
 const mockCompanyInfo = {
@@ -70,27 +72,6 @@ const mockTeamMembers = [
   }
 ]
 
-const mockAchievements = [
-  {
-    title: "Academic Excellence Award",
-    description: "Highest company GPA for 3 consecutive semesters",
-    date: "Spring 2024",
-    type: "academic"
-  },
-  {
-    title: "Community Service Leaders",
-    description: "Most community service hours logged company-wide",
-    date: "Fall 2023",
-    type: "service"
-  },
-  {
-    title: "Team Building Champions",
-    description: "Winner of annual inter-company competition",
-    date: "Spring 2023",
-    type: "teamwork"
-  }
-]
-
 const mockFourPillarsBreakdown = [
   { name: "Spiritual Standing", score: 3.9, color: "bg-blue-500" },
   { name: "Professional Standing", score: 3.8, color: "bg-green-500" },
@@ -99,9 +80,14 @@ const mockFourPillarsBreakdown = [
 ]
 
 export default function CompanyPage() {
-  // Split members into officers and regular members
-  const officers = mockTeamMembers.filter(member => member.isOfficer)
-  const members = mockTeamMembers.filter(member => !member.isOfficer)
+  const [searchQuery, setSearchQuery] = useState("")
+
+  // Filter members based on search query
+  const filteredMembers = mockTeamMembers.filter(member =>
+    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.email.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -158,87 +144,29 @@ export default function CompanyPage() {
         </div>
       </div>
 
-      {/* Company Officers */}
+      {/* All Members */}
       <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Company Officers</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">All Members ({filteredMembers.length})</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search members..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-40 h-8 text-sm"
+            />
+          </div>
         </div>
         
         <div className="space-y-2">
-          {officers.map((officer) => (
-            <Card key={officer.id}>
+          {filteredMembers.map((member) => (
+            <Card key={member.id}>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={officer.avatar || ""} />
-                    <AvatarFallback className="text-sm">
-                      {officer.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-sm">{officer.name}</p>
-                      <p className="text-sm font-bold">{officer.holisticGPA}</p>
-                    </div>
-                    <p className="text-xs text-secondary font-medium">{officer.role}</p>
-                    <div className="flex flex-col space-y-1 mt-2">
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <Mail className="h-3 w-3" />
-                        <span>{officer.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <Phone className="h-3 w-3" />
-                        <span>{officer.phone}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent Achievements */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Award className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Recent Achievements</h2>
-        </div>
-        
-        <div className="space-y-2">
-          {mockAchievements.map((achievement, index) => (
-            <Card key={index}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-sm mb-1">{achievement.title}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{achievement.description}</p>
-                    <p className="text-xs text-secondary font-medium">{achievement.date}</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs capitalize">
-                    {achievement.type}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* All Members */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">All Members ({mockCompanyInfo.memberCount})</h2>
-        
-        <div className="space-y-2">
-          {[...officers, ...members].map((member) => (
-            <Card key={member.id}>
-              <CardContent className="p-3">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-10 w-10">
                     <AvatarImage src={member.avatar || ""} />
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-sm">
                       {member.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
@@ -247,11 +175,20 @@ export default function CompanyPage() {
                       <p className="font-medium text-sm">{member.name}</p>
                       <p className="text-sm font-bold">{member.holisticGPA}</p>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">{member.role}</p>
+                    <div className="flex items-center justify-between mb-2">
                       {member.isOfficer && (
-                        <Badge variant="secondary" className="text-xs">Officer</Badge>
+                        <Badge variant="secondary" className="text-xs">{member.role}</Badge>
                       )}
+                    </div>
+                    <div className="flex flex-col space-y-1">
+                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <Mail className="h-3 w-3" />
+                        <span>{member.email}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                        <Phone className="h-3 w-3" />
+                        <span>{member.phone}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
