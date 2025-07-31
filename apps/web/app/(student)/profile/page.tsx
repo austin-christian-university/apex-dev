@@ -493,10 +493,10 @@ export default function ProfilePage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedPillar} - Detailed Breakdown
+              {selectedPillar || "Pillar"} - Detailed Breakdown
             </DialogTitle>
             <DialogDescription>
-              Components that make up your {selectedPillar?.toLowerCase()} score
+              Components that make up your {selectedPillar?.toLowerCase() || "pillar"} score
             </DialogDescription>
           </DialogHeader>
           {selectedPillar && (() => {
