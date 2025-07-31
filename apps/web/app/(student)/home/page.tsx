@@ -1,11 +1,11 @@
-'use client'
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@acu-apex/ui"
+import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
-import { Progress } from "@acu-apex/ui"
 import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
+import { createClient } from "@/lib/supabase/server"
+import { getUserProfileWithEvents } from "@/lib/events"
+import { redirect } from "next/navigation"
 
-// Mock data - will be replaced with real data later
+// Mock company standings data - will be replaced with real data later
 const mockCompanyStandings = [
   { name: "Alpha Company", score: 3.85, rank: 1, members: 24, trend: "+0.12" },
   { name: "Beta Company", score: 3.72, rank: 2, members: 26, trend: "+0.05" },
@@ -13,52 +13,49 @@ const mockCompanyStandings = [
   { name: "Delta Company", score: 3.45, rank: 4, members: 25, trend: "+0.08" },
 ]
 
-const mockUpcomingEvents = [
-  {
-    title: "Chapel Attendance Check-in",
-    description: "Weekly chapel participation required",
-    dueDate: "Tomorrow, 10:00 AM",
-    type: "spiritual",
-    urgent: true
-  },
-  {
-    title: "Community Service Hours",
-    description: "Submit this month's service hours",
-    dueDate: "Due in 3 days",
-    type: "professional", 
-    urgent: false
-  },
-  {
-    title: "GBE Team Building Event",
-    description: "Company team building activity",
-    dueDate: "Friday, 6:00 PM",
-    type: "team",
-    urgent: false
+export default async function HomePage() {
+  const supabase = await createClient()
+  
+  // Get current user
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  
+  if (authError || !user) {
+    redirect('/login')
   }
-]
 
-export default function HomePage() {
+  // Get user profile and events
+  const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEvents(user.id, supabase)
+
+  if (eventsError) {
+    console.error('Failed to fetch events:', eventsError)
+    // Continue with empty events rather than failing completely
+  }
+
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
       {/* Action Required */}
-      {mockUpcomingEvents.filter(event => event.urgent).length > 0 && (
+      {urgentEvents && urgentEvents.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <CalendarDays className="h-5 w-5 text-muted-foreground" />
             <h2 className="text-lg font-semibold">Action Required</h2>
           </div>
           
-          {mockUpcomingEvents.filter(event => event.urgent).map((event, index) => (
-            <Card key={index} className="border-destructive/20 bg-destructive/5">
+          {urgentEvents.map((userEvent) => (
+            <Card key={userEvent.event.id} className="border-destructive/20 bg-destructive/5">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-medium mb-1">{event.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                    <p className="text-xs font-medium text-destructive">{event.dueDate}</p>
+                    <h3 className="font-medium mb-1">{userEvent.event.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {userEvent.event.description || 'No description available'}
+                    </p>
+                    <p className={`text-xs font-medium ${userEvent.isPastDue ? 'text-destructive' : 'text-orange-600'}`}>
+                      {userEvent.formattedDueDate}
+                    </p>
                   </div>
                   <Badge variant="destructive" className="text-xs">
-                    Urgent
+                    Overdue
                   </Badge>
                 </div>
               </CardContent>
@@ -110,28 +107,54 @@ export default function HomePage() {
       </div>
 
       {/* Upcoming Events */}
-      <div className="space-y-3">
-        <h2 className="text-lg font-semibold">Upcoming Events</h2>
-        
-        <div className="space-y-2">
-          {mockUpcomingEvents.filter(event => !event.urgent).map((event, index) => (
-            <Card key={index}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium mb-1">{event.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                    <p className="text-xs text-muted-foreground">{event.dueDate}</p>
+      {upcomingEvents && upcomingEvents.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">Upcoming Events</h2>
+          
+          <div className="space-y-2">
+            {upcomingEvents.map((userEvent) => (
+              <Card key={userEvent.event.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium mb-1">{userEvent.event.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {userEvent.event.description || 'No description available'}
+                      </p>
+                      <p className={`text-xs ${userEvent.isUrgent ? 'text-orange-600 font-medium' : 'text-muted-foreground'}`}>
+                        {userEvent.formattedDueDate}
+                      </p>
+                    </div>
+                                         <Badge 
+                       variant={userEvent.isUrgent ? "secondary" : "outline"} 
+                       className={`text-xs capitalize ${userEvent.isUrgent ? 'bg-orange-100 text-orange-800 border-orange-200' : ''}`}
+                     >
+                       {userEvent.isUrgent ? 'Due Soon' : userEvent.event.event_type.replace('_', ' ')}
+                     </Badge>
                   </div>
-                  <Badge variant="outline" className="text-xs capitalize">
-                    {event.type}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* No Events State */}
+      {(!urgentEvents || urgentEvents.length === 0) && (!upcomingEvents || upcomingEvents.length === 0) && (
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <CalendarDays className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-lg font-semibold">Events</h2>
+          </div>
+          
+          <Card>
+            <CardContent className="p-6 text-center">
+              <CalendarDays className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No upcoming events at this time</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 } 

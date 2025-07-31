@@ -90,4 +90,96 @@ export function sortBy<T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
     if (aVal > bVal) return direction === 'asc' ? 1 : -1
     return 0
   })
+}
+
+// Event utility functions
+export function isEventApplicableToUser(
+  event: { required_roles: string[] | null; required_company: string | null },
+  userRole: string,
+  userCompanyId?: string
+): boolean {
+  // Check if user's role is in required roles (or if no roles specified, allow all)
+  if (event.required_roles && event.required_roles.length > 0) {
+    if (!event.required_roles.includes(userRole)) {
+      return false
+    }
+  }
+
+  // Check if event is company-specific and user's company matches
+  if (event.required_company) {
+    return userCompanyId === event.required_company
+  }
+
+  // If no company specified, event applies to all companies
+  return true
+}
+
+export function categorizeEventByDueDate(event: { due_date: string | null }): {
+  isUrgent: boolean
+  isPastDue: boolean
+  daysUntilDue: number
+  formattedDueDate: string
+} {
+  if (!event.due_date) {
+    return {
+      isUrgent: false,
+      isPastDue: false,
+      daysUntilDue: 0,
+      formattedDueDate: 'No due date'
+    }
+  }
+
+  const now = new Date()
+  const dueDate = new Date(event.due_date)
+  const diffTime = dueDate.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+  const isPastDue = diffDays < 0
+  const isUrgent = diffDays <= 1 && diffDays >= 0 // Due today or tomorrow
+
+  // Format due date for display
+  let formattedDueDate: string
+  if (diffDays < 0) {
+    formattedDueDate = `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`
+  } else if (diffDays === 0) {
+    formattedDueDate = 'Due today'
+  } else if (diffDays === 1) {
+    formattedDueDate = 'Due tomorrow'
+  } else if (diffDays <= 7) {
+    formattedDueDate = `Due in ${diffDays} days`
+  } else {
+    formattedDueDate = dueDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  return {
+    isUrgent,
+    isPastDue,
+    daysUntilDue: diffDays,
+    formattedDueDate
+  }
+}
+
+export function filterAndSortEvents(
+  events: Array<{ due_date: string | null; required_roles: string[] | null; required_company: string | null }>,
+  userRole: string,
+  userCompanyId?: string,
+  includePastDue: boolean = true
+): typeof events {
+  return events
+    .filter(event => isEventApplicableToUser(event, userRole, userCompanyId))
+    .filter(event => {
+      if (!event.due_date) return false
+      const { isPastDue } = categorizeEventByDueDate(event)
+      return includePastDue ? true : !isPastDue
+    })
+    .sort((a, b) => {
+      if (!a.due_date) return 1
+      if (!b.due_date) return -1
+      return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
+    })
 } 
