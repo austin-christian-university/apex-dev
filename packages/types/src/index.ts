@@ -162,6 +162,60 @@ export interface OnboardingData {
   enneagram_profile?: string;
 }
 
+// Event types - matches Supabase recurring_events table
+export interface RecurringEvent {
+  id: string;
+  name: string;
+  description: string | null;
+  event_type: 'self_report' | 'officer_input' | 'staff_input' | 'attendance';
+  required_roles: string[] | null;
+  required_years: number[] | null;
+  class_code: string | null;
+  recurrence_pattern: 'daily' | 'weekly' | 'monthly' | 'semester' | 'yearly' | null;
+  recurrence_interval: number | null; // Every X days/weeks/months
+  recurrence_days: number[] | null; // Days of week (0-6) for weekly patterns
+  start_date: string;
+  end_date: string | null;
+  time_due: string | null; // Time component for due dates
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  required_company: string | null;
+}
+
+// Event instances - matches Supabase event_instances table
+export interface EventInstance {
+  id: string;
+  name: string;
+  description: string | null;
+  event_type: 'self_report' | 'officer_input' | 'staff_input' | 'attendance';
+  required_roles: string[] | null;
+  required_years: number[] | null;
+  class_code: string | null;
+  due_date: string | null;
+  is_active: boolean;
+  created_at: string;
+  created_by: string | null;
+  recurring_event_id: string | null;
+  required_company: string | null;
+}
+
+// Event filtering and categorization
+export interface UserEvent {
+  event: EventInstance;
+  isUrgent: boolean;
+  isPastDue: boolean;
+  daysUntilDue: number;
+  formattedDueDate: string;
+}
+
+export interface EventFilters {
+  userRole: string;
+  userCompanyId?: string;
+  includePastDue?: boolean;
+  limit?: number;
+}
+
 // Supabase Database types (for direct database operations)
 export type Database = {
   public: {
@@ -190,6 +244,22 @@ export type Database = {
           created_at?: string | null;
         };
         Update: Partial<Omit<Company, 'id'>>;
+      };
+      recurring_events: {
+        Row: RecurringEvent;
+        Insert: Omit<RecurringEvent, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string | null;
+        };
+        Update: Partial<Omit<RecurringEvent, 'id'>>;
+      };
+      event_instances: {
+        Row: EventInstance;
+        Insert: Omit<EventInstance, 'id' | 'created_at'> & {
+          id?: string;
+          created_at?: string | null;
+        };
+        Update: Partial<Omit<EventInstance, 'id'>>;
       };
     };
   };

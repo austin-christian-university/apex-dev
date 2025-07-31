@@ -41,9 +41,25 @@ export default function StaffPage() {
 
                 {/* Navigation */}
                 <nav className="flex-1 py-6 space-y-2">
-                  <div className="px-3 py-3 text-sm text-muted-foreground">
-                    <div className="font-medium">Staff Portal</div>
-                    <div className="text-xs text-muted-foreground">Coming Soon</div>
+                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Staff Portal
+                  </div>
+                  <a 
+                    href="/staff/home" 
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <Users className="h-4 w-4 mr-3" />
+                    Home
+                  </a>
+                  <a 
+                    href="/staff/events" 
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-3" />
+                    Event Management
+                  </a>
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
+                    More features coming soon!
                   </div>
                 </nav>
 
@@ -160,6 +176,45 @@ export default function StaffPage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Quick Access */}
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <span>🎉</span>
+                <span>Available Now</span>
+              </CardTitle>
+              <CardDescription>
+                Get started with these staff features that are ready to use
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a href="/staff/home" className="group">
+                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      <h4 className="font-medium group-hover:text-primary">Staff Home</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Your personal staff dashboard with motivation and updates
+                    </p>
+                  </div>
+                </a>
+                <a href="/staff/events" className="group">
+                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                      <h4 className="font-medium group-hover:text-primary">Event Management</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Create and manage recurring events and event instances for students
+                    </p>
+                  </div>
+                </a>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Development Timeline */}
           <Card>
