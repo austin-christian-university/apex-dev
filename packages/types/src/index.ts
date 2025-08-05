@@ -210,6 +210,8 @@ export interface UserEvent {
   isPastDue: boolean;
   daysUntilDue: number;
   formattedDueDate: string;
+  hasSubmitted?: boolean; // For attendance events
+  isEligibleForAttendance?: boolean; // For attendance events
 }
 
 export interface EventFilters {

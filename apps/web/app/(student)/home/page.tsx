@@ -51,6 +51,8 @@ export default async function HomePage() {
               isUrgent={userEvent.isUrgent}
               isPastDue={userEvent.isPastDue}
               variant="urgent"
+              hasSubmitted={userEvent.hasSubmitted}
+              isEligibleForAttendance={userEvent.isEligibleForAttendance}
             />
           ))}
         </div>
@@ -113,6 +115,8 @@ export default async function HomePage() {
                 isUrgent={userEvent.isUrgent}
                 isPastDue={userEvent.isPastDue}
                 variant="upcoming"
+                hasSubmitted={userEvent.hasSubmitted}
+                isEligibleForAttendance={userEvent.isEligibleForAttendance}
               />
             ))}
           </div>

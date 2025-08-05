@@ -1,13 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, memo } from 'react'
 import { Card, CardContent } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
 import { Dialog, DialogContent } from '@acu-apex/ui'
 import { Clock, CheckCircle } from 'lucide-react'
 import { AttendanceForm } from './attendance-form'
-import { isEventEligibleForAttendance } from '@/lib/attendance'
-import { hasSubmittedAttendance } from '@/lib/attendance-actions'
 import { toast } from '@acu-apex/ui'
 
 interface EventCardProps {
@@ -23,31 +21,25 @@ interface EventCardProps {
   isUrgent?: boolean
   isPastDue?: boolean
   variant?: 'urgent' | 'upcoming'
+  hasSubmitted?: boolean
+  isEligibleForAttendance?: boolean
 }
 
-export function EventCard({ 
+export const EventCard = memo(function EventCard({ 
   event, 
   studentId, 
   formattedDueDate, 
   isUrgent, 
   isPastDue,
-  variant = 'upcoming'
+  variant = 'upcoming',
+  hasSubmitted: initialHasSubmitted = false,
+  isEligibleForAttendance: initialIsEligible = false
 }: EventCardProps) {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false)
-  const [isEligible, setIsEligible] = useState(false)
-  const [hasSubmitted, setHasSubmitted] = useState(false)
-
-  useEffect(() => {
-    // Check if event is eligible for attendance
-    if (event.event_type === 'attendance' && event.due_date) {
-      setIsEligible(isEventEligibleForAttendance(event.due_date))
-      
-      // Check if already submitted
-      hasSubmittedAttendance(event.id, studentId).then(submitted => {
-        setHasSubmitted(submitted)
-      })
-    }
-  }, [event.id, event.due_date, event.event_type, studentId])
+  const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
+  
+  // Use server-provided eligibility, no need for useEffect
+  const isEligible = initialIsEligible
 
   const handleCardClick = () => {
     if (event.event_type === 'attendance' && isEligible && !hasSubmitted) {
@@ -62,6 +54,9 @@ export function EventCard({
       title: "Attendance Recorded",
       description: "Your attendance has been successfully submitted.",
     })
+    
+    // The server action already calls revalidatePath('/home') which will refresh the data
+    // The optimistic update above ensures immediate UI feedback
   }
 
   const isClickable = event.event_type === 'attendance' && isEligible && !hasSubmitted
@@ -134,4 +129,4 @@ export function EventCard({
       </Dialog>
     </>
   )
-}
+})

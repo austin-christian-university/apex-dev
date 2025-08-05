@@ -4,7 +4,8 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { 
   isEventApplicableToUser, 
   categorizeEventByDueDate, 
-  filterAndSortEvents 
+  filterAndSortEvents,
+  isEventEligibleForAttendance
 } from '@acu-apex/utils'
 
 /**
@@ -227,20 +228,35 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       submittedEventIds = await getStudentSubmissions(profile.student.id, attendanceEventIds, supabase)
     }
 
+    // Enhance events with submission status and eligibility
+    const enhancedEvents = allEvents.map(event => {
+      const isAttendanceEvent = event.event.event_type === 'attendance'
+      const hasSubmitted = isAttendanceEvent ? submittedEventIds.has(event.event.id) : false
+      const isEligibleForAttendance = isAttendanceEvent && event.event.due_date 
+        ? isEventEligibleForAttendance(event.event.due_date) 
+        : false
+      
+      return {
+        ...event,
+        hasSubmitted,
+        isEligibleForAttendance
+      }
+    })
+
     // Filter urgent events: exclude attendance events that have been submitted
-    const urgentEvents = allEvents.filter(event => {
+    const urgentEvents = enhancedEvents.filter(event => {
       if (!event.isPastDue) return false
       
       // For attendance events, only show as urgent if not submitted
       if (event.event.event_type === 'attendance') {
-        return !submittedEventIds.has(event.event.id)
+        return !event.hasSubmitted
       }
       
       return true
     })
 
-    // Filter upcoming events: include all events but they'll show submission status in UI
-    const upcomingEvents = allEvents
+    // Filter upcoming events: include all events with submission status
+    const upcomingEvents = enhancedEvents
       .filter(event => !event.isPastDue)
       .slice(0, 5)
 
