@@ -32,6 +32,11 @@ alwaysApply: true
 
 ## **Feature-Specific Rules**
 
+### **[type-validation.mdc](mdc:.cursor/rules/type-validation.mdc)**
+- **Purpose**: Type validation best practices using Zod schemas and TypeScript
+- **Scope**: Data validation, type safety, runtime validation
+- **Key Topics**: Zod schemas, TypeScript types, form validation, API validation, database constraints
+
 ### **[forms-email.mdc](mdc:.cursor/rules/forms-email.mdc)**
 - **Purpose**: Form handling and email functionality
 - **Scope**: Form validation, email services, user interactions
@@ -59,9 +64,10 @@ alwaysApply: true
 ## **Rule Usage Guidelines**
 
 ### **When to Apply Each Rule**
-- **Always Apply**: `cursor-rules.mdc`, `project-structure.mdc`, `tech-stack.mdc`
+- **Always Apply**: `cursor-rules.mdc`, `project-structure.mdc`, `tech-stack.mdc`, `type-validation.mdc`
 - **UI Development**: `nextjs-shadcn.mdc`
-- **Form/Email Features**: `forms-email.mdc`
+- **Form/Email Features**: `forms-email.mdc`, `type-validation.mdc`
+- **Data Validation**: `type-validation.mdc`
 - **Project Planning**: `task-list.mdc`
 - **Code Quality**: `general-reminders.mdc`
 - **Rule Maintenance**: `self_improve.mdc`
@@ -70,6 +76,7 @@ alwaysApply: true
 - All rules depend on `cursor-rules.mdc` for proper formatting
 - `project-structure.mdc` provides foundation for file organization
 - `tech-stack.mdc` builds on project structure with technology specifics
+- `type-validation.mdc` extends tech stack with validation patterns
 - `nextjs-shadcn.mdc` extends tech stack with UI-specific guidelines
 
 ### **Cross-References**

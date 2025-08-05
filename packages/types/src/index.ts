@@ -1,3 +1,6 @@
+// Event submission types and validation
+export * from './event-submissions';
+
 // User types - matches Supabase users table
 export interface User {
   id: string;

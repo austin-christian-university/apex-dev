@@ -1,0 +1,339 @@
+---
+description: Type validation best practices using Zod schemas and TypeScript for runtime and compile-time safety
+globs: packages/types/**/*.ts, apps/**/*.ts, apps/**/*.tsx, lib/**/*.ts, components/**/*.tsx
+alwaysApply: true
+---
+
+# Type Validation Best Practices
+- **Centralized Validation**: All Zod schemas and TypeScript types live in `packages/types/`
+- **Single Source of Truth**: One schema definition used across frontend, backend, and database
+- **Type Inference**: Use `z.infer<typeof Schema>` to generate TypeScript types from Zod schemas
+- **Discriminated Unions**: Use `z.discriminatedUnion()` for complex data structures with multiple variants
+
+## **Schema Definition Patterns**
+
+### **Base Schema Extension**
+```typescript
+// ✅ DO: Extend base schemas for consistency
+export const BaseSubmissionDataSchema = z.object({
+  submission_type: z.string(),
+  notes: z.string().optional(),
+});
+
+export const CommunityServiceSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('community_service'),
+  hours: z.number().min(0).max(24),
+  organization: z.string().min(1),
+  // ... other fields
+});
+```
+
+### **Discriminated Unions for Complex Types**
+```typescript
+// ✅ DO: Use discriminated unions for variant types
+export const EventSubmissionDataSchema = z.discriminatedUnion('submission_type', [
+  AttendanceSubmissionSchema,
+  CommunityServiceSubmissionSchema,
+  TeamMeetingSubmissionSchema,
+  // ... other schemas
+]);
+```
+
+## **Validation Functions**
+
+### **Required Helper Functions**
+```typescript
+// ✅ DO: Always provide these validation helpers
+export function validateSubmissionData(data: unknown): EventSubmissionData {
+  return EventSubmissionDataSchema.parse(data);
+}
+
+export function safeValidateSubmissionData(data: unknown): EventSubmissionData | null {
+  const result = EventSubmissionDataSchema.safeParse(data);
+  return result.success ? result.data : null;
+}
+
+export function isValidSubmissionData(data: unknown): data is EventSubmissionData {
+  return EventSubmissionDataSchema.safeParse(data).success;
+}
+```
+
+## **Frontend Validation Patterns**
+
+### **Form Validation**
+```typescript
+// ✅ DO: Validate in forms before submission
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  try {
+    const validatedData = validateSubmissionData(formData);
+    await onSubmit(validatedData);
+  } catch (error) {
+    if (error instanceof Error) {
+      setErrors({ general: error.message });
+    }
+  }
+};
+```
+
+### **Type-Safe State Management**
+```typescript
+// ✅ DO: Use proper typing for form state
+const [formData, setFormData] = useState<Partial<CommunityServiceSubmission>>({
+  submission_type: 'community_service',
+  hours: 0,
+  // ... other fields with proper types
+});
+```
+
+## **Backend Validation Patterns**
+
+### **API Route Validation**
+```typescript
+// ✅ DO: Validate all incoming data in API routes
+export async function POST(request: NextRequest) {
+  const body = await request.json();
+  
+  try {
+    const validatedData = validateSubmissionData(body.submission_data);
+    // Process validated data
+  } catch (validationError) {
+    return NextResponse.json({ 
+      error: 'Invalid data', 
+      details: validationError instanceof Error ? validationError.message : 'Unknown error'
+    }, { status: 400 });
+  }
+}
+```
+
+### **Server Action Validation**
+```typescript
+// ✅ DO: Validate in server actions with proper error handling
+export async function submitEventSubmission(
+  eventId: string,
+  studentId: string,
+  submissionData: unknown
+) {
+  try {
+    const validatedData = validateSubmissionData(submissionData);
+    
+    // Additional business logic validation
+    if (validatedData.submission_type === 'community_service') {
+      if (validatedData.hours > 24) {
+        throw new Error('Community service hours cannot exceed 24 hours per day');
+      }
+    }
+    
+    // Process validated data
+  } catch (error) {
+    console.error('Validation error:', error);
+    throw error;
+  }
+}
+```
+
+## **Database Validation**
+
+### **JSONB Constraints**
+```sql
+-- ✅ DO: Add database-level validation for critical fields
+CREATE OR REPLACE FUNCTION validate_submission_jsonb(
+  submission_data jsonb,
+  event_type text
+) RETURNS boolean AS $$
+BEGIN
+  IF submission_data IS NULL THEN
+    RETURN false;
+  END IF;
+  
+  IF submission_data->>'submission_type' IS NULL THEN
+    RETURN false;
+  END IF;
+  
+  -- Add specific validation logic
+  RETURN true;
+END;
+$$ LANGUAGE plpgsql;
+
+ALTER TABLE event_submissions 
+ADD CONSTRAINT check_submission_data_valid 
+CHECK (validate_submission_jsonb(submission_data, 
+  (SELECT event_type FROM event_instances WHERE id = event_id)
+));
+```
+
+## **Type-Safe Query Patterns**
+
+### **Filtering with Type Guards**
+```typescript
+// ✅ DO: Use type guards for filtering validated data
+export async function getCommunityServiceSubmissions(studentId: string) {
+  const { data, error } = await supabase
+    .from('event_submissions')
+    .select('*')
+    .eq('student_id', studentId)
+    .contains('submission_data', { submission_type: 'community_service' });
+
+  if (error) throw error;
+
+  // Type-safe filtering
+  const validSubmissions = data?.filter(submission => {
+    return isValidSubmissionData(submission.submission_data) &&
+           submission.submission_data.submission_type === 'community_service';
+  }) as (typeof data[0] & { submission_data: CommunityServiceSubmission })[] | null;
+
+  return validSubmissions || [];
+}
+```
+
+## **Error Handling Patterns**
+
+### **Validation Error Messages**
+```typescript
+// ✅ DO: Provide user-friendly error messages
+try {
+  const validatedData = validateSubmissionData(formData);
+} catch (error) {
+  if (error instanceof z.ZodError) {
+    const fieldErrors = error.errors.map(err => ({
+      field: err.path.join('.'),
+      message: err.message
+    }));
+    setFieldErrors(fieldErrors);
+  } else {
+    setErrors({ general: 'An unexpected error occurred' });
+  }
+}
+```
+
+## **Testing Validation**
+
+### **Schema Testing**
+```typescript
+// ✅ DO: Test schemas independently
+describe('CommunityServiceSubmissionSchema', () => {
+  it('should validate correct data', () => {
+    const validData = {
+      submission_type: 'community_service',
+      hours: 5,
+      organization: 'Test Org',
+      supervisor_name: 'John Doe',
+      supervisor_contact: 'john@test.com',
+      description: 'Volunteer work at local shelter',
+      location: 'Local Shelter',
+      date_of_service: '2024-01-15',
+      verification_method: 'photo'
+    };
+    
+    const result = CommunityServiceSubmissionSchema.safeParse(validData);
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject invalid data', () => {
+    const invalidData = {
+      submission_type: 'community_service',
+      hours: 25, // Too many hours
+      organization: '', // Empty string
+      // Missing required fields
+    };
+    
+    const result = CommunityServiceSubmissionSchema.safeParse(invalidData);
+    expect(result.success).toBe(false);
+  });
+});
+```
+
+## **Schema Evolution**
+
+### **Adding New Types**
+```typescript
+// ✅ DO: Follow this pattern when adding new submission types
+// 1. Define the schema
+export const NewSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('new_type'),
+  // ... fields
+});
+
+// 2. Add to the discriminated union
+export const EventSubmissionDataSchema = z.discriminatedUnion('submission_type', [
+  // ... existing schemas
+  NewSubmissionSchema,
+]);
+
+// 3. Export the type
+export type NewSubmission = z.infer<typeof NewSubmissionSchema>;
+
+// 4. Add to helper functions
+export function getSubmissionSchema(submissionType: string) {
+  const schemas = {
+    // ... existing schemas
+    new_type: NewSubmissionSchema,
+  };
+  return schemas[submissionType as keyof typeof schemas];
+}
+```
+
+## **Performance Considerations**
+
+### **GIN Indexes for JSONB**
+```sql
+-- ✅ DO: Create indexes for efficient JSONB queries
+CREATE INDEX idx_submission_data_type ON event_submissions 
+USING GIN ((submission_data->>'submission_type'));
+
+CREATE INDEX idx_submission_attendance_status ON event_submissions 
+USING GIN ((submission_data->>'status'));
+```
+
+## **Anti-Patterns to Avoid**
+
+### **❌ DON'T: Manual Validation**
+```typescript
+// ❌ DON'T: Manual validation without schemas
+function validateData(data: any) {
+  if (!data.hours || typeof data.hours !== 'number') {
+    throw new Error('Invalid hours');
+  }
+  // ... more manual checks
+}
+```
+
+### **❌ DON'T: Type Assertions**
+```typescript
+// ❌ DON'T: Use type assertions without validation
+const submissionData = data as CommunityServiceSubmission;
+```
+
+### **❌ DON'T: Duplicate Validation Logic**
+```typescript
+// ❌ DON'T: Define validation rules in multiple places
+// Frontend validation
+const validateHours = (hours: number) => hours >= 0 && hours <= 24;
+
+// Backend validation  
+const validateHours = (hours: number) => hours >= 0 && hours <= 24;
+```
+
+## **Integration with Existing Rules**
+
+### **Related Rules**
+- Follow [tech-stack.mdc](mdc:.cursor/rules/tech-stack.mdc) for TypeScript best practices
+- Use [project-structure.mdc](mdc:.cursor/rules/project-structure.mdc) for package organization
+- Apply [forms-email.mdc](mdc:.cursor/rules/forms-email.mdc) for form validation patterns
+
+### **File References**
+- Main types package: [packages/types/src/index.ts](mdc:packages/types/src/index.ts)
+- Event submission schemas: [packages/types/src/event-submissions.ts](mdc:packages/types/src/event-submissions.ts)
+- Usage examples: [docs/EVENT_SUBMISSION_USAGE_EXAMPLES.md](mdc:docs/EVENT_SUBMISSION_USAGE_EXAMPLES.md)
+
+---
+
+**Related Rules:**
+- [tech-stack.mdc](mdc:.cursor/rules/tech-stack.mdc) - TypeScript and Next.js patterns
+- [project-structure.mdc](mdc:.cursor/rules/project-structure.mdc) - Package organization
+- [forms-email.mdc](mdc:.cursor/rules/forms-email.mdc) - Form validation patterns
+description:
+globs:
+alwaysApply: false
+---
