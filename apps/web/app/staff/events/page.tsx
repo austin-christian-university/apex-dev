@@ -339,15 +339,15 @@ export default function StaffEventsPage() {
             />
           </div>
           
-          <Select value={filters.eventType || ''} onValueChange={(value) => 
-            setFilters(prev => ({ ...prev, eventType: value || undefined }))
+          <Select value={filters.eventType || 'all'} onValueChange={(value) => 
+            setFilters(prev => ({ ...prev, eventType: value === 'all' ? undefined : value }))
           }>
             <SelectTrigger className="w-48">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Event Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Types</SelectItem>
+              <SelectItem value="all">All Types</SelectItem>
               <SelectItem value="self_report">Self Report</SelectItem>
               <SelectItem value="officer_input">Officer Input</SelectItem>
               <SelectItem value="staff_input">Staff Input</SelectItem>
@@ -355,15 +355,15 @@ export default function StaffEventsPage() {
             </SelectContent>
           </Select>
 
-          <Select value={filters.companyId || ''} onValueChange={(value) => 
-            setFilters(prev => ({ ...prev, companyId: value || undefined }))
+          <Select value={filters.companyId || 'all'} onValueChange={(value) => 
+            setFilters(prev => ({ ...prev, companyId: value === 'all' ? undefined : value }))
           }>
             <SelectTrigger className="w-48">
               <Users className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Company" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Companies</SelectItem>
+              <SelectItem value="all">All Companies</SelectItem>
               {eventsData.companies.map(company => (
                 <SelectItem key={company.id} value={company.id}>
                   {company.name}
@@ -372,14 +372,14 @@ export default function StaffEventsPage() {
             </SelectContent>
           </Select>
 
-          <Select value={filters.isActive?.toString() || ''} onValueChange={(value) => 
-            setFilters(prev => ({ ...prev, isActive: value ? value === 'true' : undefined }))
+          <Select value={filters.isActive?.toString() || 'all'} onValueChange={(value) => 
+            setFilters(prev => ({ ...prev, isActive: value === 'all' ? undefined : value === 'true' }))
           }>
             <SelectTrigger className="w-32">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="true">Active</SelectItem>
               <SelectItem value="false">Inactive</SelectItem>
             </SelectContent>

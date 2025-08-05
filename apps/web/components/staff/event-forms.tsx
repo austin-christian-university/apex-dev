@@ -436,14 +436,14 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
           <div>
             <Label htmlFor="required_company">Required Company</Label>
-            <Select value={formData.required_company} onValueChange={(value) => 
-              setFormData(prev => ({ ...prev, required_company: value }))
+            <Select value={formData.required_company || "all"} onValueChange={(value) => 
+              setFormData(prev => ({ ...prev, required_company: value === "all" ? "" : value }))
             }>
               <SelectTrigger>
                 <SelectValue placeholder="All companies" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Companies</SelectItem>
+                <SelectItem value="all">All Companies</SelectItem>
                 {companies.map(company => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.name}
@@ -493,14 +493,14 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
               <div>
                 <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
-                <Select value={formData.recurrence_pattern || ''} onValueChange={(value: any) => 
-                  setFormData(prev => ({ ...prev, recurrence_pattern: value || null }))
+                <Select value={formData.recurrence_pattern || 'none'} onValueChange={(value: any) => 
+                  setFormData(prev => ({ ...prev, recurrence_pattern: value === 'none' ? null : value }))
                 }>
                   <SelectTrigger>
                     <SelectValue placeholder="No recurrence (single event)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No recurrence (single event)</SelectItem>
+                    <SelectItem value="none">No recurrence (single event)</SelectItem>
                     {RECURRENCE_PATTERNS.map(pattern => (
                       <SelectItem key={pattern.value} value={pattern.value}>
                         {pattern.label}

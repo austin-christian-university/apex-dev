@@ -50,7 +50,7 @@ export async function getCompanyDetails(
       .from('students')
       .select(`
         *,
-        users!inner (
+        users (
           id,
           first_name,
           last_name,
@@ -67,22 +67,32 @@ export async function getCompanyDetails(
     }
 
     // Transform and calculate member data
-    const companyMembers: CompanyMember[] = (members || []).map(member => ({
-      user: member.users as User,
-      student: {
-        id: member.id,
-        company_id: member.company_id,
-        academic_role: member.academic_role,
-        company_role: member.company_role,
-        academic_year_start: member.academic_year_start,
-        academic_year_end: member.academic_year_end,
-        created_at: member.created_at,
-        updated_at: member.updated_at,
-        student_id: member.student_id
-      },
-      // Placeholder GPA calculation - will be implemented with scoring system
-      holisticGPA: 3.50 + Math.random() * 0.5 // Random between 3.50-4.00 for now
-    }))
+    const companyMembers: CompanyMember[] = (members || []).map(member => {
+      // Handle the case where users might be an array or single object
+      const userData = Array.isArray(member.users) ? member.users[0] : member.users
+      
+      if (!userData) {
+        console.warn('No user data for member:', member.id)
+        return null
+      }
+      
+      return {
+        user: userData as User,
+        student: {
+          id: member.id,
+          company_id: member.company_id,
+          academic_role: member.academic_role,
+          company_role: member.company_role,
+          academic_year_start: member.academic_year_start,
+          academic_year_end: member.academic_year_end,
+          created_at: member.created_at,
+          updated_at: member.updated_at,
+          student_id: member.student_id
+        },
+        // Placeholder GPA calculation - will be implemented with scoring system
+        holisticGPA: 3.50 + Math.random() * 0.5 // Random between 3.50-4.00 for now
+      }
+    }).filter(Boolean) as CompanyMember[]
 
     // Calculate company-wide metrics
     const memberCount = companyMembers.length
