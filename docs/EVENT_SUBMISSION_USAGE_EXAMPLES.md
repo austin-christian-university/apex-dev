@@ -340,8 +340,7 @@ export async function POST(request: NextRequest) {
         event_id: body.event_id,
         student_id: body.student_id,
         submitted_by: user.id,
-        submission_data: validatedData, // This is now type-safe
-        is_approved: false
+        submission_data: validatedData // This is now type-safe
       })
       .select()
       .single()
@@ -454,8 +453,7 @@ export async function submitEventSubmission(
         event_id: eventId,
         student_id: studentId,
         submitted_by: user.id,
-        submission_data: validatedData,
-        is_approved: false
+        submission_data: validatedData
       })
       .select()
       .single()
@@ -477,36 +475,9 @@ export async function submitEventSubmission(
   }
 }
 
-export async function approveSubmission(
-  submissionId: string,
-  approvedBy: string
-) {
-  try {
-    const supabase = await createClient()
-    
-    const { data, error } = await supabase
-      .from('event_submissions')
-      .update({
-        is_approved: true,
-        approved_by: approvedBy,
-        approved_at: new Date().toISOString()
-      })
-      .eq('id', submissionId)
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error('Failed to approve submission')
-    }
-
-    revalidatePath('/dashboard')
-    return { success: true, submission: data }
-
-  } catch (error) {
-    console.error('Approval error:', error)
-    throw error
-  }
-}
+// Note: The approval system has been removed. Submissions are now automatically accepted.
+// If you need approval functionality, consider implementing it through a separate workflow
+// or status field in the submission_data JSONB column.
 ```
 
 ## **3. Database Functions with Validation**

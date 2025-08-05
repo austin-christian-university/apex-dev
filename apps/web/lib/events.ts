@@ -137,6 +137,25 @@ export async function fetchUpcomingEvents(
 }
 
 /**
+ * Check if student has submitted for specific events
+ */
+async function getStudentSubmissions(
+  studentId: string,
+  eventIds: string[],
+  supabase: SupabaseClient
+): Promise<Set<string>> {
+  if (eventIds.length === 0) return new Set()
+  
+  const { data: submissions } = await supabase
+    .from('event_submissions')
+    .select('event_id')
+    .eq('student_id', studentId)
+    .in('event_id', eventIds)
+  
+  return new Set(submissions?.map(sub => sub.event_id) || [])
+}
+
+/**
  * Get user profile with events for homepage
  */
 export async function getUserProfileWithEvents(authUserId: string, supabaseClient?: SupabaseClient): Promise<{
@@ -191,17 +210,45 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       userCompanyId = student.company_id
     }
 
-    // Fetch events in parallel
-    const [urgentResult, upcomingResult] = await Promise.all([
-      fetchUrgentEvents(user.role, userCompanyId, supabase),
-      fetchUpcomingEvents(user.role, userCompanyId, 5, supabase)
-    ])
+    // Fetch all events first
+    const { events: allEvents, error: eventsError } = await fetchUserEvents(user.role, userCompanyId, 50, supabase)
+    
+    if (eventsError) {
+      return { profile, error: eventsError }
+    }
+
+    // For students, check which attendance events they've already submitted
+    let submittedEventIds = new Set<string>()
+    if (user.role === 'student' && profile.student) {
+      const attendanceEventIds = allEvents
+        .filter(event => event.event.event_type === 'attendance')
+        .map(event => event.event.id)
+      
+      submittedEventIds = await getStudentSubmissions(profile.student.id, attendanceEventIds, supabase)
+    }
+
+    // Filter urgent events: exclude attendance events that have been submitted
+    const urgentEvents = allEvents.filter(event => {
+      if (!event.isPastDue) return false
+      
+      // For attendance events, only show as urgent if not submitted
+      if (event.event.event_type === 'attendance') {
+        return !submittedEventIds.has(event.event.id)
+      }
+      
+      return true
+    })
+
+    // Filter upcoming events: include all events but they'll show submission status in UI
+    const upcomingEvents = allEvents
+      .filter(event => !event.isPastDue)
+      .slice(0, 5)
 
     return {
       profile,
-      urgentEvents: urgentResult.events,
-      upcomingEvents: upcomingResult.events,
-      error: urgentResult.error || upcomingResult.error
+      urgentEvents,
+      upcomingEvents,
+      error: undefined
     }
   } catch (error) {
     console.error('Profile with events fetch error:', error)

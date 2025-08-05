@@ -11,11 +11,8 @@ export type BaseSubmissionData = z.infer<typeof BaseSubmissionDataSchema>;
 // Attendance Events
 export const AttendanceSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('attendance'),
-  status: z.enum(['present', 'late', 'absent', 'excused']),
-  arrival_time: z.string().optional(), // "09:15"
-  departure_time: z.string().optional(), // "10:00"
-  participation_level: z.enum(['active', 'passive', 'disruptive']),
-  location: z.string().optional(), // "Chapel", "Classroom 101"
+  status: z.enum(['present', 'absent', 'excused']),
+  location: z.string().optional(), // Optional override for event location
 });
 
 export type AttendanceSubmission = z.infer<typeof AttendanceSubmissionSchema>;

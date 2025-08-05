@@ -182,4 +182,17 @@ export function filterAndSortEvents(
       if (!b.due_date) return -1
       return new Date(a.due_date).getTime() - new Date(b.due_date).getTime()
     })
+}
+
+/**
+ * Check if an event is eligible for attendance submission
+ * Events are eligible if they are past due or start within the next hour
+ */
+export function isEventEligibleForAttendance(eventDueDate: string): boolean {
+  const now = new Date()
+  const eventDate = new Date(eventDueDate)
+  const oneHourFromNow = new Date(now.getTime() + 60 * 60 * 1000) // 1 hour in milliseconds
+  
+  // Event is eligible if it's past or starts within the next hour
+  return eventDate <= oneHourFromNow
 } 

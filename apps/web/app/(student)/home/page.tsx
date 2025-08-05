@@ -4,6 +4,7 @@ import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { getUserProfileWithEvents } from "@/lib/events"
 import { redirect } from "next/navigation"
+import { EventCard } from "@/components/event-card"
 
 // Mock company standings data - will be replaced with real data later
 const mockCompanyStandings = [
@@ -42,24 +43,15 @@ export default async function HomePage() {
           </div>
           
           {urgentEvents.map((userEvent) => (
-            <Card key={userEvent.event.id} className="border-destructive/20 bg-destructive/5">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium mb-1">{userEvent.event.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {userEvent.event.description || 'No description available'}
-                    </p>
-                    <p className={`text-xs font-medium ${userEvent.isPastDue ? 'text-destructive' : 'text-orange-600'}`}>
-                      {userEvent.formattedDueDate}
-                    </p>
-                  </div>
-                  <Badge variant="destructive" className="text-xs">
-                    Overdue
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+            <EventCard
+              key={userEvent.event.id}
+              event={userEvent.event}
+              studentId={profile?.student.id || ''}
+              formattedDueDate={userEvent.formattedDueDate}
+              isUrgent={userEvent.isUrgent}
+              isPastDue={userEvent.isPastDue}
+              variant="urgent"
+            />
           ))}
         </div>
       )}
@@ -113,27 +105,15 @@ export default async function HomePage() {
           
           <div className="space-y-2">
             {upcomingEvents.map((userEvent) => (
-              <Card key={userEvent.event.id}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium mb-1">{userEvent.event.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {userEvent.event.description || 'No description available'}
-                      </p>
-                      <p className={`text-xs ${userEvent.isUrgent ? 'text-orange-600 font-medium' : 'text-muted-foreground'}`}>
-                        {userEvent.formattedDueDate}
-                      </p>
-                    </div>
-                                         <Badge 
-                       variant={userEvent.isUrgent ? "secondary" : "outline"} 
-                       className={`text-xs capitalize ${userEvent.isUrgent ? 'bg-orange-100 text-orange-800 border-orange-200' : ''}`}
-                     >
-                       {userEvent.isUrgent ? 'Due Soon' : userEvent.event.event_type.replace('_', ' ')}
-                     </Badge>
-                  </div>
-                </CardContent>
-              </Card>
+              <EventCard
+                key={userEvent.event.id}
+                event={userEvent.event}
+                studentId={profile?.student.id || ''}
+                formattedDueDate={userEvent.formattedDueDate}
+                isUrgent={userEvent.isUrgent}
+                isPastDue={userEvent.isPastDue}
+                variant="upcoming"
+              />
             ))}
           </div>
         </div>
