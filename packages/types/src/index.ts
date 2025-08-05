@@ -76,6 +76,9 @@ export interface Company {
   id: string;
   name: string;
   description: string | null;
+  motto: string | null;
+  vision: string | null;
+  quote: string | null;
   created_at?: string | null; // Made optional since it's nullable and not always selected
   is_active: boolean | null;
 }

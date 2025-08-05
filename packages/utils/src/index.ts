@@ -195,4 +195,32 @@ export function isEventEligibleForAttendance(eventDueDate: string): boolean {
   
   // Event is eligible if it's past or starts within the next hour
   return eventDate <= oneHourFromNow
+}
+
+/**
+ * Calculate company ranking based on holistic GPA
+ * This is a placeholder - will be implemented when scoring system is built
+ */
+export function calculateCompanyRank(companies: Array<{ id: string; holisticGPA: number }>): Map<string, number> {
+  const sorted = companies
+    .sort((a, b) => b.holisticGPA - a.holisticGPA)
+  
+  const rankMap = new Map<string, number>()
+  sorted.forEach((company, index) => {
+    rankMap.set(company.id, index + 1)
+  })
+  
+  return rankMap
+}
+
+/**
+ * Format company motto with proper capitalization
+ */
+export function formatCompanyMotto(motto: string | null): string {
+  if (!motto || motto.trim() === '') return ''
+  
+  return motto
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
 } 
