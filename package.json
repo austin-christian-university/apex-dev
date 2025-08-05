@@ -13,12 +13,16 @@
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate-dummy-data": "tsx scripts/generate-dummy-data.ts"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@types/node": "^22",
+    "dotenv": "^16.4.5",
     "prettier": "^3.0.0",
     "turbo": "^1.10.0",
+    "tsx": "^4.7.0",
     "typescript": "^5"
   },
   "packageManager": "pnpm@8.0.0",
