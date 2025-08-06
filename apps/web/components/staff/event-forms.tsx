@@ -9,10 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
-import { Calendar, CalendarDays, Clock, Users, AlertCircle, CheckCircle2, X } from 'lucide-react'
+import { Calendar, CalendarDays, AlertCircle, CheckCircle2, X } from 'lucide-react'
 import type { RecurringEvent, EventInstance, Company } from '@acu-apex/types'
-import { createRecurringEvent, createEventInstance, updateRecurringEvent, updateEventInstance } from '@/lib/staff-events'
-import { formatPhoneNumber } from '@acu-apex/utils'
+import { createRecurringEvent, createEventInstance } from '@/lib/staff-events'
 
 interface EventFormProps {
   mode: 'create' | 'edit'
@@ -292,25 +291,25 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center space-x-2">
+    <form onSubmit={handleSubmit} className="space-y-4 py-4">
+      {/* Header - More compact */}
+      <div className="flex items-center space-x-2 mb-4">
         {eventType === 'recurring' ? (
-          <Calendar className="h-5 w-5 text-primary" />
+          <Calendar className="h-4 w-4 text-primary" />
         ) : (
-          <CalendarDays className="h-5 w-5 text-secondary" />
+          <CalendarDays className="h-4 w-4 text-secondary" />
         )}
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-base font-semibold">
           {mode === 'create' ? 'Create' : 'Edit'} {eventType === 'recurring' ? 'Recurring Event' : 'Event Instance'}
         </h3>
       </div>
 
       {/* Basic Information */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Basic Information</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Basic Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-0">
           <div>
             <Label htmlFor="name">Event Name *</Label>
             <Input
@@ -338,7 +337,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
           <div>
             <Label htmlFor="event_type">Event Type *</Label>
-            <Select value={formData.event_type} onValueChange={(value: any) => 
+            <Select value={formData.event_type} onValueChange={(value: RecurringEvent['event_type']) => 
               setFormData(prev => ({ ...prev, event_type: value }))
             }>
               <SelectTrigger className={errors.event_type ? 'border-destructive' : ''}>
@@ -389,21 +388,21 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
       {/* Target Audience */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Target Audience</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">Target Audience</CardTitle>
+          <CardDescription className="text-xs">
             Leave empty to target all users. Select specific roles, years, or companies to limit the audience.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-0">
           <div>
             <Label>Required Roles</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-2">
               {ROLE_OPTIONS.map(role => (
                 <Badge
                   key={role.value}
                   variant={formData.required_roles.includes(role.value) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs py-1 px-2"
                   onClick={() => toggleRole(role.value)}
                 >
                   {role.label}
@@ -417,12 +416,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
           <div>
             <Label>Required Academic Years</Label>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-1.5 mt-2">
               {YEAR_OPTIONS.map(year => (
                 <Badge
                   key={year.value}
                   variant={formData.required_years.includes(year.value) ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs py-1 px-2"
                   onClick={() => toggleYear(year.value)}
                 >
                   {year.label}
@@ -436,7 +435,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
           <div>
             <Label htmlFor="required_company">Required Company</Label>
-            <Select value={formData.required_company || "all"} onValueChange={(value) => 
+            <Select value={formData.required_company || "all"} onValueChange={(value: string) => 
               setFormData(prev => ({ ...prev, required_company: value === "all" ? "" : value }))
             }>
               <SelectTrigger>
@@ -457,15 +456,15 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
       {/* Date/Time Configuration */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium">
             {eventType === 'recurring' ? 'Recurrence Schedule' : 'Due Date'}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-0">
           {eventType === 'recurring' ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="start_date">Start Date *</Label>
                   <Input
@@ -493,8 +492,8 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
               <div>
                 <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
-                <Select value={formData.recurrence_pattern || 'none'} onValueChange={(value: any) => 
-                  setFormData(prev => ({ ...prev, recurrence_pattern: value === 'none' ? null : value }))
+                <Select value={formData.recurrence_pattern || 'none'} onValueChange={(value: string) => 
+                  setFormData(prev => ({ ...prev, recurrence_pattern: value === 'none' ? null : value as RecurringEvent['recurrence_pattern'] }))
                 }>
                   <SelectTrigger>
                     <SelectValue placeholder="No recurrence (single event)" />
@@ -536,12 +535,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
               {formData.recurrence_pattern === 'weekly' && (
                 <div>
                   <Label>Days of Week</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1.5 mt-2">
                     {DAYS_OF_WEEK.map(day => (
                       <Badge
                         key={day.value}
                         variant={formData.recurrence_days.includes(day.value) ? 'default' : 'outline'}
-                        className="cursor-pointer"
+                        className="cursor-pointer text-xs py-1 px-2"
                         onClick={() => toggleDay(day.value)}
                       >
                         {day.short}
@@ -593,12 +592,22 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
         </div>
       )}
 
-      {/* Actions */}
-      <div className="flex items-center justify-end space-x-3">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+      {/* Actions - Mobile-friendly */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:justify-end pt-4 border-t bg-background sticky bottom-0">
+        <Button 
+          type="button" 
+          variant="outline" 
+          onClick={onCancel} 
+          disabled={loading}
+          className="order-2 sm:order-1"
+        >
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button 
+          type="submit" 
+          disabled={loading}
+          className="order-1 sm:order-2"
+        >
           {loading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>

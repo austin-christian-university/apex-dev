@@ -23,12 +23,11 @@ import {
   Repeat, 
   CalendarDays,
   Settings2,
-  AlertCircle,
-  CheckCircle2
+  AlertCircle
 } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 import { fetchAllEventsForStaff, deleteRecurringEvent, deleteEventInstance, type StaffEventFilters, type EventsResponse } from '@/lib/staff-events'
-import type { RecurringEvent, EventInstance, Company } from '@acu-apex/types'
+import type { RecurringEvent, EventInstance } from '@acu-apex/types'
 import { formatDate, formatDateTime } from '@acu-apex/utils'
 import { EventForm } from '@/components/staff/event-forms'
 
@@ -55,7 +54,7 @@ export default function StaffEventsPage() {
   // Load events data
   useEffect(() => {
     loadEvents()
-  }, [filters])
+  }, [filters]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadEvents = async () => {
     setLoading(true)
@@ -278,15 +277,18 @@ export default function StaffEventsPage() {
                   Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
+              <DialogContent className="max-w-2xl w-full max-h-[90vh] flex flex-col mx-4">
+                <DialogHeader className="flex-shrink-0">
                   <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="flex space-x-2">
+                
+                {/* Mode Selection - Fixed at top */}
+                <div className="flex-shrink-0 space-y-4 pb-4 border-b">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button 
                       variant={createMode === 'recurring' ? 'default' : 'outline'}
                       onClick={() => setCreateMode('recurring')}
+                      className="flex-1"
                     >
                       <Repeat className="h-4 w-4 mr-2" />
                       Recurring Event
@@ -294,6 +296,7 @@ export default function StaffEventsPage() {
                     <Button 
                       variant={createMode === 'instance' ? 'default' : 'outline'}
                       onClick={() => setCreateMode('instance')}
+                      className="flex-1"
                     >
                       <CalendarDays className="h-4 w-4 mr-2" />
                       Single Event
@@ -305,20 +308,25 @@ export default function StaffEventsPage() {
                       : 'Create a single, standalone event instance'
                     }
                   </p>
-                  
-                  {user?.id && (
-                    <EventForm
-                      mode="create"
-                      eventType={createMode}
-                      companies={eventsData.companies}
-                      userId={user.id}
-                      onSuccess={() => {
-                        setShowCreateDialog(false)
-                        loadEvents()
-                      }}
-                      onCancel={() => setShowCreateDialog(false)}
-                    />
-                  )}
+                </div>
+                
+                {/* Scrollable Form Content */}
+                <div className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0">
+                  <div className="space-y-4">
+                    {user?.id && (
+                      <EventForm
+                        mode="create"
+                        eventType={createMode}
+                        companies={eventsData.companies}
+                        userId={user.id}
+                        onSuccess={() => {
+                          setShowCreateDialog(false)
+                          loadEvents()
+                        }}
+                        onCancel={() => setShowCreateDialog(false)}
+                      />
+                    )}
+                  </div>
                 </div>
               </DialogContent>
             </Dialog>
@@ -499,7 +507,7 @@ export default function StaffEventsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Event</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{selectedEventToDelete?.name}"? 
+              Are you sure you want to delete &ldquo;{selectedEventToDelete?.name}&rdquo;? 
               {selectedEventToDelete?.type === 'recurring' && (
                 <span className="block mt-2 text-destructive">
                   <AlertCircle className="h-4 w-4 inline mr-1" />
