@@ -33,8 +33,8 @@ Comprehensive student development tracking system that calculates holistic GPAs 
 - [ ] Update foreign key relationships and constraints
 
 ### Phase 2: Core Calculation Functions
-- [ ] Implement bell curve transformation function `calculate_gpa_from_percentile()`
-- [ ] Build subcategory aggregation functions:
+- [ ] Implement bell curve transformation function `calculate_gpa_from_percentile()` (Supabase MCP)
+- [ ] Build subcategory aggregation functions (Supabase MCP):
   - [ ] `aggregate_community_service_points()` - Cap at 12 hours, negative for under 12
   - [ ] `aggregate_attendance_percentage()` for binary attendance (chapel, GBE, fellow friday, community events)
   - [ ] `aggregate_credentials_points()` - Sum of staff-assigned points (no default weight)
@@ -44,11 +44,18 @@ Comprehensive student development tracking system that calculates holistic GPAs 
   - [ ] `aggregate_fellow_friday_participation()` - Points-based scoring
   - [ ] `aggregate_job_promotions()` - Staff-assigned points (no default weight)
   - [ ] `aggregate_gbe_participation()` - Attendance + bonus points
-- [ ] Create daily calculation orchestrator `run_daily_score_calculation()`
-- [ ] Implement category score calculation function
-- [ ] Implement holistic GPA calculation function
-- [ ] Add audit trail triggers and functions
+- [ ] Create daily calculation orchestrator `run_daily_score_calculation()` (Supabase MCP)
+- [ ] Implement category score calculation function (Supabase MCP)
+- [ ] Implement holistic GPA calculation function (Supabase MCP)
+- [ ] Add audit trail triggers and functions (Supabase MCP)
 - [ ] Add comprehensive descriptive comments to all functions
+- [ ] Create Python scripts for heavy lifting calculations:
+  - [ ] `scripts/daily_score_calculation.py` - Main orchestration script
+  - [ ] `scripts/bell_curve_calculator.py` - Bell curve transformation logic
+  - [ ] `scripts/subcategory_aggregators.py` - Subcategory-specific calculations
+  - [ ] `scripts/score_validator.py` - Score validation and integrity checks
+- [ ] Implement batch processing logic for large student populations
+- [ ] Set up Python environment with required dependencies (requirements.txt)
 
 ### Phase 3: Data Pipeline & Testing
 - [ ] Generate comprehensive dummy data for test student `02be2f65-cef3-4b22-823a-4d8e6b8b910b`
@@ -63,12 +70,16 @@ Comprehensive student development tracking system that calculates holistic GPAs 
 - [ ] Create debugging and manual recalculation tools
 
 ### Phase 4: Integration & Monitoring
-- [ ] Schedule daily calculation job (2 AM daily)
-- [ ] Build monitoring and alerting system
+- [ ] Schedule daily calculation job (2 AM daily) using Supabase cron jobs
+- [ ] Create webhook endpoint or local script trigger for Python calculations
+- [ ] Build monitoring and alerting system for calculation performance
 - [ ] Create score validation checks
-- [ ] Implement error handling and recovery
+- [ ] Implement error handling and recovery with retry logic
 - [ ] Document scoring methodology
 - [ ] Create admin interface for score management
+- [ ] Monitor performance and plan migration to AWS Lambda for production
+- [ ] Set up dashboards for scoring system health
+- [ ] Create Docker container for consistent Python environment
 
 ## Implementation Plan
 
@@ -400,30 +411,166 @@ $$ LANGUAGE plpgsql;
 
 ### Relevant Files
 
-#### Database Schema Files
-- `migrations/001_create_student_category_scores.sql` - New category scores table
-- `migrations/002_create_student_holistic_gpa.sql` - New holistic GPA table
-- `migrations/003_rename_student_scores.sql` - Rename and update student_scores table
-- `migrations/004_add_scoring_functions.sql` - Core calculation functions
+#### Planned Database Schema Files (To Be Created via Supabase MCP)
+- `migrations/001_create_student_category_scores.sql` - New category scores table (via Supabase MCP)
+- `migrations/002_create_student_holistic_gpa.sql` - New holistic GPA table (via Supabase MCP)
+- `migrations/003_rename_student_scores.sql` - Rename and update student_scores table (via Supabase MCP)
+- `migrations/004_add_scoring_functions.sql` - Core calculation functions (via Supabase MCP)
 
-#### Application Files
-- `lib/scoring/` - Scoring calculation utilities
-  - `bell-curve.ts` - Bell curve transformation logic
-  - `subcategory-aggregators.ts` - Subcategory-specific aggregation functions
-  - `daily-calculator.ts` - Daily calculation orchestrator
-  - `validation.ts` - Score validation and integrity checks
+#### Planned Python Scripts (To Be Created)
+- `scripts/daily_score_calculation.py` - Main orchestration script for daily calculations
+- `scripts/bell_curve_calculator.py` - Bell curve transformation logic using SciPy
+- `scripts/subcategory_aggregators.py` - Subcategory-specific aggregation functions
+- `scripts/score_validator.py` - Score validation and integrity checks
+- `scripts/generate_dummy_data.py` - Test data generation for student `02be2f65-cef3-4b22-823a-4d8e6b8b910b`
+- `requirements.txt` - Python dependencies (pandas, numpy, scipy, supabase, etc.)
 
-#### Testing Files
-- `scripts/generate-dummy-scores.ts` - Test data generation for student `02be2f65-cef3-4b22-823a-4d8e6b8b910b`
+#### Planned Testing Files (To Be Created)
 - `tests/scoring/` - Scoring system tests
-  - `bell-curve.test.ts` - Bell curve algorithm tests
-  - `aggregation.test.ts` - Subcategory aggregation tests
-  - `integration.test.ts` - End-to-end scoring tests
+  - `test_bell_curve.py` - Bell curve algorithm tests
+  - `test_aggregation.py` - Subcategory aggregation tests
+  - `test_integration.py` - End-to-end scoring tests
+- `notebooks/` - Jupyter notebooks for algorithm development
+  - `bell_curve_development.ipynb` - Bell curve algorithm development
+  - `scoring_validation.ipynb` - Score validation and testing
 
-#### Documentation Files
+#### Planned Documentation Files (To Be Created)
 - `docs/SCORING_METHODOLOGY.md` - Detailed scoring methodology documentation
 - `docs/BELL_CURVE_ALGORITHM.md` - Bell curve implementation details
 - `docs/SCORING_VALIDATION.md` - Validation and testing procedures
+- `docs/PYTHON_SETUP.md` - Python environment setup and deployment
+
+### Architecture Considerations
+
+#### Heavy Lifting Functions - Python Scripts Approach
+
+**Development Phase: Local Python Scripts**
+- **Pros**: 
+  - Better mathematical libraries (NumPy, SciPy, Pandas)
+  - Easier to test and debug locally
+  - More flexible for complex calculations
+  - Better performance for data processing
+  - Can use Jupyter notebooks for development
+- **Cons**: 
+  - Need to handle Supabase integration
+  - Manual deployment process initially
+
+**Production Phase: AWS Lambda with Python**
+- **Pros**:
+  - Same Python codebase as development
+  - Scalable and cost-effective
+  - Can handle large datasets efficiently
+  - Easy migration from local scripts
+- **Cons**:
+  - Additional infrastructure to manage
+  - Need to handle authentication and database connections
+
+**Recommended Approach:**
+1. **Start with local Python scripts** for development and testing
+2. **Use Supabase cron jobs** to trigger local scripts (or webhook endpoints)
+3. **Test thoroughly** with realistic data volumes
+4. **Migrate to AWS Lambda** for production deployment
+5. **Maintain same Python codebase** across environments
+
+#### Integration Strategy
+
+**Development: Supabase Cron Job → Local Python Script → Database Updates**
+
+```python
+# Local Python script approach (development)
+# scripts/daily_score_calculation.py
+import asyncio
+import pandas as pd
+import numpy as np
+from supabase import create_client, Client
+
+async def calculate_daily_scores():
+    # Initialize Supabase client
+    supabase: Client = create_client(url, key)
+    
+    # Get all students for current academic year
+    current_year = datetime.now().year
+    students = supabase.table('students').select('id, academic_year_start').eq('academic_year_start', current_year).execute()
+    
+    # Process in batches
+    batch_size = 100
+    for i in range(0, len(students.data), batch_size):
+        batch = students.data[i:i+batch_size]
+        await process_student_batch(batch, supabase)
+        
+    print(f"Processed {len(students.data)} students")
+
+async def process_student_batch(students, supabase):
+    # Calculate scores for each student in batch
+    for student in students:
+        await calculate_student_scores(student['id'], supabase)
+
+if __name__ == "__main__":
+    asyncio.run(calculate_daily_scores())
+```
+
+**Production: Supabase Cron Job → AWS Lambda → Database Updates**
+```python
+# AWS Lambda approach (production)
+# services/lambdas/score-calculation/src/handler.py
+import json
+import pandas as pd
+import numpy as np
+from supabase import create_client, Client
+
+def lambda_handler(event, context):
+    # Same calculation logic as local script
+    academic_year = event.get('academic_year', datetime.now().year)
+    batch_size = event.get('batch_size', 100)
+    
+    # Initialize Supabase client
+    supabase: Client = create_client(url, key)
+    
+    # Process scoring calculations
+    results = calculate_scores_for_year(academic_year, batch_size, supabase)
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'success': True,
+            'processed': len(results)
+        })
+    }
+```
+
+#### Python Libraries and Dependencies
+
+**Required Python Packages:**
+```python
+# requirements.txt
+supabase==2.0.0
+pandas==2.1.0
+numpy==1.24.0
+scipy==1.11.0
+asyncio
+python-dotenv==1.0.0
+pydantic==2.4.0
+```
+
+**Key Mathematical Operations:**
+- **Bell Curve Calculations**: SciPy for statistical distributions
+- **Data Processing**: Pandas for efficient data manipulation
+- **Numerical Operations**: NumPy for fast array operations
+- **Data Validation**: Pydantic for type safety
+
+#### Performance Considerations
+
+**Batch Processing Strategy:**
+- Process students in batches of 100-200 for optimal performance
+- Use pandas DataFrames for efficient data manipulation
+- Implement async processing for database operations
+- Store intermediate results to resume from failures
+
+**Development Workflow:**
+- Use Jupyter notebooks for algorithm development and testing
+- Local Python scripts for integration testing
+- Docker containers for consistent environments
+- Version control for all Python code
 
 ### Environment Configuration
 
