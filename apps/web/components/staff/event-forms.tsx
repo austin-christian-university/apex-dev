@@ -26,20 +26,20 @@ interface EventFormProps {
 type FormData = {
   name: string
   description: string
-  event_type: 'self_report' | 'officer_input' | 'staff_input' | 'attendance'
+  event_type: 'self_report' | 'attendance'
   required_roles: string[]
   required_years: number[]
   class_code: string
   required_company: string
   is_active: boolean
   
-  // Recurring event specific
-  recurrence_pattern: 'daily' | 'weekly' | 'monthly' | 'semester' | 'yearly' | null
-  recurrence_interval: number
-  recurrence_days: number[]
+  // Recurring event specific - now matches database JSONB format
+  recurrence_type: 'daily' | 'weekly' | 'monthly' | null
+  recurrence_day_of_week: number | null // 0-6 for weekly pattern
+  recurrence_time: string // HH:MM format
+  recurrence_timezone: string
   start_date: string
   end_date: string
-  time_due: string
   
   // Event instance specific
   due_date: string
@@ -47,10 +47,8 @@ type FormData = {
 }
 
 const EVENT_TYPES = [
-  { value: 'self_report', label: 'Self Report', description: 'Students report their own data' },
-  { value: 'officer_input', label: 'Officer Input', description: 'Company officers input data for students' },
-  { value: 'staff_input', label: 'Staff Input', description: 'Staff members input data for students' },
-  { value: 'attendance', label: 'Attendance', description: 'Attendance tracking for classes or events' }
+  { value: 'attendance', label: 'Attendance', description: 'Attendance tracking for classes or events' },
+  { value: 'self_report', label: 'Participation', description: 'Student participation in activities' }
 ]
 
 const ROLE_OPTIONS = [
@@ -71,9 +69,7 @@ const YEAR_OPTIONS = [
 const RECURRENCE_PATTERNS = [
   { value: 'daily', label: 'Daily' },
   { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'semester', label: 'Semester' },
-  { value: 'yearly', label: 'Yearly' }
+  { value: 'monthly', label: 'Monthly' }
 ]
 
 const DAYS_OF_WEEK = [
@@ -90,18 +86,18 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
-    event_type: 'self_report',
+    event_type: 'attendance',
     required_roles: [],
     required_years: [],
     class_code: '',
     required_company: '',
     is_active: true,
-    recurrence_pattern: null,
-    recurrence_interval: 1,
-    recurrence_days: [],
+    recurrence_type: null,
+    recurrence_day_of_week: null,
+    recurrence_time: '09:00',
+    recurrence_timezone: 'America/Chicago',
     start_date: '',
     end_date: '',
-    time_due: '',
     due_date: '',
     recurring_event_id: ''
   })
@@ -123,12 +119,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           class_code: data.class_code || '',
           required_company: data.required_company || '',
           is_active: data.is_active,
-          recurrence_pattern: data.recurrence_pattern,
-          recurrence_interval: data.recurrence_interval || 1,
-          recurrence_days: data.recurrence_days || [],
+          recurrence_type: data.recurrence_pattern?.type || null,
+          recurrence_day_of_week: data.recurrence_pattern?.day_of_week || null,
+          recurrence_time: data.recurrence_pattern?.time || '09:00',
+          recurrence_timezone: data.recurrence_pattern?.timezone || 'America/Chicago',
           start_date: data.start_date.split('T')[0], // Extract date part
           end_date: data.end_date ? data.end_date.split('T')[0] : '',
-          time_due: data.time_due || '',
           due_date: '',
           recurring_event_id: ''
         })
@@ -145,12 +141,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           is_active: data.is_active,
           due_date: data.due_date ? data.due_date.split('T')[0] : '',
           recurring_event_id: data.recurring_event_id || '',
-          recurrence_pattern: null,
-          recurrence_interval: 1,
-          recurrence_days: [],
+          recurrence_type: null,
+          recurrence_day_of_week: null,
+          recurrence_time: '09:00',
+          recurrence_timezone: 'America/Chicago',
           start_date: '',
-          end_date: '',
-          time_due: ''
+          end_date: ''
         })
       }
     }
@@ -171,11 +167,11 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
       if (!formData.start_date) {
         newErrors.start_date = 'Start date is required'
       }
-      if (formData.recurrence_pattern && !formData.recurrence_interval) {
-        newErrors.recurrence_interval = 'Recurrence interval is required'
+      if (formData.recurrence_type === 'weekly' && formData.recurrence_day_of_week === null) {
+        newErrors.recurrence_day_of_week = 'Select a day of week for weekly recurrence'
       }
-      if (formData.recurrence_pattern === 'weekly' && formData.recurrence_days.length === 0) {
-        newErrors.recurrence_days = 'Select at least one day for weekly recurrence'
+      if (!formData.recurrence_time) {
+        newErrors.recurrence_time = 'Event time is required'
       }
     } else {
       if (!formData.due_date) {
@@ -202,6 +198,18 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
     
     try {
       if (eventType === 'recurring') {
+        // Create the JSONB recurrence pattern object
+        const recurrencePattern: RecurringEvent['recurrence_pattern'] = {
+          type: formData.recurrence_type,
+          time: formData.recurrence_time,
+          timezone: formData.recurrence_timezone
+        }
+
+        // Add day_of_week for weekly patterns
+        if (formData.recurrence_type === 'weekly' && formData.recurrence_day_of_week !== null) {
+          recurrencePattern.day_of_week = formData.recurrence_day_of_week
+        }
+
         const recurringData: Omit<RecurringEvent, 'id' | 'created_at'> = {
           name: formData.name,
           description: formData.description || null,
@@ -209,12 +217,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           required_roles: formData.required_roles.length > 0 ? formData.required_roles : null,
           required_years: formData.required_years.length > 0 ? formData.required_years : null,
           class_code: formData.class_code || null,
-          recurrence_pattern: formData.recurrence_pattern,
-          recurrence_interval: formData.recurrence_interval || null,
-          recurrence_days: formData.recurrence_days.length > 0 ? formData.recurrence_days : null,
+          recurrence_pattern: recurrencePattern,
+          recurrence_interval: null, // Not used in new structure
+          recurrence_days: null, // Not used in new structure  
           start_date: formData.start_date,
           end_date: formData.end_date || null,
-          time_due: formData.time_due || null,
+          time_due: null, // Time is now in recurrence_pattern
           is_active: formData.is_active,
           created_by: userId,
           required_company: formData.required_company || null
@@ -281,12 +289,10 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
     }))
   }
 
-  const toggleDay = (day: number) => {
+  const handleDaySelect = (day: number) => {
     setFormData(prev => ({
       ...prev,
-      recurrence_days: prev.recurrence_days.includes(day)
-        ? prev.recurrence_days.filter(d => d !== day)
-        : [...prev.recurrence_days, day]
+      recurrence_day_of_week: day
     }))
   }
 
@@ -491,9 +497,9 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
               </div>
 
               <div>
-                <Label htmlFor="recurrence_pattern">Recurrence Pattern</Label>
-                <Select value={formData.recurrence_pattern || 'none'} onValueChange={(value: string) => 
-                  setFormData(prev => ({ ...prev, recurrence_pattern: value === 'none' ? null : value as RecurringEvent['recurrence_pattern'] }))
+                <Label htmlFor="recurrence_type">Recurrence Pattern</Label>
+                <Select value={formData.recurrence_type || 'none'} onValueChange={(value: string) => 
+                  setFormData(prev => ({ ...prev, recurrence_type: value === 'none' ? null : value as 'daily' | 'weekly' | 'monthly' }))
                 }>
                   <SelectTrigger>
                     <SelectValue placeholder="No recurrence (single event)" />
@@ -509,61 +515,59 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
                 </Select>
               </div>
 
-              {formData.recurrence_pattern && (
+              {formData.recurrence_type === 'weekly' && (
                 <div>
-                  <Label htmlFor="recurrence_interval">
-                    Every {formData.recurrence_interval} {formData.recurrence_pattern}(s)
-                  </Label>
-                  <Input
-                    id="recurrence_interval"
-                    type="number"
-                    min="1"
-                    max="365"
-                    value={formData.recurrence_interval}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      recurrence_interval: parseInt(e.target.value) || 1 
-                    }))}
-                    className={errors.recurrence_interval ? 'border-destructive' : ''}
-                  />
-                  {errors.recurrence_interval && (
-                    <p className="text-sm text-destructive mt-1">{errors.recurrence_interval}</p>
-                  )}
-                </div>
-              )}
-
-              {formData.recurrence_pattern === 'weekly' && (
-                <div>
-                  <Label>Days of Week</Label>
+                  <Label>Day of Week</Label>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {DAYS_OF_WEEK.map(day => (
                       <Badge
                         key={day.value}
-                        variant={formData.recurrence_days.includes(day.value) ? 'default' : 'outline'}
+                        variant={formData.recurrence_day_of_week === day.value ? 'default' : 'outline'}
                         className="cursor-pointer text-xs py-1 px-2"
-                        onClick={() => toggleDay(day.value)}
+                        onClick={() => handleDaySelect(day.value)}
                       >
                         {day.short}
-                        {formData.recurrence_days.includes(day.value) && (
+                        {formData.recurrence_day_of_week === day.value && (
                           <X className="h-3 w-3 ml-1" />
                         )}
                       </Badge>
                     ))}
                   </div>
-                  {errors.recurrence_days && (
-                    <p className="text-sm text-destructive mt-1">{errors.recurrence_days}</p>
+                  {errors.recurrence_day_of_week && (
+                    <p className="text-sm text-destructive mt-1">{errors.recurrence_day_of_week}</p>
                   )}
                 </div>
               )}
 
               <div>
-                <Label htmlFor="time_due">Time Due (Optional)</Label>
+                <Label htmlFor="recurrence_time">Event Time *</Label>
                 <Input
-                  id="time_due"
+                  id="recurrence_time"
                   type="time"
-                  value={formData.time_due}
-                  onChange={(e) => setFormData(prev => ({ ...prev, time_due: e.target.value }))}
+                  value={formData.recurrence_time}
+                  onChange={(e) => setFormData(prev => ({ ...prev, recurrence_time: e.target.value }))}
+                  className={errors.recurrence_time ? 'border-destructive' : ''}
                 />
+                {errors.recurrence_time && (
+                  <p className="text-sm text-destructive mt-1">{errors.recurrence_time}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="recurrence_timezone">Timezone</Label>
+                <Select value={formData.recurrence_timezone} onValueChange={(value: string) => 
+                  setFormData(prev => ({ ...prev, recurrence_timezone: value }))
+                }>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select timezone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="America/Chicago">Central Time (America/Chicago)</SelectItem>
+                    <SelectItem value="America/New_York">Eastern Time (America/New_York)</SelectItem>
+                    <SelectItem value="America/Denver">Mountain Time (America/Denver)</SelectItem>
+                    <SelectItem value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </>
           ) : (

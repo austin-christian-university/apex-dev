@@ -58,6 +58,13 @@ export default function StaffPage() {
                     <BarChart3 className="h-4 w-4 mr-3" />
                     Event Management
                   </a>
+                  <a 
+                    href="/staff/approvals" 
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <Settings className="h-4 w-4 mr-3" />
+                    Event Approvals
+                  </a>
                   <div className="px-3 py-2 text-xs text-muted-foreground">
                     More features coming soon!
                   </div>
@@ -189,7 +196,7 @@ export default function StaffPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <a href="/staff/home" className="group">
                   <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
                     <div className="flex items-center space-x-3 mb-2">
@@ -209,6 +216,17 @@ export default function StaffPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Create and manage recurring events and event instances for students
+                    </p>
+                  </div>
+                </a>
+                <a href="/staff/approvals" className="group">
+                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Settings className="h-5 w-5 text-primary" />
+                      <h4 className="font-medium group-hover:text-primary">Event Approvals</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Review and approve student-submitted events and achievements
                     </p>
                   </div>
                 </a>

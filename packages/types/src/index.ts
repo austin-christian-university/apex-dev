@@ -173,16 +173,21 @@ export interface RecurringEvent {
   id: string;
   name: string;
   description: string | null;
-  event_type: 'self_report' | 'officer_input' | 'staff_input' | 'attendance';
+  event_type: 'self_report' | 'attendance';
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;
-  recurrence_pattern: 'daily' | 'weekly' | 'monthly' | 'semester' | 'yearly' | null;
-  recurrence_interval: number | null; // Every X days/weeks/months
-  recurrence_days: number[] | null; // Days of week (0-6) for weekly patterns
+  recurrence_pattern: {
+    type: 'daily' | 'weekly' | 'monthly';
+    day_of_week?: number; // 0-6 for weekly patterns
+    time: string; // HH:MM format
+    timezone: string;
+  };
+  recurrence_interval: number | null; // Legacy field
+  recurrence_days: number[] | null; // Legacy field
   start_date: string;
   end_date: string | null;
-  time_due: string | null; // Time component for due dates
+  time_due: string | null; // Legacy field
   is_active: boolean;
   created_at: string;
   created_by: string | null;
@@ -194,7 +199,7 @@ export interface EventInstance {
   id: string;
   name: string;
   description: string | null;
-  event_type: 'self_report' | 'officer_input' | 'staff_input' | 'attendance';
+  event_type: 'self_report' | 'attendance';
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;

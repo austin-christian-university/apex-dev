@@ -1,10 +1,16 @@
+'use client'
+
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
 import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
-import { createClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/client"
 import { getUserProfileWithEvents } from "@/lib/events"
-import { redirect } from "next/navigation"
 import { EventCard } from "@/components/event-card"
+import { AddEventDialog } from "@/components/add-event-dialog"
+import { useAuth } from "@/components/auth/auth-provider"
+import { useRouter } from "next/navigation"
 
 // Mock company standings data - will be replaced with real data later
 const mockCompanyStandings = [
@@ -14,22 +20,48 @@ const mockCompanyStandings = [
   { name: "Delta Company", score: 3.45, rank: 4, members: 25, trend: "+0.08" },
 ]
 
-export default async function HomePage() {
-  const supabase = await createClient()
-  
-  // Get current user
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-  
-  if (authError || !user) {
-    redirect('/login')
+export default function HomePage() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [showAddEventDialog, setShowAddEventDialog] = useState(false)
+  const [profile, setProfile] = useState<any>(null)
+  const [urgentEvents, setUrgentEvents] = useState<any[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Redirect if not authenticated
+  if (!user) {
+    router.push('/login')
+    return null
   }
 
-  // Get user profile and events
-  const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEvents(user.id, supabase)
+  // Load user data on mount
+  useEffect(() => {
+    loadUserData()
+  }, [])
 
-  if (eventsError) {
-    console.error('Failed to fetch events:', eventsError)
-    // Continue with empty events rather than failing completely
+  async function loadUserData() {
+    try {
+      setLoading(true)
+      const supabase = createClient()
+      const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEvents(user!.id, supabase)
+
+      if (eventsError) {
+        console.error('Failed to fetch events:', eventsError)
+      }
+
+      setProfile(profile)
+      setUrgentEvents(urgentEvents || [])
+      setUpcomingEvents(upcomingEvents || [])
+    } catch (error) {
+      console.error('Error loading user data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="px-4 py-6 max-w-md mx-auto">Loading...</div>
   }
 
   return (
@@ -103,7 +135,17 @@ export default async function HomePage() {
       {/* Upcoming Events */}
       {upcomingEvents && upcomingEvents.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-lg font-semibold">Upcoming Events</h2>
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <h2 className="text-lg font-semibold">Upcoming Events</h2>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowAddEventDialog(true)}
+                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <span>+ Add Event</span>
+              </button>
+            </div>
+          </div>
           
           <div className="space-y-2">
             {upcomingEvents.map((userEvent) => (
@@ -123,12 +165,46 @@ export default async function HomePage() {
         </div>
       )}
 
+      {/* Add Event Section - show when no upcoming events but there might be urgent events */}
+      {(!upcomingEvents || upcomingEvents.length === 0) && urgentEvents && urgentEvents.length > 0 && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <h2 className="text-lg font-semibold">Other Events</h2>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowAddEventDialog(true)}
+                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <span>+ Add Event</span>
+              </button>
+            </div>
+          </div>
+          
+          <Card>
+            <CardContent className="p-6 text-center">
+              <CalendarDays className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">No upcoming events. Add your own achievements!</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* No Events State */}
       {(!urgentEvents || urgentEvents.length === 0) && (!upcomingEvents || upcomingEvents.length === 0) && (
         <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <CalendarDays className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Events</h2>
+          <div className="grid grid-cols-2 gap-4 items-center">
+            <div className="flex items-center space-x-2">
+              <CalendarDays className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Events</h2>
+            </div>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowAddEventDialog(true)}
+                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <span>+ Add Event</span>
+              </button>
+            </div>
           </div>
           
           <Card>
@@ -139,6 +215,13 @@ export default async function HomePage() {
           </Card>
         </div>
       )}
+
+      {/* Add Event Dialog */}
+      <AddEventDialog 
+        open={showAddEventDialog} 
+        onOpenChange={setShowAddEventDialog}
+        onSubmitSuccess={loadUserData}
+      />
     </div>
   )
 } 

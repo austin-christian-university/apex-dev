@@ -223,4 +223,123 @@ export function formatCompanyMotto(motto: string | null): string {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(' ')
+}
+
+/**
+ * Convert file to base64 string
+ */
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+      } else {
+        reject(new Error('Failed to convert file to base64'))
+      }
+    }
+    reader.onerror = (error) => reject(error)
+  })
+}
+
+/**
+ * Validate file type for photos
+ */
+export function isValidPhotoFile(file: File): boolean {
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+  return validTypes.includes(file.type)
+}
+
+/**
+ * Validate file size (max 5MB)
+ */
+export function isValidFileSize(file: File, maxSizeMB: number = 5): boolean {
+  const maxSizeBytes = maxSizeMB * 1024 * 1024
+  return file.size <= maxSizeBytes
+}
+
+/**
+ * Compress image if needed (basic compression)
+ */
+export function compressImage(file: File, maxWidth: number = 1920, quality: number = 0.8): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const img = new Image()
+    
+    img.onload = () => {
+      // Calculate new dimensions
+      const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
+      canvas.width = img.width * ratio
+      canvas.height = img.height * ratio
+      
+      // Draw compressed image
+      ctx?.drawImage(img, 0, 0, canvas.width, canvas.height)
+      
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now()
+            })
+            resolve(compressedFile)
+          } else {
+            reject(new Error('Failed to compress image'))
+          }
+        },
+        file.type,
+        quality
+      )
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = URL.createObjectURL(file)
+  })
+}
+
+/**
+ * Process multiple photo files for submission
+ */
+export async function processPhotosForSubmission(files: File[]): Promise<{
+  photos: string[]
+  errors: string[]
+}> {
+  const photos: string[] = []
+  const errors: string[] = []
+  
+  for (const file of files) {
+    try {
+      // Validate file type
+      if (!isValidPhotoFile(file)) {
+        errors.push(`${file.name}: Invalid file type. Please use JPG, PNG, or WebP.`)
+        continue
+      }
+      
+      // Validate file size
+      if (!isValidFileSize(file)) {
+        errors.push(`${file.name}: File too large. Maximum size is 5MB.`)
+        continue
+      }
+      
+      // Compress if needed
+      let processedFile = file
+      if (file.size > 1024 * 1024) { // If larger than 1MB, compress
+        try {
+          processedFile = await compressImage(file)
+        } catch (compressionError) {
+          console.warn('Image compression failed, using original:', compressionError)
+        }
+      }
+      
+      // Convert to base64
+      const base64 = await fileToBase64(processedFile)
+      photos.push(base64)
+    } catch (error) {
+      errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+  
+  return { photos, errors }
 } 

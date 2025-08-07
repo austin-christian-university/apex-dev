@@ -277,7 +277,7 @@ export default function StaffEventsPage() {
                   Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl w-full max-h-[90vh] flex flex-col mx-4">
+              <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col mx-4 sm:max-w-2xl sm:w-full">
                 <DialogHeader className="flex-shrink-0">
                   <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
@@ -348,7 +348,7 @@ export default function StaffEventsPage() {
           </div>
           
           <Select value={filters.eventType || 'all'} onValueChange={(value) => 
-            setFilters(prev => ({ ...prev, eventType: value === 'all' ? undefined : value }))
+            setFilters(prev => ({ ...prev, eventType: value === 'all' ? undefined : value as 'attendance' | 'self_report' }))
           }>
             <SelectTrigger className="w-48">
               <Filter className="h-4 w-4 mr-2" />
@@ -356,10 +356,8 @@ export default function StaffEventsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="self_report">Self Report</SelectItem>
-              <SelectItem value="officer_input">Officer Input</SelectItem>
-              <SelectItem value="staff_input">Staff Input</SelectItem>
               <SelectItem value="attendance">Attendance</SelectItem>
+              <SelectItem value="self_report">Participation</SelectItem>
             </SelectContent>
           </Select>
 

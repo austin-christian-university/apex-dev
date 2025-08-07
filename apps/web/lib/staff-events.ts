@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
  */
 
 export interface StaffEventFilters {
-  eventType?: 'self_report' | 'officer_input' | 'staff_input' | 'attendance'
+  eventType?: 'self_report' | 'attendance'
   isActive?: boolean
   companyId?: string
   createdBy?: string

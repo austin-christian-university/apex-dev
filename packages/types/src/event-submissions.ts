@@ -17,7 +17,7 @@ export const AttendanceSubmissionSchema = BaseSubmissionDataSchema.extend({
 
 export type AttendanceSubmission = z.infer<typeof AttendanceSubmissionSchema>;
 
-// Community Service Events
+// Community Service Events (Updated for non-routine submissions)
 export const CommunityServiceSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('community_service'),
   hours: z.number().min(0).max(24),
@@ -25,13 +25,37 @@ export const CommunityServiceSubmissionSchema = BaseSubmissionDataSchema.extend(
   supervisor_name: z.string().min(1),
   supervisor_contact: z.string().email(),
   description: z.string().min(10),
-  photo_url: z.string().url().optional(),
-  location: z.string().min(1),
+  photos: z.array(z.string()).optional(), // Base64 encoded photos
   date_of_service: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
-  verification_method: z.enum(['photo', 'supervisor_signature', 'organization_letter']),
 });
 
 export type CommunityServiceSubmission = z.infer<typeof CommunityServiceSubmissionSchema>;
+
+// Job Promotion Events
+export const JobPromotionSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('job_promotion'),
+  promotion_title: z.string().min(1),
+  organization: z.string().min(1),
+  supervisor_name: z.string().min(1),
+  supervisor_contact: z.string().email(),
+  description: z.string().min(10),
+  photos: z.array(z.string()).optional(), // Base64 encoded photos
+  date_of_promotion: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
+});
+
+export type JobPromotionSubmission = z.infer<typeof JobPromotionSubmissionSchema>;
+
+// Credentials Events
+export const CredentialsSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('credentials'),
+  credential_name: z.string().min(1),
+  granting_organization: z.string().min(1),
+  description: z.string().min(10).optional(),
+  photos: z.array(z.string()).optional(), // Base64 encoded photos
+  date_of_credential: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
+});
+
+export type CredentialsSubmission = z.infer<typeof CredentialsSubmissionSchema>;
 
 // Team Meeting Events
 export const TeamMeetingSubmissionSchema = BaseSubmissionDataSchema.extend({
@@ -154,6 +178,8 @@ export type FellowFridaySubmission = z.infer<typeof FellowFridaySubmissionSchema
 export const EventSubmissionDataSchema = z.discriminatedUnion('submission_type', [
   AttendanceSubmissionSchema,
   CommunityServiceSubmissionSchema,
+  JobPromotionSubmissionSchema,
+  CredentialsSubmissionSchema,
   TeamMeetingSubmissionSchema,
   LeaderMeetingSubmissionSchema,
   AcademicSubmissionSchema,
@@ -188,6 +214,8 @@ export function getSubmissionSchema(submissionType: string) {
   const schemas = {
     attendance: AttendanceSubmissionSchema,
     community_service: CommunityServiceSubmissionSchema,
+    job_promotion: JobPromotionSubmissionSchema,
+    credentials: CredentialsSubmissionSchema,
     team_meeting: TeamMeetingSubmissionSchema,
     leader_meeting: LeaderMeetingSubmissionSchema,
     academic: AcademicSubmissionSchema,
