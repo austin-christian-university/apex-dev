@@ -11,6 +11,9 @@ Comprehensive implementation of the Supabase database schema for the ACU Apex st
 - [x] Academic records structure
 - [x] Company competition framework
 - [x] Security and access control planning
+- [x] Phase 4: Academic System Tables (classes, academic_records)
+- [x] Phase 5: Company Competition Tables (company_scores)
+- [x] Phase 6: Additional Data Tables (financial_records)
 
 ### Phase 1: Core Entity Tables ✅
 - [x] Create `companies` table with all required fields
@@ -64,50 +67,43 @@ Comprehensive implementation of the Supabase database schema for the ACU Apex st
 
 ## In Progress Tasks
 
-- [ ] Phase 4: Academic System Tables Implementation
+- [ ] Phase 5: Database Functions and Business Logic Implementation
 
 ## Future Tasks
 
-### Phase 4: Academic System Tables
-- [ ] Create `classes` table with all required fields
-- [ ] Create unique constraint on `class_code`
-- [ ] Create index on `department`
-- [ ] Create `academic_records` table with all required fields
-- [ ] Set up foreign key constraints
-- [ ] Create composite index on `(student_id, academic_year_start)`
-- [ ] Create index on `class_id`
-- [ ] Set up RLS policies for academic record access
+### Phase 4: Academic System Tables ✅
+- [x] Create `classes` table with all required fields
+- [x] Create unique constraint on `class_code`
+- [x] Create index on `department`
+- [x] Create `academic_records` table with all required fields
+- [x] Set up foreign key constraints
+- [x] Create composite index on `(student_id, academic_year_start)`
+- [x] Create index on `class_id`
+- [x] Set up RLS policies for academic record access
 
-### Phase 5: Company Competition Tables
-- [ ] Create `company_standings` table with all required fields
-- [ ] Set up foreign key constraint to companies
-- [ ] Create composite index on `(company_id, academic_year_start)`
-- [ ] Create index on `rank`
-- [ ] Set up RLS policies for standings access
-- [ ] Create `company_scores` table with all required fields
-- [ ] Set up foreign key constraints
-- [ ] Create composite index on `(company_id, academic_year_start, category_id)`
-- [ ] Set up RLS policies for company score access
+### Phase 5: Company Competition Tables ✅
+- [x] Create `company_scores` table with all required fields (serves as both current and historical standings)
+- [x] Set up foreign key constraints to companies and categories
+- [x] Create composite index on `(company_id, academic_year_start, category_id)`
+- [x] Create index on `rank`
+- [x] Set up RLS policies for company score access
+- [x] Create unique constraints for current scores and overall scores
 
-### Phase 6: Additional Data Tables
-- [ ] Create `financial_records` table with all required fields
-- [ ] Set up foreign key constraint to students
-- [ ] Create composite index on `(student_id, academic_year_start)`
-- [ ] Set up RLS policies for financial record access
-- [ ] Create `personality_profiles` table with all required fields
-- [ ] Set up foreign key constraint to students
-- [ ] Create indexes on `student_id`, `profile_type`
-- [ ] Set up RLS policies for personality profile access
-- [ ] Create `student_profiles` table with all required fields
-- [ ] Set up foreign key constraint to students
-- [ ] Create unique constraint on `student_id`
-- [ ] Set up RLS policies for profile access
+### Phase 6: Additional Data Tables ✅
+- [x] Create `financial_records` table with all required fields
+- [x] Set up foreign key constraint to students
+- [x] Create composite index on `(student_id, academic_year_start)`
+- [x] Set up RLS policies for financial record access
+- [x] Add Populi import tracking with `populi_transaction_id` and import timestamps
+- ~~Create `personality_profiles` table~~ (moved to users table)
+- ~~Create `student_profiles` table~~ (not needed - data in users/students tables)
 
 ### Phase 7: Database Functions and Triggers
 - [ ] Create Holistic GPA calculation function
 - [ ] Create Company score calculation function
 - [ ] Create Score history trigger
 - [ ] Create Academic year validation function
+- [ ] Create daily company score calculation job
 
 ### Phase 8: Row Level Security (RLS) Policies
 - [ ] Implement Student access policies
