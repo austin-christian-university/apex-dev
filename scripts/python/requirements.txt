@@ -1,0 +1,34 @@
+# ACU Apex Holistic GPA Scoring System - Python Dependencies
+# Core dependencies for scoring calculations and data processing
+
+# Supabase client for database operations
+supabase==2.0.0
+
+# Data processing and numerical computations
+pandas==2.1.0
+numpy==1.24.0
+scipy==1.11.0
+
+# Async support for concurrent operations
+asyncio
+
+# Environment and configuration management
+python-dotenv==1.0.0
+pydantic==2.4.0
+
+# Logging and monitoring
+structlog==23.2.0
+
+# AWS SDK for Lambda deployment
+boto3==1.34.0
+botocore==1.34.0
+
+# Development and testing dependencies
+pytest==7.4.0
+pytest-asyncio==0.21.0
+black==23.7.0
+flake8==6.0.0
+
+# Jupyter notebooks for development
+jupyter==1.0.0
+ipykernel==6.25.0

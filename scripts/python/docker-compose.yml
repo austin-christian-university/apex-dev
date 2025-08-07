@@ -1,0 +1,40 @@
+# ACU Apex Holistic GPA Scoring System - Local Development
+# Docker Compose configuration for running Python scoring scripts locally
+
+version: '3.8'
+
+services:
+  scoring-system:
+    build: .
+    container_name: apex-scoring-system
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    volumes:
+      # Mount local code for development
+      - .:/app
+      # Mount logs directory
+      - ./logs:/app/logs
+    working_dir: /app
+    command: python daily_score_calculation.py
+    restart: unless-stopped
+    
+  # Optional: Jupyter notebook for development
+  jupyter:
+    build: .
+    container_name: apex-jupyter
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+      - ./notebooks:/app/notebooks
+    ports:
+      - "8888:8888"
+    working_dir: /app
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''
+    profiles:
+      - development
