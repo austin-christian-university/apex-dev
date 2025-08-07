@@ -119,7 +119,7 @@ export function AttendanceForm({ event, studentId, onSuccess, onCancel }: Attend
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Note: If you were late, please mark yourself as absent.
+              If you were late, you were absent.
             </p>
           </div>
 
