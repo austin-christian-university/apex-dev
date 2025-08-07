@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
 import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
-import { getUserProfileWithEvents } from "@/lib/events"
+import { getUserProfileWithEventsAction } from "@/lib/user-actions"
 import { EventCard } from "@/components/event-card"
 import { AddEventDialog } from "@/components/add-event-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
@@ -29,22 +29,12 @@ export default function HomePage() {
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Redirect if not authenticated
-  if (!user) {
-    router.push('/login')
-    return null
-  }
-
-  // Load user data on mount
-  useEffect(() => {
-    loadUserData()
-  }, [])
-
-  async function loadUserData() {
+  const loadUserData = useCallback(async () => {
+    if (!user) return
+    
     try {
       setLoading(true)
-      const supabase = createClient()
-      const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEvents(user!.id, supabase)
+      const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEventsAction(user.id)
 
       if (eventsError) {
         console.error('Failed to fetch events:', eventsError)
@@ -58,9 +48,20 @@ export default function HomePage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
-  if (loading) {
+  // Load user data on mount
+  useEffect(() => {
+    // Redirect if not authenticated
+    if (!user) {
+      router.push('/login')
+      return
+    }
+    
+    loadUserData()
+  }, [user, router, loadUserData])
+
+  if (loading || !user) {
     return <div className="px-4 py-6 max-w-md mx-auto">Loading...</div>
   }
 

@@ -7,7 +7,11 @@ import { Button } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
 import { Award, Briefcase, Heart } from "lucide-react"
 import { CommunityServiceForm, JobPromotionForm, CredentialsForm } from "@/components/event-forms"
-import { submitCommunityServiceEvent, submitJobPromotionEvent, submitCredentialsEvent } from "@/lib/non-routine-events"
+import { 
+  submitCommunityServiceEventAction, 
+  submitJobPromotionEventAction, 
+  submitCredentialsEventAction 
+} from "@/lib/staff-actions"
 import { useAuth } from "@/components/auth/auth-provider"
 import type { CommunityServiceSubmission, JobPromotionSubmission, CredentialsSubmission } from "@acu-apex/types"
 
@@ -74,7 +78,7 @@ export function AddEventDialog({ open, onOpenChange, onSubmitSuccess }: AddEvent
     
     setIsSubmitting(true)
     try {
-      const result = await submitCommunityServiceEvent(user.id, data)
+      const result = await submitCommunityServiceEventAction(user.id, data)
       if (!result.success) {
         throw new Error(result.error)
       }
@@ -93,7 +97,7 @@ export function AddEventDialog({ open, onOpenChange, onSubmitSuccess }: AddEvent
     
     setIsSubmitting(true)
     try {
-      const result = await submitJobPromotionEvent(user.id, data)
+      const result = await submitJobPromotionEventAction(user.id, data)
       if (!result.success) {
         throw new Error(result.error)
       }
@@ -112,7 +116,7 @@ export function AddEventDialog({ open, onOpenChange, onSubmitSuccess }: AddEvent
     
     setIsSubmitting(true)
     try {
-      const result = await submitCredentialsEvent(user.id, data)
+      const result = await submitCredentialsEventAction(user.id, data)
       if (!result.success) {
         throw new Error(result.error)
       }

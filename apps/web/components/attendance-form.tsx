@@ -8,7 +8,7 @@ import { Label } from '@acu-apex/ui'
 import { Textarea } from '@acu-apex/ui'
 import { AlertCircle, Clock } from 'lucide-react'
 import { AttendanceSubmissionSchema, type AttendanceSubmission } from '@acu-apex/types'
-import { submitAttendance } from '@/lib/attendance-actions'
+import { submitAttendanceAction } from '@/lib/user-actions'
 
 interface AttendanceFormProps {
   event: {
@@ -54,7 +54,7 @@ export function AttendanceForm({ event, studentId, onSuccess, onCancel }: Attend
       const validatedData = AttendanceSubmissionSchema.parse(formData)
       
       // Submit attendance
-      const result = await submitAttendance(event.id, studentId, validatedData)
+      const result = await submitAttendanceAction(event.id, studentId, validatedData)
       
       if (result.success) {
         onSuccess()

@@ -22,8 +22,8 @@ import {
   AlertCircle
 } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
-import { getPendingSubmissions, approveSubmission, rejectSubmission } from '@/lib/non-routine-events'
 import { formatDate, formatDateTime } from '@acu-apex/utils'
+import { getPendingSubmissionsAction, approveSubmissionAction, rejectSubmissionAction } from '@/lib/staff-actions'
 
 interface SubmissionData {
   id: string
@@ -63,7 +63,7 @@ export default function StaffApprovalsPage() {
   const loadPendingSubmissions = async () => {
     try {
       setLoading(true)
-      const result = await getPendingSubmissions()
+      const result = await getPendingSubmissionsAction()
       if (result.success) {
         setSubmissions(result.submissions)
       } else {
@@ -118,9 +118,9 @@ export default function StaffApprovalsPage() {
     try {
       let result
       if (actionType === 'approve') {
-        result = await approveSubmission(selectedSubmission.id, pointsToGrant)
+        result = await approveSubmissionAction(selectedSubmission.id, pointsToGrant)
       } else {
-        result = await rejectSubmission(selectedSubmission.id, rejectionReason)
+        result = await rejectSubmissionAction(selectedSubmission.id, rejectionReason)
       }
 
       if (result.success) {
@@ -303,7 +303,7 @@ export default function StaffApprovalsPage() {
     )
   }
 
-  if (!user || !['staff', 'admin'].includes(user.role)) {
+  if (!user || !user.role || !['staff', 'admin'].includes(user.role)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="max-w-md">
