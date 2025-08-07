@@ -55,6 +55,7 @@ async function makePopuliRequest<T = any>(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const endpoint = searchParams.get('endpoint')
+  const limit = searchParams.get('limit')
 
   if (!endpoint) {
     return NextResponse.json(
@@ -63,7 +64,14 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const result = await makePopuliRequest(endpoint)
+  // Build the full endpoint with query parameters
+  let fullEndpoint = endpoint
+  if (limit) {
+    const separator = endpoint.includes('?') ? '&' : '?'
+    fullEndpoint = `${endpoint}${separator}limit=${limit}`
+  }
+
+  const result = await makePopuliRequest(fullEndpoint)
   
   if (result.error) {
     return NextResponse.json(

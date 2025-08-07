@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-
 import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
 import { Sheet, SheetContent, SheetTrigger } from '@acu-apex/ui'
-import { Construction, Users, BarChart3, Settings, ArrowLeft, Menu } from 'lucide-react'
+import { Construction, Users, BarChart3, Settings, ArrowLeft, Menu, Database } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function StaffPage() {
@@ -64,6 +64,13 @@ export default function StaffPage() {
                   >
                     <Settings className="h-4 w-4 mr-3" />
                     Event Approvals
+                  </a>
+                  <a 
+                    href="/staff/populi-actions" 
+                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                  >
+                    <Database className="h-4 w-4 mr-3" />
+                    Populi Actions
                   </a>
                   <div className="px-3 py-2 text-xs text-muted-foreground">
                     More features coming soon!
@@ -227,6 +234,17 @@ export default function StaffPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">
                       Review and approve student-submitted events and achievements
+                    </p>
+                  </div>
+                </a>
+                <a href="/staff/populi-actions" className="group">
+                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <Database className="h-5 w-5 text-primary" />
+                      <h4 className="font-medium group-hover:text-primary">Populi Actions</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Test and interact with the Populi API for data management
                     </p>
                   </div>
                 </a>
