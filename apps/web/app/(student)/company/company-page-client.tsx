@@ -13,13 +13,20 @@ interface CompanyPageClientProps {
   companyDetails: CompanyDetails
 }
 
-// Mock data for four pillars - will be replaced with real calculations later
-const mockFourPillarsBreakdown = [
-  { name: "Spiritual Standing", score: 3.9, color: "bg-blue-500" },
-  { name: "Professional Standing", score: 3.8, color: "bg-green-500" },
-  { name: "Academic Performance", score: 3.85, color: "bg-purple-500" },
-  { name: "Team Execution", score: 3.88, color: "bg-orange-500" }
-]
+// Category display names and colors
+const categoryDisplayNames: Record<string, string> = {
+  spiritual: "Spiritual Standing",
+  professional: "Professional Standing", 
+  academic: "Academic Performance",
+  team: "Team Execution"
+}
+
+const categoryColors: Record<string, string> = {
+  spiritual: "bg-blue-500",
+  professional: "bg-green-500",
+  academic: "bg-purple-500", 
+  team: "bg-orange-500"
+}
 
 export default function CompanyPageClient({ companyDetails }: CompanyPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
@@ -36,6 +43,20 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
   const foundedYear = companyDetails.company.created_at 
     ? new Date(companyDetails.company.created_at).getFullYear()
     : new Date().getFullYear()
+
+  // Generate category breakdown from real data or fallback to mock data
+  const categoryBreakdown = companyDetails.categoryBreakdown 
+    ? Object.entries(companyDetails.categoryBreakdown).map(([category, score]) => ({
+        name: categoryDisplayNames[category] || category,
+        score: score,
+        color: categoryColors[category] || "bg-gray-500"
+      }))
+    : [
+        { name: "Spiritual Standing", score: 3.9, color: "bg-blue-500" },
+        { name: "Professional Standing", score: 3.8, color: "bg-green-500" },
+        { name: "Academic Performance", score: 3.85, color: "bg-purple-500" },
+        { name: "Team Execution", score: 3.88, color: "bg-orange-500" }
+      ]
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -55,7 +76,7 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-2xl font-bold">{companyDetails.holisticGPA}</p>
+              <p className="text-2xl font-bold">{companyDetails.holisticGPA.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground">Holistic GPA</p>
             </div>
             <div>
@@ -90,12 +111,12 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
         </div>
         
         <div className="space-y-3">
-          {mockFourPillarsBreakdown.map((pillar) => (
+          {categoryBreakdown.map((pillar) => (
             <Card key={pillar.name}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium">{pillar.name}</p>
-                  <p className="text-lg font-bold">{pillar.score}</p>
+                  <p className="text-lg font-bold">{pillar.score.toFixed(2)}</p>
                 </div>
                 <Progress value={pillar.score * 25} className="h-2" />
               </CardContent>

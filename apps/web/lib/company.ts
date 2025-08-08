@@ -1,4 +1,4 @@
-import type { Company, Student, User } from '@acu-apex/types'
+import type { Company, Student, User, CompanyHolisticGPA } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -12,8 +12,9 @@ export interface CompanyDetails {
   company: Company
   members: CompanyMember[]
   memberCount: number
-  holisticGPA: number // Company average
+  holisticGPA: number // Company average from company_holistic_gpa table
   rank: number // Placeholder
+  categoryBreakdown?: Record<string, number> // From company_holistic_gpa.category_breakdown
 }
 
 /**
@@ -43,6 +44,19 @@ export async function getCompanyDetails(
 
     if (!company) {
       throw new Error('Company not found')
+    }
+
+    // Fetch company holistic GPA data
+    const { data: companyGPA, error: gpaError } = await supabase
+      .from('company_holistic_gpa')
+      .select('*')
+      .eq('company_id', companyId)
+      .order('calculation_date', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (gpaError && gpaError.code !== 'PGRST116') { // PGRST116 is "not found" error
+      console.warn('Failed to fetch company GPA data:', gpaError.message)
     }
 
     // Fetch company members with their user data
@@ -96,16 +110,19 @@ export async function getCompanyDetails(
 
     // Calculate company-wide metrics
     const memberCount = companyMembers.length
-    const holisticGPA = memberCount > 0 
+    
+    // Use real company GPA data if available, otherwise fall back to member average
+    const holisticGPA = companyGPA?.holistic_gpa || (memberCount > 0 
       ? companyMembers.reduce((sum, member) => sum + member.holisticGPA, 0) / memberCount
-      : 0
+      : 0)
 
     const companyDetails: CompanyDetails = {
       company,
       members: companyMembers,
       memberCount,
       holisticGPA: Math.round(holisticGPA * 100) / 100, // Round to 2 decimal places
-      rank: 1 // Placeholder - will be calculated relative to other companies
+      rank: 1, // Placeholder - will be calculated relative to other companies
+      categoryBreakdown: companyGPA?.category_breakdown || undefined
     }
 
     return { companyDetails }
