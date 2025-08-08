@@ -92,6 +92,16 @@ export function sortBy<T>(array: T[], key: keyof T, direction: 'asc' | 'desc' = 
   })
 }
 
+// Extract a friendly term label from Populi academic term display_name
+// e.g. "2024-2025: Spring 2025" -> "Spring 2025"
+export function extractTermShortName(displayName?: string | null): string | null {
+  if (!displayName) return null
+  const parts = String(displayName).split(':')
+  const tail = (parts.length > 1 ? parts[1] : parts[0]) ?? ''
+  const trimmed = String(tail).trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
 // Event utility functions
 export function isEventApplicableToUser(
   event: { required_roles: string[] | null; required_company: string | null },

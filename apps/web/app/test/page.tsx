@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { extractTermShortName } from '@acu-apex/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
@@ -21,6 +22,8 @@ import {
   getPopuliPersonBalances,
   getPopuliOnlinePaymentLink,
   callPopuliEndpoint,
+  getPopuliStudentEnrollmentsExpanded,
+  getPopuliCourseOffering,
 } from '@/lib/populi'
 
 interface PopuliPerson {
@@ -54,6 +57,26 @@ interface PopuliMatchResult {
   error?: string
 }
 
+// Local debug types for course-term mapping
+interface MappedCourseForTerm {
+  enrollmentId: string | number
+  courseOfferingId: string | number
+  catalogCourseId?: string | number
+  code?: string
+  name?: string
+  credits?: number
+  letterGrade?: string
+  finalGrade?: number
+  termId?: string | number | null
+  termName?: string | null
+}
+
+interface TermCoursesGroup {
+  termId: string
+  termName: string
+  courses: MappedCourseForTerm[]
+}
+
 export default function TestPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [people, setPeople] = useState<PopuliPerson[]>([])
@@ -76,6 +99,7 @@ export default function TestPage() {
   const [personId, setPersonId] = useState('')
   const [studentId, setStudentId] = useState('')
   const [academicTermId, setAcademicTermId] = useState('')
+  const [courseOfferingId, setCourseOfferingId] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [customEndpoint, setCustomEndpoint] = useState('')
@@ -88,6 +112,10 @@ export default function TestPage() {
   const [finTxResp, setFinTxResp] = useState<any | null>(null)
   const [balanceResp, setBalanceResp] = useState<any | null>(null)
   const [genericResp, setGenericResp] = useState<any | null>(null)
+  const [enrollmentsExpandedResp, setEnrollmentsExpandedResp] = useState<any | null>(null)
+  const [termGroupedDebug, setTermGroupedDebug] = useState<any | null>(null)
+  const [mappedGroups, setMappedGroups] = useState<TermCoursesGroup[] | null>(null)
+  const [mappingError, setMappingError] = useState<string>('')
 
   const handleApiCall = async (endpoint: string, apiFunction: () => Promise<any>) => {
     setIsLoading(true)
@@ -451,6 +479,10 @@ POPULI_URL=https://austinchristianuniversity.populiweb.com/`}</pre>
                   <Label htmlFor="termId">Academic Term ID</Label>
                   <Input id="termId" value={academicTermId} onChange={(e) => setAcademicTermId(e.target.value)} placeholder="e.g., 202401" />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="offeringId">Course Offering ID</Label>
+                  <Input id="offeringId" value={courseOfferingId} onChange={(e) => setCourseOfferingId(e.target.value)} placeholder="e.g., 21910" />
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -471,12 +503,128 @@ POPULI_URL=https://austinchristianuniversity.populiweb.com/`}</pre>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" onClick={async () => { const r = await getPopuliPerson(personId); setPersonResp(r); }}>Get Person</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliStudentEnrollments(personId, academicTermId || undefined); setEnrollmentsResp(r); }}>Get Enrollments</Button>
+                <Button variant="outline" onClick={async () => { const r = await getPopuliStudentEnrollmentsExpanded(personId, 'courseoffering', academicTermId || undefined); setEnrollmentsExpandedResp(r); }}>Get Enrollments (expanded)</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliAcademicTerms(); setTermsResp(r); }}>Get Academic Terms</Button>
+                <Button variant="outline" onClick={async () => { const r = await getPopuliCourseOffering(courseOfferingId); setOfferingsResp(r); }}>Get Course Offering</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliStudentBalance(personId); setBalanceResp(r); }}>Get Student Balance</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliStudent(personId); setPersonResp(r); }}>Get Student</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliPersonBalances(); setGenericResp(r); }}>Get All Balances</Button>
                 <Button variant="outline" onClick={async () => { const r = await getPopuliOnlinePaymentLink(personId); setGenericResp(r); }}>Get Payment Link</Button>
                 <Button variant="outline" onClick={async () => { const r = await callPopuliEndpoint(customEndpoint); setGenericResp(r); }}>Call Raw Endpoint</Button>
+                <Button variant="outline" onClick={async () => {
+                  // Build a simple grouping by term from expanded enrollments + terms
+                  const [enRes, termsRes] = await Promise.all([
+                    getPopuliStudentEnrollmentsExpanded(personId, 'courseoffering', academicTermId || undefined),
+                    getPopuliAcademicTerms()
+                  ])
+                  setEnrollmentsExpandedResp(enRes)
+                  setTermsResp(termsRes)
+                  const enrollmentsArray = Array.isArray((enRes as any).data?.data)
+                    ? (enRes as any).data.data
+                    : Array.isArray(enRes.data) ? enRes.data : []
+                  const termsArray = Array.isArray((termsRes as any).data?.data)
+                    ? (termsRes as any).data.data
+                    : Array.isArray(termsRes.data) ? termsRes.data : []
+                  const termMap: Record<string, string> = {}
+                  termsArray.forEach((t: any) => {
+                    if (t?.id) termMap[String(t.id)] = extractTermShortName(t.display_name) || t.display_name || t.name || String(t.id)
+                  })
+                  const groups: Record<string, any[]> = {}
+                  enrollmentsArray.forEach((en: any) => {
+                    const termIdExpanded = en?.courseoffering?.academic_term_id ?? en?.courseoffering?.term_id ?? null
+                    const termIdDirect = en?.academic_term_id ?? null
+                    const termId = termIdExpanded ?? termIdDirect
+                    const key = termId ? String(termId) : 'Unknown Term'
+                    if (!groups[key]) groups[key] = []
+                    const codeExpanded = en?.courseoffering?.catalog_courses?.[0]?.abbrv ?? en?.courseoffering?.abbrv
+                    const nameExpanded = en?.courseoffering?.catalog_courses?.[0]?.name ?? en?.courseoffering?.name
+                    groups[key].push({
+                      enrollment_id: en.id,
+                      course_offering_id: en.course_offering_id,
+                      catalog_course_id: en.catalog_course_id,
+                      term_id_expanded: termIdExpanded,
+                      term_id_direct: termIdDirect,
+                      term_id_used: termId ?? null,
+                      term_name: termId ? (termMap[String(termId)] || null) : null,
+                      term_mismatch: termIdExpanded !== null && termIdDirect !== null && String(termIdExpanded) !== String(termIdDirect),
+                      course_abbrv: codeExpanded,
+                      course_name: nameExpanded,
+                      letter_grade: en.letter_grade,
+                      final_grade: en.final_grade,
+                      credits: en.credits ?? en.courseoffering?.credits ?? null
+                    })
+                  })
+                  setTermGroupedDebug(groups)
+                }}>Group By Term (debug)</Button>
+                <Button variant="outline" onClick={async () => {
+                  // Full mapping flow via course offerings
+                  setMappingError('')
+                  setMappedGroups(null)
+                  try {
+                    // 1) Academic terms
+                    const termsRes = await getPopuliAcademicTerms()
+                    const termsArray = Array.isArray((termsRes as any).data?.data)
+                      ? (termsRes as any).data.data
+                      : Array.isArray(termsRes.data) ? termsRes.data : []
+                  const termMap: Record<string, string> = {}
+                  termsArray.forEach((t: any) => {
+                    if (t?.id) termMap[String(t.id)] = extractTermShortName(t.display_name) || t.display_name || t.name || String(t.id)
+                  })
+
+                    // 2) Enrollments (non-expanded)
+                    const enrollRes = await getPopuliStudentEnrollments(personId, academicTermId || undefined)
+                    const enrollmentsArray: any[] = Array.isArray((enrollRes as any).data?.data)
+                      ? (enrollRes as any).data.data
+                      : Array.isArray(enrollRes.data) ? enrollRes.data : []
+                    if (!Array.isArray(enrollmentsArray) || enrollmentsArray.length === 0) {
+                      setMappedGroups([])
+                      return
+                    }
+
+                    // 3) Fetch offerings for unique course_offering_id
+                    const uniqueOfferingIds = Array.from(new Set(
+                      enrollmentsArray.map((en: any) => en.course_offering_id).filter(Boolean)
+                    ))
+                    const offeringMap: Record<string, any> = {}
+                    await Promise.all(uniqueOfferingIds.map(async (id: any) => {
+                      const o = await getPopuliCourseOffering(String(id))
+                      const payload = (o as any).data?.data ?? o.data
+                      const offering = Array.isArray(payload) ? payload[0] : payload
+                      offeringMap[String(id)] = offering
+                    }))
+
+                    // 4+5) Build mapped rows and group by term
+                    const groupsByTermId: Record<string, MappedCourseForTerm[]> = {}
+                    for (const en of enrollmentsArray) {
+                      const off = offeringMap[String(en.course_offering_id)] || {}
+                      const termId = off?.academic_term_id ?? off?.term_id ?? null
+                      const termKey = termId ? String(termId) : 'Unknown Term'
+                      if (!groupsByTermId[termKey]) groupsByTermId[termKey] = []
+                      const catalogCourse = Array.isArray(off?.catalog_courses) ? off.catalog_courses[0] : undefined
+                      groupsByTermId[termKey].push({
+                        enrollmentId: en.id,
+                        courseOfferingId: en.course_offering_id,
+                        catalogCourseId: en.catalog_course_id,
+                        code: catalogCourse?.abbrv ?? off?.abbrv ?? undefined,
+                        name: catalogCourse?.name ?? off?.name ?? undefined,
+                        credits: en?.credits ?? off?.credits ?? undefined,
+                        letterGrade: typeof en?.letter_grade === 'string' ? en.letter_grade : undefined,
+                        finalGrade: typeof en?.final_grade === 'number' ? en.final_grade : undefined,
+                        termId,
+                        termName: termId ? (termMap[String(termId)] || null) : null,
+                      })
+                    }
+
+                    const groupsArr: TermCoursesGroup[] = Object.entries(groupsByTermId).map(([tid, courses]) => ({
+                      termId: tid,
+                      termName: tid !== 'Unknown Term' ? (termMap[tid] || tid) : 'Unknown Term',
+                      courses,
+                    }))
+                    setMappedGroups(groupsArr)
+                  } catch (err) {
+                    setMappingError(err instanceof Error ? err.message : 'Mapping failed')
+                  }
+                }}>Map Courses to Terms (via offerings)</Button>
               </div>
             </CardContent>
           </Card>
@@ -498,6 +646,12 @@ POPULI_URL=https://austinchristianuniversity.populiweb.com/`}</pre>
               <Card>
                 <CardHeader><CardTitle>Enrollments</CardTitle></CardHeader>
                 <CardContent>{formatObject(enrollmentsResp)}</CardContent>
+              </Card>
+            )}
+            {enrollmentsExpandedResp && (
+              <Card>
+                <CardHeader><CardTitle>Enrollments (expanded)</CardTitle></CardHeader>
+                <CardContent>{formatObject(enrollmentsExpandedResp)}</CardContent>
               </Card>
             )}
             {termsResp && (
@@ -528,6 +682,75 @@ POPULI_URL=https://austinchristianuniversity.populiweb.com/`}</pre>
               <Card>
                 <CardHeader><CardTitle>Raw Endpoint Response</CardTitle></CardHeader>
                 <CardContent>{formatObject(genericResp)}</CardContent>
+              </Card>
+            )}
+            {termGroupedDebug && (
+              <Card>
+                <CardHeader><CardTitle>Grouped By Term (debug)</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                    {Object.entries(termGroupedDebug).map(([term, rows]) => (
+                      <Card key={term} className="text-sm">
+                        <CardHeader>
+                          <CardTitle className="text-sm">Term: {term}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <pre className="whitespace-pre-wrap text-xs">{JSON.stringify(rows, null, 2)}</pre>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            {mappingError && (
+              <Card>
+                <CardHeader><CardTitle>Mapping Error</CardTitle></CardHeader>
+                <CardContent>
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{mappingError}</AlertDescription>
+                  </Alert>
+                </CardContent>
+              </Card>
+            )}
+            {mappedGroups && (
+              <Card>
+                <CardHeader><CardTitle>Mapped Courses by Term (Offerings method)</CardTitle></CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {mappedGroups.map(group => (
+                      <div key={group.termId} className="border rounded p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-semibold">{group.termName}</div>
+                          <Badge variant="secondary">{group.courses.length} courses</Badge>
+                        </div>
+                        <div className="space-y-2">
+                          {group.courses.map((c) => (
+                            <div key={`${group.termId}-${c.courseOfferingId}-${c.enrollmentId}`} className="text-sm grid grid-cols-1 md:grid-cols-5 gap-2">
+                              <div>
+                                <div className="font-medium">{c.code || String(c.courseOfferingId)}</div>
+                                <div className="text-muted-foreground text-xs">Offering #{c.courseOfferingId}</div>
+                              </div>
+                              <div className="md:col-span-2">
+                                <div>{c.name || 'Unknown Course'}</div>
+                                <div className="text-muted-foreground text-xs">Catalog #{c.catalogCourseId}</div>
+                              </div>
+                              <div>
+                                <div>Credits: {c.credits ?? '—'}</div>
+                                <div className="text-muted-foreground text-xs">Enrollment #{c.enrollmentId}</div>
+                              </div>
+                              <div>
+                                <div>Grade: {c.letterGrade ?? (typeof c.finalGrade === 'number' ? `${Math.round(c.finalGrade)}%` : 'In Progress')}</div>
+                                <div className="text-muted-foreground text-xs">Term: {c.termName || 'Unknown'}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
               </Card>
             )}
           </div>

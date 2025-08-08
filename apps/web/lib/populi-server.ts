@@ -48,8 +48,8 @@ export async function getStudentEnrollmentsServer(personId: string, academicTerm
   return makePopuliServerRequest(`people/${personId}/enrollments${qs}`)
 }
 
-export async function getStudentBalanceServer(personId: string, studentId: string) {
-  return makePopuliServerRequest(`people/${personId}/students/${studentId}/balances`)
+export async function getEnrollmentServer(enrollmentId: string) {
+  return makePopuliServerRequest(`enrollments/${enrollmentId}`)
 }
 
 export async function getFinancialTransactionsServer(personId: string, startDate?: string, endDate?: string) {

@@ -160,7 +160,7 @@ export default function ProfilePage() {
     user: UserType | null
     student: Student | null
     company: Company | null
-    holisticGPA: HolisticGPABreakdown | null
+    holisticGPA: import('@acu-apex/types').StudentHolisticGPA | null
     recentActivity: RecentActivity[]
     populiData: {
       academic: PopuliAcademicRecord[] | null
@@ -292,11 +292,13 @@ export default function ProfilePage() {
   }
 
   // Generate radar chart data from real holistic GPA data
-  const radarChartData = holisticGPA?.categories.map(category => ({
-    pillar: category.category.display_name.replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
-    score: category.score,
+  const breakdownList = holisticGPA ? Object.values((holisticGPA as any).category_breakdown || {}) as any[] : []
+  const radarChartData = breakdownList.map((cat: any) => ({
+    categoryId: cat.category_id,
+    pillar: (cat.category_display_name || cat.category_name || '').replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
+    score: Number(cat.category_score) || 0,
     fullScore: 4.0
-  })) || []
+  }))
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -332,7 +334,7 @@ export default function ProfilePage() {
               </div>
               <div className="mt-4 grid grid-cols-1 gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold">{holisticGPA?.overall_gpa?.toFixed(2) || 'N/A'}</p>
+                  <p className="text-2xl font-bold">{typeof holisticGPA?.holistic_gpa === 'number' ? holisticGPA.holistic_gpa.toFixed(2) : 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Holistic GPA</p>
                 </div>
               </div>
@@ -473,8 +475,11 @@ export default function ProfilePage() {
                         cursor: "pointer",
                       }}
                       onClick={(data: any) => {
-                        if (data && data.payload) {
-                          handlePillarClick(data.payload.pillar)
+                        if (data && data.payload && data.payload.categoryId) {
+                          const cat = breakdownList.find((c: any) => c.category_id === data.payload.categoryId)
+                          if (cat) {
+                            setSelectedPillar(cat.category_display_name || cat.category_name)
+                          }
                         }
                       }}
                     />
@@ -628,6 +633,12 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   )}
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      Note: Financial aid, scholarships, and work study amounts are not yet accurate. We will update these values in a future release.
+                    </AlertDescription>
+                  </Alert>
                 </CardContent>
               </Card>
             ) : (
@@ -700,26 +711,29 @@ export default function ProfilePage() {
             </DialogDescription>
           </DialogHeader>
           {selectedPillar && holisticGPA && (() => {
-            const category = holisticGPA.categories.find(cat => cat.category.display_name === selectedPillar)
+            const breakdownEntries = Object.values((holisticGPA as any).category_breakdown || {}) as any[]
+            const category = breakdownEntries.find((cat: any) => (cat.category_display_name || cat.category_name) === selectedPillar)
             if (!category) return null
             
             return (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold">Overall Score:</span>
-                  <span className="text-2xl font-bold">{category.score.toFixed(2)}/4.0</span>
+                  <span className="text-2xl font-bold">{Number(category.category_score || 0).toFixed(2)}/4.0</span>
                 </div>
                 <div className="space-y-3">
-                  {category.subcategories.map((subcategory) => (
-                    <div key={subcategory.subcategory.id} className="space-y-2">
+                  {category.subcategories.map((subcategory: any) => (
+                    <div key={subcategory.subcategory_id} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{subcategory.subcategory.display_name}</span>
+                        <span className="font-medium">{subcategory.subcategory_display_name || subcategory.subcategory_name}</span>
                         <div className="text-right">
-                          <span className="font-bold">{subcategory.normalized_score.toFixed(2)}/4.0</span>
-                          <span className="text-muted-foreground ml-2">({subcategory.data_points_count} activities)</span>
+                          <span className="font-bold">{Number(subcategory.subcategory_score || 0).toFixed(2)}/4.0</span>
+                          {subcategory.data_points_count != null && (
+                            <span className="text-muted-foreground ml-2">({subcategory.data_points_count} activities)</span>
+                          )}
                         </div>
                       </div>
-                      <Progress value={(subcategory.normalized_score / 4.0) * 100} className="h-2" />
+                      <Progress value={((Number(subcategory.subcategory_score || 0)) / 4.0) * 100} className="h-2" />
                     </div>
                   ))}
                 </div>

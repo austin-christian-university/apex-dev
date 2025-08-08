@@ -8,16 +8,15 @@ import type {
   HolisticGPABreakdown, 
   PopuliAcademicRecord, 
   PopuliFinancialInfo, 
-  RecentActivity 
+  RecentActivity,
+  Company
 } from '@acu-apex/types'
 import { 
   getStudentEnrollmentsServer, 
-  getStudentBalanceServer, 
-  getFinancialTransactionsServer, 
+  getPersonBalancesServer, 
   getPersonExpandedServer,
-  getStudentServer,
-  getTranscriptServer,
-  getPersonBalancesServer
+  getAcademicTermsServer,
+  getEnrollmentServer
 } from '@/lib/populi-server'
 
 /**
@@ -26,6 +25,7 @@ import {
 export async function getStudentProfileData(userId: string): Promise<{
   user: User | null
   student: Student | null
+  company: Company | null
   holisticGPA: StudentHolisticGPA | null
   recentActivity: RecentActivity[]
   populiData: {
@@ -49,6 +49,7 @@ export async function getStudentProfileData(userId: string): Promise<{
       return {
         user: null,
         student: null,
+        company: null,
         holisticGPA: null,
         recentActivity: [],
         populiData: { academic: null, financial: null, error: 'Failed to fetch user data' }
@@ -59,11 +60,22 @@ export async function getStudentProfileData(userId: string): Promise<{
     const { data: student, error: studentError } = await supabase
       .from('students')
       .select('*')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .single()
 
     if (studentError && studentError.code !== 'PGRST116') {
       console.error('Error fetching student:', studentError)
+    }
+
+    // Get company if student found
+    let company: Company | null = null
+    if (student?.company_id) {
+      const { data: companyRow } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('id', student.company_id)
+        .single()
+      company = (companyRow as unknown as Company) || null
     }
 
     // Get holistic GPA data
@@ -81,6 +93,7 @@ export async function getStudentProfileData(userId: string): Promise<{
     return {
       user,
       student: student || null,
+      company,
       holisticGPA,
       recentActivity,
       populiData
@@ -91,6 +104,7 @@ export async function getStudentProfileData(userId: string): Promise<{
     return {
       user: null,
       student: null,
+      company: null,
       holisticGPA: null,
       recentActivity: [],
       populiData: { academic: null, financial: null, error: 'Failed to fetch profile data' }
@@ -109,7 +123,7 @@ async function getStudentHolisticGPA(userId: string): Promise<StudentHolisticGPA
     const { data: holisticGPA, error: gpaError } = await supabase
       .from('student_holistic_gpa')
       .select('*')
-      .eq('user_id', userId)
+      .eq('student_id', userId)
       .single()
 
     if (gpaError) {
@@ -127,16 +141,16 @@ async function getStudentHolisticGPA(userId: string): Promise<StudentHolisticGPA
         subcategories (
           id,
           name,
-          description,
+          display_name,
           category_id,
           categories (
             id,
             name,
-            description
+            display_name
           )
         )
       `)
-      .eq('user_id', userId)
+      .eq('student_id', userId)
 
     if (scoresError) {
       console.error('Error fetching subcategory scores:', scoresError)
@@ -150,27 +164,29 @@ async function getStudentHolisticGPA(userId: string): Promise<StudentHolisticGPA
       subcategoryScores.forEach((score: any) => {
         const category = score.subcategories?.categories
         if (category) {
-          if (!categoryBreakdown[category.name]) {
-            categoryBreakdown[category.name] = {
+          if (!categoryBreakdown[category.id]) {
+            categoryBreakdown[category.id] = {
               category_id: category.id,
               category_name: category.name,
+              category_display_name: category.display_name,
               category_score: 0,
               subcategories: []
             }
           }
           
-          categoryBreakdown[category.name].subcategories.push({
+          categoryBreakdown[category.id].subcategories.push({
             subcategory_id: score.subcategories.id,
             subcategory_name: score.subcategories.name,
-            subcategory_score: score.score
+            subcategory_display_name: score.subcategories.display_name,
+            subcategory_score: Number(score.normalized_score) || 0
           })
         }
       })
 
-      // Calculate category scores (average of subcategory scores)
+      // Calculate category scores (average of subcategory normalized scores)
       Object.values(categoryBreakdown).forEach((category: any) => {
         if (category.subcategories.length > 0) {
-          const totalScore = category.subcategories.reduce((sum: number, sub: any) => sum + sub.subcategory_score, 0)
+          const totalScore = category.subcategories.reduce((sum: number, sub: any) => sum + (Number(sub.subcategory_score) || 0), 0)
           category.category_score = totalScore / category.subcategories.length
         }
       })
@@ -197,21 +213,18 @@ async function getStudentRecentActivity(userId: string): Promise<RecentActivity[
     const { data: submissions, error } = await supabase
       .from('event_submissions')
       .select(`
-        *,
-        event_instances (
+        id,
+        submission_data,
+        submitted_at,
+        event_instances:event_id (
           id,
-          event_id,
-          event_date,
-          events (
-            id,
-            name,
-            description,
-            event_type
-          )
+          name,
+          description,
+          event_type
         )
       `)
       .eq('student_id', userId)
-      .order('created_at', { ascending: false })
+      .order('submitted_at', { ascending: false })
       .limit(5)
 
     if (error) {
@@ -219,12 +232,12 @@ async function getStudentRecentActivity(userId: string): Promise<RecentActivity[
       return []
     }
 
-    return (submissions || []).map(submission => ({
+    return (submissions || []).map((submission: any) => ({
       id: submission.id,
-      event_name: submission.event_instances?.events?.name || 'Unknown Event',
-      submission_type: submission.event_instances?.events?.event_type || 'unknown',
-      submitted_at: submission.created_at,
-      description: submission.event_instances?.events?.description || '',
+      event_name: submission.event_instances?.name || 'Unknown Event',
+      submission_type: submission.event_instances?.event_type || 'unknown',
+      submitted_at: submission.submitted_at,
+      description: submission.event_instances?.description || '',
       points_earned: undefined
     }))
 
@@ -243,51 +256,77 @@ async function getPopuliData(populiId: string): Promise<{
   error?: string
 }> {
   try {
-    // Get person details and student id
+    // Ensure person exists
     const personResult = await getPersonExpandedServer(populiId, 'student')
     if (personResult.error || !personResult.data) {
       return { academic: null, financial: null, error: `Person data: ${personResult.error || 'Person not found'}` }
     }
 
-    const studentId = (personResult as any).data?.student?.id
+    // Enrollments with expanded courseoffering details
+    const enrollmentsResult = await getStudentEnrollmentsServer(populiId, undefined, 'courseoffering')
 
-    // Enrollments
-    const enrollmentsResult = await getStudentEnrollmentsServer(populiId)
+    // Fetch all balances and filter by person_id
+    const balancesList = await getPersonBalancesServer()
+    const personBalance = (Array.isArray((balancesList as any).data?.data)
+      ? (balancesList as any).data.data.find((row: any) => String(row.person_id) === String(populiId))
+      : null)
 
-    // Balance requires studentId
-    let balanceResult: any = { data: null, error: undefined }
-    if (studentId) {
-      balanceResult = await getStudentBalanceServer(populiId, String(studentId))
+    // Fetch terms to map academic_term_id to human-readable names
+    const termsResult = await getAcademicTermsServer()
+    const termMap: Record<string, string> = {}
+    if (Array.isArray((termsResult as any).data?.data)) {
+      ;(termsResult as any).data.data.forEach((t: any) => {
+        if (t && t.id) termMap[String(t.id)] = t.name || String(t.id)
+      })
     }
 
-    // Academic processing
+    // Academic processing with course names, codes, and letter grades
     let academic: PopuliAcademicRecord[] | null = null
-    if (enrollmentsResult.data && Array.isArray(enrollmentsResult.data)) {
+    const enrollmentsArray = Array.isArray((enrollmentsResult as any).data?.data)
+      ? (enrollmentsResult as any).data.data
+      : Array.isArray(enrollmentsResult.data)
+        ? enrollmentsResult.data
+        : null
+
+    if (enrollmentsArray) {
+      // Optionally enrich enrollments with letter grades/credits where missing
+      const enriched = await Promise.all(
+        enrollmentsArray.map(async (en: any) => {
+          if (en.final_grade == null || en.credits == null) {
+            const d = await getEnrollmentServer(String(en.id))
+            if (d.data) return { ...en, ...d.data }
+          }
+          return en
+        })
+      )
+
       const termGroups: Record<string, any[]> = {}
-      enrollmentsResult.data.forEach((enrollment: any) => {
-        const termKey = enrollment.academic_term_id || 'Unknown Term'
+      enriched.forEach((enrollment: any) => {
+        const termKey = String(enrollment.academic_term_id || 'Unknown Term')
         if (!termGroups[termKey]) termGroups[termKey] = []
         termGroups[termKey].push(enrollment)
       })
 
       academic = Object.entries(termGroups).map(([termId, enrollments]) => ({
-        semester: termId,
+        semester: termMap[termId] || termId,
         courses: (enrollments as any[]).map((enrollment: any) => ({
-          code: String(enrollment.course_offering_id ?? 'Unknown Code'),
-          name: String(enrollment.course_offering_id ?? 'Unknown Course'),
-          grade: String(enrollment.final_grade ?? 'In Progress'),
-          credits: enrollment.credits || 0
+          code: enrollment.courseoffering?.abbrv || String(enrollment.course_offering_id || 'Unknown Code'),
+          name: enrollment.courseoffering?.name || 'Unknown Course',
+          grade: typeof enrollment.letter_grade === 'string'
+            ? enrollment.letter_grade
+            : (typeof enrollment.final_grade === 'number' ? `${Math.round(enrollment.final_grade)}%` : 'In Progress'),
+          credits: enrollment.credits || enrollment.courseoffering?.credits || 0
         })),
         gpa: calculateTermGPA(enrollments as any[])
       }))
     }
 
-    // Financial processing
+    // Financial processing (map person balance to UI fields)
     let financial: PopuliFinancialInfo | null = null
-    if (balanceResult.data) {
+    if (personBalance) {
       financial = {
-        tuition_balance: balanceResult.data.current_balance || 0,
-        financial_aid: balanceResult.data.total_financial_aid || 0,
+        tuition_balance: Number(personBalance.balance) || 0,
+        financial_aid: 0,
         scholarships: 0,
         work_study: 0,
         status: 'Active',
@@ -298,7 +337,7 @@ async function getPopuliData(populiId: string): Promise<{
 
     let error = undefined
     if (enrollmentsResult.error) error = `Academic data: ${enrollmentsResult.error}`
-    if (balanceResult.error) error = error ? `${error}; Financial data: ${balanceResult.error}` : `Financial data: ${balanceResult.error}`
+    if (balancesList.error) error = error ? `${error}; Financial data: ${balancesList.error}` : `Financial data: ${balancesList.error}`
 
     return { academic, financial, error }
   } catch (error) {

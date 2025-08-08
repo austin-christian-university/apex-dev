@@ -153,6 +153,13 @@ class SubcategoryAggregator:
         logger.debug(f"Community service result: {capped_total_hours} hours (cap applied: {result['cap_applied']})")
         return result
     
+    async def _get_subcategory_id_by_name(self, name: str) -> Optional[str]:
+        """Resolve a subcategory id by its internal name."""
+        resp = self.supabase.table('subcategories').select('id').eq('name', name).limit(1).execute()
+        if resp.data:
+            return resp.data[0]['id']
+        return None
+
     async def aggregate_attendance_percentage(
         self, 
         student_id: str, 
@@ -172,10 +179,13 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating attendance for {subcategory_name}, student {student_id}")
         
-        # Get all attendance submissions for this subcategory
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {'attendance_percentage': 0, 'present_count': 0, 'total_count': 0, 'submissions': []}
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         if not response.data:
             return {
@@ -251,10 +261,13 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating staff points for {subcategory_name}, student {student_id}")
         
-        # Get relevant submissions
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {'total_points': 0, 'submission_count': 0, 'submissions': []}
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         if not response.data:
             return {
@@ -327,10 +340,13 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating performance ratings for {subcategory_name}, student {student_id}")
         
-        # Get relevant submissions
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {'average_rating': 0, 'converted_score': 0, 'rating_count': 0, 'submissions': []}
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         if not response.data:
             return {
@@ -406,10 +422,13 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating monthly checks for {subcategory_name}, student {student_id}")
         
-        # Get relevant submissions
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {'participation_percentage': 0, 'present_count': 0, 'total_count': 0, 'submissions': []}
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         if not response.data:
             return {
@@ -488,10 +507,13 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating points for {subcategory_name}, student {student_id}")
         
-        # Get relevant submissions
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {'total_points': 0, 'submission_count': 0, 'submissions': []}
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         if not response.data:
             return {
@@ -553,15 +575,21 @@ class SubcategoryAggregator:
         """
         logger.debug(f"Aggregating attendance+bonus for {subcategory_name}, student {student_id}")
         
-        # First get base attendance percentage
-        attendance_result = await self.aggregate_attendance_percentage(
-            student_id, subcategory_name, academic_year
-        )
-        
-        # Then get bonus points
+        subcategory_id = await self._get_subcategory_id_by_name(subcategory_name)
+        if not subcategory_id:
+            return {
+                'attendance_percentage': 0,
+                'bonus_points': 0,
+                'total_score': 0,
+                'attendance_submissions': [],
+                'bonus_submissions': []
+            }
+
+        attendance_result = await self.aggregate_attendance_percentage(student_id, subcategory_name, academic_year)
+
         response = self.supabase.table('event_submissions').select(
             'id, submission_data, submitted_at'
-        ).eq('student_id', student_id).execute()
+        ).eq('student_id', student_id).eq('subcategory_id', subcategory_id).execute()
         
         bonus_points = 0
         bonus_submissions = []

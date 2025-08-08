@@ -132,6 +132,24 @@ export async function getPopuliStudentEnrollments(personId: string, academicTerm
   return makePopuliRequest(`people/${personId}/enrollments${params}`)
 }
 
+// Enrollments with expand support (e.g., expand=courseoffering)
+export async function getPopuliStudentEnrollmentsExpanded(
+  personId: string,
+  expand?: string,
+  academicTermId?: string
+) {
+  const searchParams = new URLSearchParams()
+  if (academicTermId) searchParams.append('academic_term_id', academicTermId)
+  if (expand) searchParams.append('expand', expand)
+  const qs = searchParams.toString() ? `?${searchParams.toString()}` : ''
+  return makePopuliRequest(`people/${personId}/enrollments${qs}`)
+}
+
+// Fetch a single course offering (to inspect fields like academic_term_id)
+export async function getPopuliCourseOffering(courseOfferingId: string) {
+  return makePopuliRequest(`courseofferings/${courseOfferingId}`)
+}
+
 
 
 // FIX: Person-only balances endpoint
