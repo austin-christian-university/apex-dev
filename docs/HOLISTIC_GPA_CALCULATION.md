@@ -62,6 +62,93 @@ Each subcategory record stores:
 - `total_possible_points`: optional upper bound for QA/validation
 
 
+### Subcategory Reference (Inputs & Aggregation)
+
+Documented below are all current subcategories in the database, their expected input types, typical data sources, and the aggregation rule used to convert raw inputs into raw points (0–100) prior to percentile/bell-curve normalization.
+
+- Spiritual
+  - Chapel Attendance (`chapel_attendance`)
+    - Expected input: Binary attendance (present/absent per instance)
+    - Data source: student_input
+    - Aggregation: present_count / total_count × 100
+  - Chapel Team Participation (`chapel_participation`)
+    - Expected input: Engagement quality (1–5 per participation instance)
+    - Data source: student_input
+    - Aggregation: Average(rating) × 20 → 0–100
+  - Community Service Hours (`community_service_hours`)
+    - Expected input: Hours per submission
+    - Data source: student_input
+    - Aggregation: Cap daily to 8 hours; annual cap min(sum(hours), 12). Map proportion of 12 hours to 0–100.
+  - Dream Team Involvement (`dream_team_involvement`)
+    - Expected input: Monthly check (present/absent)
+    - Data source: student_input
+    - Aggregation: present_months / total_months × 100. No role multipliers.
+  - Fellow Friday Attendance (`fellow_friday_attendance`)
+    - Expected input: Binary attendance (present/absent per instance)
+    - Data source: student_input
+    - Aggregation: present_count / total_count × 100
+  - GBE Attendance (`gbe_attendance`)
+    - Expected input: Binary attendance (present/absent per instance)
+    - Data source: student_input
+    - Aggregation: present_count / total_count × 100
+  - Small Group Involvement (`small_group_involvement`)
+    - Expected input: Monthly check (present/absent)
+    - Data source: student_input
+    - Aggregation: present_months / total_months × 100
+  - Spiritual Formation Grade (`spiritual_formation_grade`)
+    - Expected input: Percent grade (0–100)
+    - Data source: populi
+    - Aggregation: Use provided percent; if provided as points, convert to percent
+
+- Academic
+  - Academic Class Attendance & Grades (`class_attendance_grades`)
+    - Expected input: Attendance percent and/or course grade percent
+    - Data source: populi
+    - Aggregation: Performance ratio Sum(rating)/Sum(max_rating) × 100 (or direct grade percent)
+
+- Professional
+  - Credentials or Certifications (`credentials_certifications`)
+    - Expected input: Staff-assigned points per credential (entered upon staff review)
+    - Data source: student_input (submitted), scored by staff
+    - Aggregation: Sum(assigned_points)
+  - Fellow Friday Team Participation (`fellow_friday_participation`)
+    - Expected input: Points-based participation score per instance
+    - Data source: student_input
+    - Aggregation: Sum(participation_points)
+  - Job or Campus Role Promotion/Resume-Building Opportunities (`job_promotion_opportunities`)
+    - Expected input: Staff-assigned points per promotion/opportunity
+    - Data source: student_input (submitted), scored by staff
+    - Aggregation: Sum(assigned_points)
+  - Practicum Grade (`practicum_grade`)
+    - Expected input: Percent grade (0–100)
+    - Data source: populi
+    - Aggregation: Use provided percent
+
+- Team
+  - Company Community Events (`company_community_events`)
+    - Expected input: Binary attendance (present/absent per instance)
+    - Data source: student_input
+    - Aggregation: present_count / total_count × 100
+  - Company Team-Building (`company_team_building`)
+    - Expected input: Participation engagement rating (1–5 per event)
+    - Data source: officer_input
+    - Aggregation: Average(rating) × 20 → 0–100 (rank/scale-based participation)
+  - GBE Participation (`gbe_participation`)
+    - Expected input: Attendance plus bonus points for roles/extra effort
+    - Data source: officer_input
+    - Aggregation: attendance_percent + Sum(bonus_points) (clamp to 0–100 if needed)
+  - Lions Games Involvement (`lions_games_involvement`)
+    - Expected input: Staff-assigned points
+    - Data source: staff_input
+    - Aggregation: Sum(assigned_points)
+
+Notes
+- Where multiple inputs exist (e.g., attendance + bonus), clamp combined raw points to [0, 100] before percentile/bell curve.
+- Monthly checks behave like attendance but at a monthly cadence.
+- Community service caps: per-submission daily cap 8 hours; annual cap 12 hours.
+- Staff/officer-assigned points are authoritative; student submissions can initiate review but do not auto-award points.
+
+
 ## From Raw Points to GPA
 
 ### 1) Percentile Rank (population reference)
