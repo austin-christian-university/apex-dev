@@ -8,10 +8,18 @@ import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 import { CheckCircle, Loader2, AlertTriangle, Sparkles } from 'lucide-react'
 import { getOnboardingData, validateOnboardingData, clearOnboardingData } from '@/lib/onboarding/storage'
-import { syncOnboardingDataToSupabase } from '@/lib/onboarding/sync'
 import type { OnboardingData } from '@acu-apex/types'
 
-type SyncStatus = 'pending' | 'syncing' | 'success' | 'error'
+// Types for API response
+interface PopuliSyncResult {
+  success: boolean
+  populiId?: string
+  confidence?: 'high' | 'medium' | 'low'
+  matchType?: string
+  error?: string
+}
+
+type SyncStatus = 'pending' | 'syncing' | 'populi_syncing' | 'success' | 'error'
 
 export default function CompletePage() {
   const { user } = useAuth()
@@ -19,6 +27,7 @@ export default function CompletePage() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('pending')
   const [error, setError] = useState<string>('')
   const [onboardingData, setOnboardingData] = useState<Partial<OnboardingData>>({})
+  const [populiSyncResult, setPopuliSyncResult] = useState<PopuliSyncResult | null>(null)
   const [validationResult, setValidationResult] = useState<{
     isValid: boolean
     missingFields: string[]
@@ -54,19 +63,42 @@ export default function CompletePage() {
 
     setSyncStatus('syncing')
     setError('')
+    setPopuliSyncResult(null)
 
     try {
-      const result = await syncOnboardingDataToSupabase(
-        onboardingData as OnboardingData,
-        user.id
-      )
+      // Call the API route instead of direct sync
+      const response = await fetch('/api/onboarding/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          onboardingData: onboardingData as OnboardingData,
+          authUserId: user.id
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || `HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      // Store Populi sync result for display
+      if (result.populiSync) {
+        setPopuliSyncResult(result.populiSync)
+      }
 
       if (result.success) {
         setSyncStatus('success')
+        
+        // Clear local storage after successful sync
+        clearOnboardingData()
+        
         // Wait a moment for the success animation, then redirect
         setTimeout(() => {
           redirectToDashboard()
-        }, 2000)
+        }, 3000) // Slightly longer to show Populi status
       } else {
         setSyncStatus('error')
         setError(result.error || 'Failed to complete onboarding')
@@ -172,11 +204,15 @@ export default function CompletePage() {
           </div>
         </div>
         <h1 className="text-3xl font-bold">
-          {syncStatus === 'success' ? 'Welcome to ACU Apex!' : 'Ready to Complete!'}
+          {syncStatus === 'success' ? 'Welcome to ACU Apex!' : 
+           syncStatus === 'syncing' ? 'Setting up your account...' : 
+           'Ready to Complete!'}
         </h1>
         <p className="text-lg text-muted-foreground">
           {syncStatus === 'success' 
             ? 'Your onboarding is complete. Redirecting to your dashboard...'
+            : syncStatus === 'syncing'
+            ? 'Please wait while we sync your data with Populi...'
             : 'Review your information and complete your onboarding'
           }
         </p>
@@ -268,6 +304,52 @@ export default function CompletePage() {
                 )}
               </div>
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Populi Sync Status Card */}
+      {populiSyncResult && (
+        <Card className={`${
+          populiSyncResult.success 
+            ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
+            : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
+        }`}>
+          <CardHeader className="pb-3">
+            <CardTitle className={`text-lg flex items-center space-x-2 ${
+              populiSyncResult.success ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
+            }`}>
+              {populiSyncResult.success ? (
+                <CheckCircle className="h-5 w-5" />
+              ) : (
+                <AlertTriangle className="h-5 w-5" />
+              )}
+              <span>Populi Integration</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {populiSyncResult.success ? (
+              <div className="space-y-2">
+                <p className="text-sm text-green-700 dark:text-green-300">
+                  ✅ Successfully linked your account to Populi records
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  Match confidence: {populiSyncResult.confidence} • Type: {populiSyncResult.matchType}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                  ⚠️ Could not automatically link your account to Populi
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                  {populiSyncResult.error}
+                </p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+                  Don't worry! Please contact an administrator to manually link your account for academic and financial data access.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

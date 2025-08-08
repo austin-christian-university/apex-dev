@@ -17,6 +17,7 @@ export interface User {
   has_completed_onboarding: boolean | null;
   date_of_birth: string | null; // Date string
   photo: string | null; // Base64 encoded photo
+  populi_id: string | null; // Populi person ID for linking to academic/financial data
 }
 
 // Student types - matches Supabase students table
@@ -150,6 +151,136 @@ export interface ChartConfig {
   title: string;
   data: ChartData[];
   type: 'line' | 'bar' | 'pie' | 'area';
+}
+
+// Holistic GPA types - matches database schema
+export interface Category {
+  id: string;
+  name: string;
+  display_name: string;
+  weight: number;
+  created_at: string | null;
+}
+
+export interface Subcategory {
+  id: string;
+  category_id: string;
+  name: string;
+  display_name: string;
+  data_source: 'populi' | 'student_input' | 'officer_input' | 'staff_input';
+  weight: number;
+  created_at: string | null;
+}
+
+export interface StudentSubcategoryScore {
+  id: string;
+  student_id: string;
+  subcategory_id: string;
+  score: number;
+  academic_year_start: number;
+  academic_year_end: number;
+  created_at: string | null;
+  updated_at: string | null;
+  calculation_date: string;
+  raw_points: number;
+  normalized_score: number;
+  data_points_count: number | null;
+  total_possible_points: number | null;
+}
+
+export interface StudentCategoryScore {
+  id: string;
+  student_id: string;
+  category_id: string;
+  raw_score: number;
+  normalized_score: number;
+  academic_year_start: number;
+  academic_year_end: number;
+  calculation_date: string;
+  subcategory_count: number | null;
+  total_possible_points: number | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface StudentHolisticGPA {
+  id: string;
+  student_id: string;
+  holistic_gpa: number;
+  academic_year_start: number;
+  academic_year_end: number;
+  calculation_date: string;
+  category_breakdown: Record<string, number> | null; // JSONB object with category scores
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface CompanyHolisticGPA {
+  id: string;
+  company_id: string;
+  holistic_gpa: number;
+  academic_year_start: number;
+  academic_year_end: number;
+  calculation_date: string;
+  category_breakdown: Record<string, number> | null; // JSONB object with category scores
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+// Enhanced profile data with full GPA breakdown
+export interface HolisticGPABreakdown {
+  overall_gpa: number;
+  categories: Array<{
+    category: Category;
+    score: number;
+    subcategories: Array<{
+      subcategory: Subcategory;
+      score: number;
+      raw_points: number;
+      normalized_score: number;
+      data_points_count: number;
+    }>;
+  }>;
+}
+
+// Recent activity from event submissions
+export interface RecentActivity {
+  id: string;
+  event_name: string;
+  submission_type: string;
+  submitted_at: string;
+  points_earned?: number;
+  description: string;
+}
+
+// Populi API types
+export interface PopuliPerson {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  student_id?: string;
+}
+
+export interface PopuliAcademicRecord {
+  semester: string;
+  courses: Array<{
+    code: string;
+    name: string;
+    grade: string;
+    credits: number;
+  }>;
+  gpa: number;
+}
+
+export interface PopuliFinancialInfo {
+  tuition_balance: number;
+  financial_aid: number;
+  scholarships: number;
+  work_study: number;
+  last_payment?: string;
+  next_due_date?: string;
+  status: string;
 }
 
 // Onboarding types - updated to match User interface

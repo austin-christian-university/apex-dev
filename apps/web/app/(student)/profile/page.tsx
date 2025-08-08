@@ -11,9 +11,13 @@ import { Label } from "@acu-apex/ui"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/ui"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@acu-apex/ui"
-import { User, GraduationCap, DollarSign, Calendar, TrendingUp, BookOpen, Pencil, ChevronDown, ChevronUp } from "lucide-react"
+import { Alert, AlertDescription } from "@acu-apex/ui"
+import { User, GraduationCap, DollarSign, Calendar, TrendingUp, BookOpen, Pencil, ChevronDown, ChevronUp, AlertTriangle, Loader2 } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useAuth } from '@/components/auth/auth-provider'
+import { getStudentProfileData } from '@/lib/profile-data'
+import type { HolisticGPABreakdown, RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, User as UserType, Student, Company } from '@acu-apex/types'
 
 // Mock data - will be replaced with real data later
 const mockUserProfile = {
@@ -110,30 +114,6 @@ const mockAcademicRecord = [
   }
 ]
 
-// Radar chart data for Four Pillars
-const radarChartData = [
-  {
-    pillar: "Spiritual",
-    score: 3.95,
-    fullScore: 4.0
-  },
-  {
-    pillar: "Professional", 
-    score: 3.85,
-    fullScore: 4.0
-  },
-  {
-    pillar: "Academic",
-    score: 3.88,
-    fullScore: 4.0
-  },
-  {
-    pillar: "Team",
-    score: 4.0,
-    fullScore: 4.0
-  }
-]
-
 const chartConfig = {
   score: {
     label: "Score",
@@ -169,20 +149,154 @@ const mockRecentActivity = [
 ]
 
 export default function ProfilePage() {
+  const { user: authUser } = useAuth()
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false)
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null)
-  const [editableProfile, setEditableProfile] = useState(mockUserProfile)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  
+  // Real profile data
+  const [profileData, setProfileData] = useState<{
+    user: UserType | null
+    student: Student | null
+    company: Company | null
+    holisticGPA: HolisticGPABreakdown | null
+    recentActivity: RecentActivity[]
+    populiData: {
+      academic: PopuliAcademicRecord[] | null
+      financial: PopuliFinancialInfo | null
+      error?: string
+    } | null
+  }>({
+    user: null,
+    student: null,
+    company: null,
+    holisticGPA: null,
+    recentActivity: [],
+    populiData: null
+  })
+
+  const [editableProfile, setEditableProfile] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    date_of_birth: '',
+    disc_profile: '',
+    myers_briggs_profile: '',
+    enneagram_profile: ''
+  })
+
+  // Load profile data on component mount
+  useEffect(() => {
+    async function loadProfileData() {
+      if (!authUser?.id) return
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        const result = await getStudentProfileData(authUser.id)
+        
+        if (result.error) {
+          setError(result.error)
+        } else {
+          setProfileData({
+            user: result.user || null,
+            student: result.student || null,
+            company: result.company || null,
+            holisticGPA: result.holisticGPA || null,
+            recentActivity: result.recentActivity || [],
+            populiData: result.populiData || null
+          })
+
+          // Initialize editable profile with user data
+          if (result.user) {
+            setEditableProfile({
+              first_name: result.user.first_name || '',
+              last_name: result.user.last_name || '',
+              email: result.user.email || '',
+              phone_number: result.user.phone_number || '',
+              date_of_birth: result.user.date_of_birth || '',
+              disc_profile: result.user.disc_profile || '',
+              myers_briggs_profile: result.user.myers_briggs_profile || '',
+              enneagram_profile: result.user.enneagram_profile || ''
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Error loading profile data:', err)
+        setError('Failed to load profile data')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProfileData()
+  }, [authUser?.id])
 
   const handleProfileUpdate = (field: string, value: string) => {
     setEditableProfile(prev => ({ ...prev, [field]: value }))
   }
 
   const handlePillarClick = (pillarName: string) => {
-    const pillar = mockFourPillarsDetailed.find(p => p.name.includes(pillarName))
-    if (pillar) {
-      setSelectedPillar(pillar.name)
+    if (!profileData.holisticGPA) return
+    
+    const category = profileData.holisticGPA.categories.find(cat => 
+      cat.category.display_name.toLowerCase().includes(pillarName.toLowerCase())
+    )
+    if (category) {
+      setSelectedPillar(category.category.display_name)
     }
   }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
+        <Card>
+          <CardContent className="p-6 flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading profile...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  const { user, student, company, holisticGPA, recentActivity, populiData } = profileData
+
+  if (!user) {
+    return (
+      <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>User data not found</AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
+
+  // Generate radar chart data from real holistic GPA data
+  const radarChartData = holisticGPA?.categories.map(category => ({
+    pillar: category.category.display_name.replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
+    score: category.score,
+    fullScore: 4.0
+  })) || []
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -194,9 +308,9 @@ export default function ProfilePage() {
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={editableProfile.avatar || editableProfile.photo || ""} />
+                    <AvatarImage src={user.photo || ""} />
                     <AvatarFallback className="text-lg">
-                      {editableProfile.first_name[0]}{editableProfile.last_name[0]}
+                      {(user.first_name?.[0] || '').toUpperCase()}{(user.last_name?.[0] || '').toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <Button
@@ -208,9 +322,9 @@ export default function ProfilePage() {
                   </Button>
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-xl font-bold">{editableProfile.name}</h1>
-                  <p className="text-sm text-muted-foreground">{editableProfile.email}</p>
-                  <p className="text-sm text-secondary font-medium">{editableProfile.company}</p>
+                  <h1 className="text-xl font-bold">{user.first_name} {user.last_name}</h1>
+                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-secondary font-medium">{company?.name || 'No Company'}</p>
                 </div>
                 <div className="ml-auto">
                   {isHeaderExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
@@ -218,7 +332,7 @@ export default function ProfilePage() {
               </div>
               <div className="mt-4 grid grid-cols-1 gap-4 text-center">
                 <div>
-                  <p className="text-2xl font-bold">{mockUserProfile.holisticGPA}</p>
+                  <p className="text-2xl font-bold">{holisticGPA?.overall_gpa?.toFixed(2) || 'N/A'}</p>
                   <p className="text-xs text-muted-foreground">Holistic GPA</p>
                 </div>
               </div>
@@ -288,8 +402,8 @@ export default function ProfilePage() {
                     <Label htmlFor="myers_briggs">Myers-Briggs</Label>
                     <Input
                       id="myers_briggs"
-                      value={editableProfile.myers_briggs || ''}
-                      onChange={(e) => handleProfileUpdate('myers_briggs', e.target.value)}
+                      value={editableProfile.myers_briggs_profile || ''}
+                      onChange={(e) => handleProfileUpdate('myers_briggs_profile', e.target.value)}
                       placeholder="e.g., INTJ"
                     />
                   </div>
@@ -297,8 +411,8 @@ export default function ProfilePage() {
                     <Label htmlFor="enneagram">Enneagram</Label>
                     <Input
                       id="enneagram"
-                      value={editableProfile.enneagram || ''}
-                      onChange={(e) => handleProfileUpdate('enneagram', e.target.value)}
+                      value={editableProfile.enneagram_profile || ''}
+                      onChange={(e) => handleProfileUpdate('enneagram_profile', e.target.value)}
                       placeholder="e.g., Type 5 - The Investigator"
                     />
                   </div>
@@ -332,42 +446,60 @@ export default function ProfilePage() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4 mt-6">
-          {/* Interactive Radar Chart */}
-          <Card>
-            <CardHeader className="items-center">
-              <CardTitle>Holistic GPA Breakdown</CardTitle>
-              <CardDescription>
-                Tap any pillar to see detailed breakdown
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pb-0">
-              <ChartContainer
-                config={chartConfig}
-                className="mx-auto aspect-square max-h-[250px]"
-              >
-                <RadarChart data={radarChartData}>
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                  <PolarAngleAxis dataKey="pillar" />
-                  <PolarGrid />
-                  <Radar
-                    dataKey="score"
-                    fill="var(--color-score)"
-                    fillOpacity={0.6}
-                    dot={{
-                      r: 6,
-                      fillOpacity: 1,
-                      cursor: "pointer",
-                    }}
-                    onClick={(data: any) => {
-                      if (data && data.payload) {
-                        handlePillarClick(data.payload.pillar)
-                      }
-                    }}
-                  />
-                </RadarChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          {holisticGPA ? (
+            <Card>
+              <CardHeader className="items-center">
+                <CardTitle>Holistic GPA Breakdown</CardTitle>
+                <CardDescription>
+                  Tap any pillar to see detailed breakdown
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-0">
+                <ChartContainer
+                  config={chartConfig}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RadarChart data={radarChartData}>
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                    <PolarAngleAxis dataKey="pillar" />
+                    <PolarGrid />
+                    <Radar
+                      dataKey="score"
+                      fill="var(--color-score)"
+                      fillOpacity={0.6}
+                      dot={{
+                        r: 6,
+                        fillOpacity: 1,
+                        cursor: "pointer",
+                      }}
+                      onClick={(data: any) => {
+                        if (data && data.payload) {
+                          handlePillarClick(data.payload.pillar)
+                        }
+                      }}
+                    />
+                  </RadarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardHeader className="items-center">
+                <CardTitle>Holistic GPA Breakdown</CardTitle>
+                <CardDescription>
+                  Your holistic GPA is being calculated
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-6">
+                <Alert>
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    Your holistic GPA hasn't been calculated yet. This usually happens after you submit your first few activities and events. Check back soon!
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Academic Tab */}
@@ -378,30 +510,54 @@ export default function ProfilePage() {
               <h2 className="text-lg font-semibold">Academic Record</h2>
             </div>
             
-            {mockAcademicRecord.map((semester) => (
-              <Card key={semester.semester}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{semester.semester}</CardTitle>
-                    <Badge variant="secondary">GPA: {semester.gpa}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {semester.courses.map((course) => (
-                    <div key={course.code} className="flex items-center justify-between text-sm">
-                      <div>
-                        <p className="font-medium">{course.code}</p>
-                        <p className="text-muted-foreground text-xs">{course.name}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{course.grade}</p>
-                        <p className="text-muted-foreground text-xs">{course.credits} credits</p>
-                      </div>
+            {!user.populi_id ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Your academic records from Populi aren't linked yet. Please contact staff to link your account for academic data.
+                </AlertDescription>
+              </Alert>
+            ) : populiData?.error ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Unable to fetch academic data from Populi: {populiData.error}
+                </AlertDescription>
+              </Alert>
+            ) : populiData?.academic && populiData.academic.length > 0 ? (
+              populiData.academic.map((semester) => (
+                <Card key={semester.semester}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">{semester.semester}</CardTitle>
+                      <Badge variant="secondary">GPA: {semester.gpa.toFixed(2)}</Badge>
                     </div>
-                  ))}
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {semester.courses.map((course, index) => (
+                      <div key={`${course.code}-${index}`} className="flex items-center justify-between text-sm">
+                        <div>
+                          <p className="font-medium">{course.code}</p>
+                          <p className="text-muted-foreground text-xs">{course.name}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{course.grade}</p>
+                          <p className="text-muted-foreground text-xs">{course.credits} credits</p>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    No academic records found. Academic data may not be available yet.
+                  </p>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
         </TabsContent>
 
@@ -413,46 +569,76 @@ export default function ProfilePage() {
               <h2 className="text-lg font-semibold">Financial Overview</h2>
             </div>
             
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Account Status</CardTitle>
-                <Badge variant="secondary" className="w-fit">
-                  {mockFinancialInfo.status}
-                </Badge>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-muted-foreground">Tuition Balance</p>
-                    <p className="text-lg font-bold">${mockFinancialInfo.tuitionBalance.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Financial Aid</p>
-                    <p className="text-lg font-bold text-green-600">${mockFinancialInfo.financialAid.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Scholarships</p>
-                    <p className="text-lg font-bold text-green-600">${mockFinancialInfo.scholarships.toLocaleString()}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Work Study</p>
-                    <p className="text-lg font-bold text-green-600">${mockFinancialInfo.workStudy.toLocaleString()}</p>
-                  </div>
-                </div>
-                <div className="pt-2 border-t">
+            {!user.populi_id ? (
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Your financial records from Populi aren't linked yet. Please contact staff to link your account for financial data.
+                </AlertDescription>
+              </Alert>
+            ) : populiData?.error ? (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Unable to fetch financial data from Populi: {populiData.error}
+                </AlertDescription>
+              </Alert>
+            ) : populiData?.financial ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Account Status</CardTitle>
+                  <Badge variant="secondary" className="w-fit">
+                    {populiData.financial.status}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Last Payment</p>
-                      <p className="font-medium">{mockFinancialInfo.lastPayment}</p>
+                      <p className="text-muted-foreground">Tuition Balance</p>
+                      <p className="text-lg font-bold">${populiData.financial.tuition_balance.toLocaleString()}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Next Due Date</p>
-                      <p className="font-medium">{mockFinancialInfo.nextDueDate}</p>
+                      <p className="text-muted-foreground">Financial Aid</p>
+                      <p className="text-lg font-bold text-green-600">${populiData.financial.financial_aid.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Scholarships</p>
+                      <p className="text-lg font-bold text-green-600">${populiData.financial.scholarships.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Work Study</p>
+                      <p className="text-lg font-bold text-green-600">${populiData.financial.work_study.toLocaleString()}</p>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  {(populiData.financial.last_payment || populiData.financial.next_due_date) && (
+                    <div className="pt-2 border-t">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        {populiData.financial.last_payment && (
+                          <div>
+                            <p className="text-muted-foreground">Last Payment</p>
+                            <p className="font-medium">{populiData.financial.last_payment}</p>
+                          </div>
+                        )}
+                        {populiData.financial.next_due_date && (
+                          <div>
+                            <p className="text-muted-foreground">Next Due Date</p>
+                            <p className="font-medium">{populiData.financial.next_due_date}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    No financial data found. Financial information may not be available yet.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
@@ -464,26 +650,40 @@ export default function ProfilePage() {
               <h2 className="text-lg font-semibold">Recent Activity</h2>
             </div>
             
-            <div className="space-y-2">
-              {mockRecentActivity.map((activity, index) => (
-                <Card key={index}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <Badge variant="outline" className="text-xs">
-                            {activity.type}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{activity.date}</span>
+            {recentActivity.length > 0 ? (
+              <div className="space-y-2">
+                {recentActivity.map((activity) => (
+                  <Card key={activity.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Badge variant="outline" className="text-xs">
+                              {activity.submission_type.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(activity.submitted_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium">{activity.description}</p>
                         </div>
-                        <p className="text-sm font-medium">{activity.description}</p>
+                        {activity.points_earned && (
+                          <span className="text-sm font-bold text-secondary">+{activity.points_earned} pts</span>
+                        )}
                       </div>
-                      <span className="text-sm font-bold text-secondary">{activity.points}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="text-muted-foreground">
+                    No recent activity found. Start submitting events and activities to see your progress here!
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
       </Tabs>
@@ -499,33 +699,33 @@ export default function ProfilePage() {
               Components that make up your {selectedPillar?.toLowerCase() || "pillar"} score
             </DialogDescription>
           </DialogHeader>
-          {selectedPillar && (() => {
-            const pillar = mockFourPillarsDetailed.find(p => p.name === selectedPillar)
-            if (!pillar) return null
+          {selectedPillar && holisticGPA && (() => {
+            const category = holisticGPA.categories.find(cat => cat.category.display_name === selectedPillar)
+            if (!category) return null
             
             return (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold">Overall Score:</span>
-                  <span className="text-2xl font-bold">{pillar.score}/4.0</span>
+                  <span className="text-2xl font-bold">{category.score.toFixed(2)}/4.0</span>
                 </div>
                 <div className="space-y-3">
-                  {pillar.components.map((component) => (
-                    <div key={component.name} className="space-y-2">
+                  {category.subcategories.map((subcategory) => (
+                    <div key={subcategory.subcategory.id} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{component.name}</span>
+                        <span className="font-medium">{subcategory.subcategory.display_name}</span>
                         <div className="text-right">
-                          <span className="font-bold">{component.score}/4.0</span>
-                          <span className="text-muted-foreground ml-2">({component.weight}%)</span>
+                          <span className="font-bold">{subcategory.normalized_score.toFixed(2)}/4.0</span>
+                          <span className="text-muted-foreground ml-2">({subcategory.data_points_count} activities)</span>
                         </div>
                       </div>
-                      <Progress value={(component.score / 4.0) * 100} className="h-2" />
+                      <Progress value={(subcategory.normalized_score / 4.0) * 100} className="h-2" />
                     </div>
                   ))}
                 </div>
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground">
-                    This score is calculated based on the weighted average of the components above.
+                    This score is calculated based on your activity submissions and normalized using a bell curve distribution.
                   </p>
                 </div>
               </div>

@@ -47,6 +47,11 @@ All API calls follow this pattern:
 https://yourschool.populiweb.com/api2/{object}/{method}
 ```
 
+**Important**: For person-specific endpoints, the structure is:
+```
+https://yourschool.populiweb.com/api2/people/{person_id}/{endpoint}
+```
+
 ### Request Examples
 ```bash
 # Simple GET request
@@ -54,6 +59,12 @@ GET https://yourschool.populiweb.com/api2/people
 
 # GET with parameters in URL path
 GET https://yourschool.populiweb.com/api2/people/55782
+
+# Person-specific endpoints (NEW STRUCTURE)
+GET https://yourschool.populiweb.com/api2/people/55782/enrollments
+GET https://yourschool.populiweb.com/api2/people/55782/student
+GET https://yourschool.populiweb.com/api2/people/55782/transcript
+GET https://yourschool.populiweb.com/api2/people/55782/balances
 
 # POST with JSON body
 POST https://yourschool.populiweb.com/api2/people/55782/phonenumbers/create
@@ -154,27 +165,32 @@ GET /api2/people/by_student_id/{student_id}
 **Parameters:**
 - `student_id` (required) - The student's ID number
 
-### Get Student Information
+### Get Student Information for a Person
 ```http
-GET /api2/people/{person_id}/students/{student_id}
+GET /api2/people/{person_id}/student
 ```
 
 **Response:**
 ```json
 {
   "object": "student",
-  "id": "12345",
-  "person_id": "55782",
-  "student_id": "STU001",
-  "status": "ENROLLED",
-  "entrance_term_id": "202401",
-  "exit_term_id": null,
+  "id": 12,
+  "visible_student_id": "20220xx002",
+  "entrance_term_id": 0,
+  "first_time": false,
+  "last_academic_term_id": null,
   "exit_date": null,
-  "entrance_date": "2024-01-15",
-  "academic_standing": "GOOD_STANDING",
-  "created_at": "2024-01-15T10:30:00Z",
-  "updated_at": "2024-01-20T14:22:00Z",
-  "sandbox": false
+  "exit_reason_id": null,
+  "receives_1098t": true,
+  "proctored": false,
+  "max_enrolled_credits": null,
+  "max_enrolled_hours": null,
+  "max_audit_credits": null,
+  "max_audit_hours": null,
+  "student_type_campus": "enroll_audit",
+  "student_type_online": "enroll_audit",
+  "housing": null,
+  "sandbox": true
 }
 ```
 
@@ -277,7 +293,7 @@ GET /api2/courseofferings/{course_offering_id}/enrollments
 }
 ```
 
-### Get Student's Enrollments
+### Get Student's Enrollments (UPDATED)
 ```http
 GET /api2/people/{person_id}/enrollments
 ```
@@ -285,6 +301,56 @@ GET /api2/people/{person_id}/enrollments
 **Optional Parameters:**
 - `academic_term_id` - Filter by specific term
 - `status` - Filter by enrollment status (ENROLLED, COMPLETED, DROPPED, etc.)
+
+**Response:**
+```json
+{
+  "object": "list",
+  "count": 1,
+  "results": 1,
+  "results_per_page": null,
+  "pages": 1,
+  "page": 1,
+  "offset": 0,
+  "has_more": false,
+  "data": [
+    {
+      "object": "enrollment",
+      "id": 6000003,
+      "course_offering_id": 21910,
+      "catalog_course_id": 688,
+      "student_id": 12,
+      "status": "enrolled",
+      "status_expires_at": null,
+      "pending_reason": null,
+      "final_comment": null,
+      "final_grade": 91.5,
+      "final_attendance": 0,
+      "released_final_grade": null,
+      "commented_by_id": null,
+      "enrolled_by_id": null,
+      "enrolled_by_type": "registrar",
+      "status_date": "2022-10-05",
+      "enrolled_date": null,
+      "credits": 2,
+      "hours": 2,
+      "attendance_hours": null,
+      "clinical_hours": null,
+      "pass_fail": false,
+      "finalized": false,
+      "finalized_at": null,
+      "delivery_method_id": null,
+      "automatically_removed_at": null,
+      "automatically_removed_from": null,
+      "added_at": null,
+      "added_by_id": null,
+      "updated_at": null,
+      "display_status": "Enrolled"
+    }
+  ],
+  "sandbox": true
+}
+```
 
 ---
 
@@ -365,24 +431,129 @@ GET /api2/assignments/{assignment_id}/grades/{person_id}
 
 ## Student Academic Progress
 
-### Get Student Transcript
+### Get Student Transcript (UPDATED)
 ```http
-GET /api2/people/{person_id}/students/{student_id}/transcript
+GET /api2/people/{person_id}/transcript
+```
+
+**Parameters:**
+- `program_id` (required) - The program ID
+
+**Response:**
+```json
+{
+  "object": "list",
+  "count": 2,
+  "results": 2,
+  "results_per_page": null,
+  "pages": 1,
+  "page": 1,
+  "offset": 0,
+  "has_more": false,
+  "data": {
+    "programs": {
+      "2": {
+        "programid": "2",
+        "level": "Undergraduate",
+        "name": "Certificate",
+        "units": "CREDITS",
+        "hidden_from_students": 0,
+        "started_on": "2004-10-20",
+        "exit_date": null,
+        "exit_reason": null,
+        "standings_include_clinical_hours": 0,
+        "lock_gpa_data": false,
+        "transcript_note": {
+          "errors": null
+        },
+        "entrance_term_id": null,
+        "entrance_term_display_name": null,
+        "sort_by": 0
+      }
+    },
+    "transfer_credits": {
+      "2": {
+        "institutions": {
+          "1": {
+            "contact_org_name": "The Oxford School",
+            "transfer_courses": [
+              {
+                "course_group_id": null,
+                "course_id": 687,
+                "course_num": "SPAN306",
+                "course_name": "Spanish 6",
+                "description": "Spanish 7",
+                "attempted_units": 2.6,
+                "earned_units": 2.6,
+                "earned_standing_units": 2.6,
+                "grade_abbrv": "A",
+                "letter_grade": "A",
+                "quality_points": 10.4,
+                "gpa_units": 2.6,
+                "attempted_contra-units": 0,
+                "earned_contra-units": null,
+                "attempted_attendance_hours": null,
+                "earned_attendance_hours": null,
+                "attempted_clinical_hours": null,
+                "earned_clinical_hours": null,
+                "attendance_hours_that_affect_standing": null,
+                "clinical_hours_that_affect_standing": null,
+                "applied_to_course_abbrv": "LAT100",
+                "applied_to_course_name": "Beginning Latin",
+                "show_on_transcript": 1
+              }
+            ],
+            "transfer_degrees": []
+          }
+        },
+        "totals": {
+          "institutions": {
+            "1": {
+              "quality_points": 10.4,
+              "gpa_units": 2.6,
+              "attempted_units": 2.6,
+              "earned_units": 2.6,
+              "earned_standing_units": 2.6,
+              "attempted_contra-units": 0,
+              "earned_contra-units": null,
+              "attempted_attendance_hours": null,
+              "earned_attendance_hours": null,
+              "attempted_clinical_hours": null,
+              "earned_clinical_hours": null,
+              "attendance_hours_that_affect_standing": null,
+              "clinical_hours_that_affect_standing": null,
+              "clinical_course_earned_units": null,
+              "non_clinical_course_earned_units": 2.6,
+              "clinical_course_earned_contra_units": null,
+              "non_clinical_course_earned_contra_units": null
+            }
+          }
+        },
+        "effective_date_units": []
+      }
+    }
+  }
+}
 ```
 
 ### Export Grade Report
 ```http
-GET /api2/people/{person_id}/students/{student_id}/export_grade_report
+GET /api2/people/{person_id}/gradereport
 ```
 
-**Optional Parameters:**
-- `academic_term_id` - Specific term
-- `format` - Export format (PDF, etc.)
+**Parameters:**
+- `academic_term_id` (required) - The academic term ID
+- `program_id` (required) - The program ID
 
 ### Export Transcript  
 ```http
-GET /api2/people/{person_id}/students/{student_id}/export_transcript
+GET /api2/people/{person_id}/export_transcript
 ```
+
+**Parameters:**
+- `program_id` (required) - The program ID
+- `print_layout_id` (optional) - The print layout ID
+- `export_format` (optional) - The export format
 
 ---
 
@@ -428,9 +599,9 @@ GET /api2/financialtransactions
 GET /api2/financialtransactions/{transaction_id}
 ```
 
-### Get Student Account Balances
+### Get Student Account Balances (UPDATED)
 ```http
-GET /api2/people/{person_id}/students/{student_id}/balances
+GET /api2/people/{person_id}/balances
 ```
 
 **Response:**
@@ -452,6 +623,38 @@ GET /api2/people/{person_id}/students/{student_id}/balances
       "charges": 12750.00,
       "payments": 10000.00,
       "financial_aid": 2000.00
+    }
+  ]
+}
+```
+
+### Get All Person Balances (UPDATED)
+```http
+GET /api2/personbalances
+```
+
+**Optional Parameters:**
+- `filter` - Filter conditions (balance, uncollectible_invoices, program, has_active_student_role, on_active_payment_plan, has_active_recurring_payment, student_campus, tag, lock_type, custom_field)
+- `page` - Page number for pagination
+
+**Response:**
+```json
+{
+  "object": "list",
+  "count": 2,
+  "results": 2,
+  "results_per_page": null,
+  "pages": 1,
+  "page": 1,
+  "offset": 0,
+  "has_more": false,
+  "data": [
+    {
+      "person_id": 1,
+      "display_name": "Elizabeth Fox",
+      "first_name": "Elizabeth",
+      "last_name": "Fox",
+      "balance": "1234.56"
     }
   ]
 }
@@ -625,14 +828,18 @@ GET /api2/invoices/{invoice_id}
 
 ### Get Student Payment Link
 ```http
-GET /api2/people/{person_id}/students/{student_id}/get_online_payment_link
+GET /api2/people/{person_id}/onlinepaymentlink
 ```
+
+**Optional Parameters:**
+- `force_regenerate` - Set to true to generate a new link, which will invalidate any previous links. Default is false
 
 **Response:**
 ```json
 {
-  "payment_url": "https://yourschool.populiweb.com/payments/student/55782/pay",
-  "expires_at": "2024-08-30T23:59:59Z"
+  "object": "link",
+  "person_id": 12,
+  "url": "https://nsa.populiweb.com/router/paymentlink/16c5c392008841bd04c1301959d799c6"
 }
 ```
 
@@ -736,7 +943,7 @@ class PopuliAPIv2 {
     return await this.request(`/people/${personId}${params}`);
   }
 
-  // Get student enrollments  
+  // Get student enrollments (UPDATED)
   async getStudentEnrollments(personId, academicTermId = null) {
     const params = academicTermId ? `?academic_term_id=${academicTermId}` : '';
     return await this.request(`/people/${personId}/enrollments${params}`);
@@ -753,9 +960,9 @@ class PopuliAPIv2 {
     return await this.request(`/financialtransactions${queryString}`);
   }
 
-  // Get student account balance
-  async getStudentBalance(personId, studentId) {
-    return await this.request(`/people/${personId}/students/${studentId}/balances`);
+  // Get student account balance (UPDATED)
+  async getStudentBalance(personId) {
+    return await this.request(`/people/${personId}/balances`);
   }
 
   // Get course grades for a student
@@ -794,7 +1001,7 @@ const transactions = await api.getFinancialTransactions(
 );
 
 // Get current account balance
-const balance = await api.getStudentBalance(55782, 'STU001');
+const balance = await api.getStudentBalance(55782);
 ```
 
 ### Python Example

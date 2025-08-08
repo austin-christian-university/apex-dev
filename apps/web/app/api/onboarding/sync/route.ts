@@ -1,7 +1,8 @@
-import type { OnboardingData, User, Student, Company } from '@acu-apex/types'
-import { createClient } from '@/lib/supabase/client'
-import { clearOnboardingData } from './storage'
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { findBestPopuliPersonMatch } from '@/lib/populi'
+import type { OnboardingData, User, Student } from '@acu-apex/types'
 
 export interface SyncResult {
   success: boolean
@@ -17,14 +18,34 @@ export interface PopuliSyncResult {
 }
 
 /**
- * Sync onboarding data to Supabase USERS and STUDENTS tables
+ * POST /api/onboarding/sync
+ * Sync onboarding data to database using service role (bypasses RLS)
  */
-export async function syncOnboardingDataToSupabase(
-  onboardingData: OnboardingData,
-  authUserId: string
-): Promise<SyncResult & { populiSync?: PopuliSyncResult }> {
+export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient()
+    const body = await request.json()
+    const { onboardingData, authUserId } = body
+
+    if (!onboardingData || !authUserId) {
+      return NextResponse.json(
+        { error: 'Missing required fields: onboardingData and authUserId' },
+        { status: 400 }
+      )
+    }
+
+    // Verify the user is authenticated by checking with regular client
+    const regularClient = await createClient()
+    const { data: authUser, error: authError } = await regularClient.auth.getUser()
+    
+    if (authError || !authUser.user || authUser.user.id !== authUserId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Use service role client to bypass RLS for onboarding
+    const supabase = createServiceRoleClient()
 
     // Prepare user data for database (matching actual schema)
     const userData: Partial<User> = {
@@ -81,7 +102,8 @@ export async function syncOnboardingDataToSupabase(
         onboardingData.first_name, 
         onboardingData.last_name, 
         onboardingData.email,
-        onboardingData.phone_number
+        onboardingData.phone_number,
+        supabase
       )
     } catch (error) {
       console.warn('Failed to link user to Populi during onboarding:', error)
@@ -93,25 +115,26 @@ export async function syncOnboardingDataToSupabase(
 
     // If user is a student or officer, also create/update student record
     if ((onboardingData.role === 'student' || onboardingData.role === 'officer') && onboardingData.company_id) {
-      const studentResult = await syncStudentData(authUserId, onboardingData.company_id)
+      const studentResult = await syncStudentData(authUserId, onboardingData.company_id, supabase)
       if (!studentResult.success) {
         throw new Error(`Failed to sync student data: ${studentResult.error}`)
       }
     }
 
-    // Clear local storage after successful sync
-    clearOnboardingData()
-
-    return { 
+    return NextResponse.json({ 
       success: true,
       populiSync: populiSyncResult
-    }
+    })
+
   } catch (error) {
-    console.error('Onboarding sync error:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }
+    console.error('Onboarding sync API error:', error)
+    return NextResponse.json(
+      { 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      },
+      { status: 500 }
+    )
   }
 }
 
@@ -120,11 +143,10 @@ export async function syncOnboardingDataToSupabase(
  */
 async function syncStudentData(
   userId: string,
-  companyId: string
+  companyId: string,
+  supabase: any
 ): Promise<SyncResult> {
   try {
-    const supabase = createClient()
-
     // Check if student record already exists
     const { data: existingStudent, error: fetchError } = await supabase
       .from('students')
@@ -136,7 +158,7 @@ async function syncStudentData(
       throw new Error(`Failed to check existing student: ${fetchError.message}`)
     }
 
-    // Prepare student data (you can extend this with more fields as needed)
+    // Prepare student data
     const studentData: Partial<Student> = {
       id: userId,
       company_id: companyId,
@@ -174,134 +196,6 @@ async function syncStudentData(
 }
 
 /**
- * Check if user has completed onboarding
- */
-export async function checkOnboardingStatus(authUserId: string): Promise<{
-  hasCompleted: boolean
-  user?: Partial<User>
-  error?: string
-}> {
-  try {
-    const supabase = createClient()
-
-    console.log('authUserId', authUserId)
-
-
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('id, has_completed_onboarding, role, first_name, last_name')
-      .eq('id', authUserId)
-      .single()
-
-
-    if (error && error.code !== 'PGRST116') {
-      throw new Error(`Failed to check onboarding status: ${error.message}`)
-    }
-
-    return {
-      hasCompleted: user?.has_completed_onboarding ?? false,
-      user: user || undefined
-    }
-  } catch (error) {
-    console.error('Onboarding status check error:', error)
-    return {
-      hasCompleted: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }
-  }
-}
-
-/**
- * Fetch available companies for selection
- */
-export async function fetchCompanies(): Promise<{
-  companies: Array<Pick<Company, 'id' | 'name' | 'description' | 'is_active'>>
-  error?: string
-}> {
-  try {
-    const supabase = createClient()
-
-    const { data: companies, error } = await supabase
-      .from('companies')
-      .select('id, name, description, is_active')
-      .eq('is_active', true)
-      .order('name')
-
-    if (error) {
-      throw new Error(`Failed to fetch companies: ${error.message}`)
-    }
-
-    return { companies: companies || [] }
-  } catch (error) {
-    console.error('Company fetch error:', error)
-    return {
-      companies: [],
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }
-  }
-}
-
-/**
- * Get complete user profile (user + student data if applicable)
- */
-export async function getUserProfile(authUserId: string): Promise<{
-  profile?: any // You can type this more specifically based on your needs
-  error?: string
-}> {
-  try {
-    const supabase = createClient()
-
-    // First get the user data
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', authUserId)
-      .single()
-
-    if (userError) {
-      throw new Error(`Failed to fetch user: ${userError.message}`)
-    }
-
-    // If user is a student, also fetch student and company data
-    if (user.role === 'student') {
-      const { data: student, error: studentError } = await supabase
-        .from('students')
-        .select(`
-          *,
-          companies (
-            id,
-            name,
-            description,
-            is_active
-          )
-        `)
-        .eq('id', authUserId)
-        .single()
-
-      if (studentError) {
-        throw new Error(`Failed to fetch student data: ${studentError.message}`)
-      }
-
-      return {
-        profile: {
-          user,
-          student,
-          company: student.companies
-        }
-      }
-    }
-
-    // For non-students, return just user data
-    return { profile: { user } }
-  } catch (error) {
-    console.error('Profile fetch error:', error)
-    return {
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
-    }
-  }
-}
-
-/**
  * Attempt to link user to Populi person during onboarding
  */
 async function attemptPopuliLinking(
@@ -309,7 +203,8 @@ async function attemptPopuliLinking(
   firstName: string, 
   lastName: string, 
   email: string,
-  phoneNumber?: string
+  phoneNumber: string | undefined,
+  supabase: any
 ): Promise<PopuliSyncResult> {
   try {
     console.log(`Attempting to find Populi match for user: ${firstName} ${lastName} (${email})`)
@@ -329,7 +224,6 @@ async function attemptPopuliLinking(
       
       // Auto-link if confidence is high, otherwise return info for user decision
       if (matchResult.confidence === 'high') {
-        const supabase = createClient()
         const { error: updateError } = await supabase
           .from('users')
           .update({ populi_id: matchResult.person.id })
