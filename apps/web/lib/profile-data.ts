@@ -16,8 +16,10 @@ import {
   getPersonBalancesServer, 
   getPersonExpandedServer,
   getAcademicTermsServer,
-  getEnrollmentServer
+  getEnrollmentServer,
+  getCourseOfferingServer
 } from '@/lib/populi-server'
+import { extractTermShortName } from '@acu-apex/utils'
 
 /**
  * Get student profile data including personal info, holistic GPA, recent activity, and Populi data
@@ -262,8 +264,8 @@ async function getPopuliData(populiId: string): Promise<{
       return { academic: null, financial: null, error: `Person data: ${personResult.error || 'Person not found'}` }
     }
 
-    // Enrollments with expanded courseoffering details
-    const enrollmentsResult = await getStudentEnrollmentsServer(populiId, undefined, 'courseoffering')
+    // Enrollments (non-expanded) and terms; we'll fetch offerings to ensure catalog course fields
+    const enrollmentsResult = await getStudentEnrollmentsServer(populiId)
 
     // Fetch all balances and filter by person_id
     const balancesList = await getPersonBalancesServer()
@@ -274,13 +276,32 @@ async function getPopuliData(populiId: string): Promise<{
     // Fetch terms to map academic_term_id to human-readable names
     const termsResult = await getAcademicTermsServer()
     const termMap: Record<string, string> = {}
+    const termSortKey: Record<string, number> = {}
     if (Array.isArray((termsResult as any).data?.data)) {
       ;(termsResult as any).data.data.forEach((t: any) => {
-        if (t && t.id) termMap[String(t.id)] = t.name || String(t.id)
+        if (t && t.id) {
+          const idStr = String(t.id)
+          const shortName = extractTermShortName(t.display_name) || t.display_name || t.name
+          termMap[idStr] = shortName || idStr
+
+          // Build a descending-friendly numeric key: year*10 + seasonOrder
+          const seasonOrder: Record<string, number> = { winter: 1, spring: 2, summer: 3, fall: 4 }
+          let key = Number(idStr) || 0
+          if (shortName) {
+            const match = String(shortName).match(/(Fall|Spring|Summer|Winter)\s+(\d{4})/i)
+            if (match) {
+              const season = match[1].toLowerCase()
+              const year = Number(match[2]) || 0
+              const ord = seasonOrder[season] ?? 0
+              key = year * 10 + ord
+            }
+          }
+          termSortKey[idStr] = key
+        }
       })
     }
 
-    // Academic processing with course names, codes, and letter grades
+    // Academic processing with course names, codes (from catalog_courses), and letter grades
     let academic: PopuliAcademicRecord[] | null = null
     const enrollmentsArray = Array.isArray((enrollmentsResult as any).data?.data)
       ? (enrollmentsResult as any).data.data
@@ -300,24 +321,49 @@ async function getPopuliData(populiId: string): Promise<{
         })
       )
 
+      // Fetch offerings for unique course_offering_id
+      const uniqueOfferingIds = Array.from(new Set(
+        enriched.map((en: any) => en.course_offering_id).filter(Boolean)
+      ))
+      const offeringMap: Record<string, any> = {}
+      await Promise.all(uniqueOfferingIds.map(async (id: any) => {
+        const o = await getCourseOfferingServer(String(id))
+        const payload = (o as any).data?.data ?? o.data
+        const offering = Array.isArray(payload) ? payload[0] : payload
+        offeringMap[String(id)] = offering
+      }))
+
       const termGroups: Record<string, any[]> = {}
       enriched.forEach((enrollment: any) => {
-        const termKey = String(enrollment.academic_term_id || 'Unknown Term')
+        const off = offeringMap[String(enrollment.course_offering_id)] || {}
+        const termId = off?.academic_term_id ?? off?.term_id ?? enrollment.academic_term_id ?? null
+        const termKey = termId ? String(termId) : 'Unknown Term'
         if (!termGroups[termKey]) termGroups[termKey] = []
-        termGroups[termKey].push(enrollment)
+        termGroups[termKey].push({ enrollment, offering: off })
       })
 
-      academic = Object.entries(termGroups).map(([termId, enrollments]) => ({
+      const sortedEntries = Object.entries(termGroups).sort((a, b) => {
+        const [termA] = a
+        const [termB] = b
+        const keyA = termSortKey[termA] ?? Number(termA) ?? 0
+        const keyB = termSortKey[termB] ?? Number(termB) ?? 0
+        return keyB - keyA // most recent first
+      })
+
+      academic = sortedEntries.map(([termId, rows]) => ({
         semester: termMap[termId] || termId,
-        courses: (enrollments as any[]).map((enrollment: any) => ({
-          code: enrollment.courseoffering?.abbrv || String(enrollment.course_offering_id || 'Unknown Code'),
-          name: enrollment.courseoffering?.name || 'Unknown Course',
-          grade: typeof enrollment.letter_grade === 'string'
-            ? enrollment.letter_grade
-            : (typeof enrollment.final_grade === 'number' ? `${Math.round(enrollment.final_grade)}%` : 'In Progress'),
-          credits: enrollment.credits || enrollment.courseoffering?.credits || 0
-        })),
-        gpa: calculateTermGPA(enrollments as any[])
+        courses: (rows as any[]).map(({ enrollment, offering }) => {
+          const catalogCourse = Array.isArray(offering?.catalog_courses) ? offering.catalog_courses[0] : undefined
+          return {
+            code: catalogCourse?.abbrv ?? offering?.abbrv ?? String(enrollment.course_offering_id || 'Unknown Code'),
+            name: catalogCourse?.name ?? offering?.name ?? 'Unknown Course',
+            grade: typeof enrollment.letter_grade === 'string'
+              ? enrollment.letter_grade
+              : (typeof enrollment.final_grade === 'number' ? `${Math.round(enrollment.final_grade)}%` : 'In Progress'),
+            credits: enrollment.credits ?? offering?.credits ?? 0
+          }
+        }),
+        gpa: calculateTermGPA((rows as any[]).map(r => r.enrollment))
       }))
     }
 

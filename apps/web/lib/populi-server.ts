@@ -52,6 +52,10 @@ export async function getEnrollmentServer(enrollmentId: string) {
   return makePopuliServerRequest(`enrollments/${enrollmentId}`)
 }
 
+export async function getCourseOfferingServer(courseOfferingId: string) {
+  return makePopuliServerRequest(`courseofferings/${courseOfferingId}`)
+}
+
 export async function getFinancialTransactionsServer(personId: string, startDate?: string, endDate?: string) {
   const params = new URLSearchParams()
   params.append('person_id', personId)
