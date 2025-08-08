@@ -5,20 +5,19 @@ import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
 import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
-import { createClient } from "@/lib/supabase/client"
-import { getUserProfileWithEventsAction } from "@/lib/user-actions"
+import { getUserProfileWithEventsAction, getCompanyStandingsAction } from "@/lib/user-actions"
 import { EventCard } from "@/components/event-card"
 import { AddEventDialog } from "@/components/add-event-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
 
-// Mock company standings data - will be replaced with real data later
-const mockCompanyStandings = [
-  { name: "Alpha Company", score: 3.85, rank: 1, members: 24, trend: "+0.12" },
-  { name: "Beta Company", score: 3.72, rank: 2, members: 26, trend: "+0.05" },
-  { name: "Gamma Company", score: 3.68, rank: 3, members: 23, trend: "-0.03" },
-  { name: "Delta Company", score: 3.45, rank: 4, members: 25, trend: "+0.08" },
-]
+interface CompanyStandingUI {
+  name: string
+  score: number
+  rank: number
+  members: number
+  trend?: number
+}
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -27,6 +26,7 @@ export default function HomePage() {
   const [profile, setProfile] = useState<any>(null)
   const [urgentEvents, setUrgentEvents] = useState<any[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
+  const [companyStandings, setCompanyStandings] = useState<CompanyStandingUI[]>([])
   const [loading, setLoading] = useState(true)
 
   const loadUserData = useCallback(async () => {
@@ -34,15 +34,29 @@ export default function HomePage() {
     
     try {
       setLoading(true)
-      const { profile, urgentEvents, upcomingEvents, error: eventsError } = await getUserProfileWithEventsAction(user.id)
+      const [eventsResult, standingsResult] = await Promise.all([
+        getUserProfileWithEventsAction(user.id),
+        getCompanyStandingsAction(),
+      ])
 
-      if (eventsError) {
-        console.error('Failed to fetch events:', eventsError)
-      }
+      const { profile, urgentEvents, upcomingEvents, error: eventsError } = eventsResult || {}
+      const { standings, error: standingsError } = standingsResult || { standings: [] }
+
+      if (eventsError) console.error('Failed to fetch events:', eventsError)
+      if (standingsError) console.error('Failed to fetch company standings:', standingsError)
 
       setProfile(profile)
       setUrgentEvents(urgentEvents || [])
       setUpcomingEvents(upcomingEvents || [])
+      setCompanyStandings(
+        (standings || []).map((s: any) => ({
+          name: s.name,
+          score: s.score,
+          rank: s.rank,
+          members: s.members,
+          trend: s.trend,
+        }))
+      )
     } catch (error) {
       console.error('Error loading user data:', error)
     } finally {
@@ -99,7 +113,7 @@ export default function HomePage() {
         </div>
         
         <div className="space-y-2">
-          {mockCompanyStandings.map((company) => (
+          {companyStandings.map((company) => (
             <Card key={company.name} className={company.rank === 1 ? "border-secondary/30" : ""}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -118,13 +132,15 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">{company.score}</p>
-                    <div className="flex items-center space-x-1 text-xs">
-                      <TrendingUp className={`h-3 w-3 ${company.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}`} />
-                      <span className={company.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}>
-                        {company.trend}
-                      </span>
-                    </div>
+                    <p className="text-lg font-bold">{company.score.toFixed(2)}</p>
+                    {typeof company.trend === 'number' && (
+                      <div className="flex items-center space-x-1 text-xs">
+                        <TrendingUp className={`h-3 w-3 ${company.trend >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+                        <span className={company.trend >= 0 ? 'text-green-500' : 'text-red-500'}>
+                          {company.trend >= 0 ? `+${company.trend.toFixed(2)}` : company.trend.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

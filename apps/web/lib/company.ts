@@ -1,6 +1,7 @@
 import type { Company, Student, User, CompanyHolisticGPA } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { calculateCompanyRank } from '@acu-apex/utils'
 
 export interface CompanyMember {
   user: User
@@ -15,6 +16,121 @@ export interface CompanyDetails {
   holisticGPA: number // Company average from company_holistic_gpa table
   rank: number // Placeholder
   categoryBreakdown?: Record<string, number> // From company_holistic_gpa.category_breakdown
+}
+
+export interface CompanyStanding {
+  companyId: string
+  name: string
+  score: number
+  members: number
+  rank: number
+  trend?: number
+}
+
+/**
+ * Fetch real company standings derived from latest company_holistic_gpa
+ * - Uses latest record per company by calculation_date
+ * - Includes member counts from students table
+ * - Computes trend delta vs previous record (if available)
+ */
+export async function getCompanyStandings(
+  supabaseClient?: SupabaseClient
+): Promise<{ standings: CompanyStanding[]; error?: string }> {
+  try {
+    const supabase = supabaseClient || (await createClient())
+
+    // 1) Active companies
+    const { data: companies, error: companiesError } = await supabase
+      .from('companies')
+      .select('id, name')
+      .eq('is_active', true)
+      .order('name')
+
+    if (companiesError) {
+      throw new Error(`Failed to fetch companies: ${companiesError.message}`)
+    }
+
+    const companyIds = (companies || []).map((c) => c.id)
+
+    if (companyIds.length === 0) {
+      return { standings: [] }
+    }
+
+    // 2) All GPA rows for these companies ordered by newest first
+    const { data: gpaRows, error: gpaError } = await supabase
+      .from('company_holistic_gpa')
+      .select('company_id, holistic_gpa, calculation_date')
+      .in('company_id', companyIds)
+      .order('calculation_date', { ascending: false })
+
+    if (gpaError) {
+      throw new Error(`Failed to fetch company GPA: ${gpaError.message}`)
+    }
+
+    // Build latest and previous maps per company for trend
+    const latestByCompany = new Map<string, { gpa: number; date: string }>()
+    const previousByCompany = new Map<string, { gpa: number; date: string }>()
+
+    for (const row of gpaRows || []) {
+      const companyId = row.company_id as string
+      const gpa = Number(row.holistic_gpa) || 0
+      const date = String(row.calculation_date)
+      if (!latestByCompany.has(companyId)) {
+        latestByCompany.set(companyId, { gpa, date })
+      } else if (!previousByCompany.has(companyId)) {
+        previousByCompany.set(companyId, { gpa, date })
+      }
+    }
+
+    // 3) Member counts per company (small N; fetch all and count client-side for reliability)
+    const { data: students, error: studentsError } = await supabase
+      .from('students')
+      .select('id, company_id')
+      .in('company_id', companyIds)
+
+    if (studentsError) {
+      throw new Error(`Failed to fetch student counts: ${studentsError.message}`)
+    }
+
+    const memberCountByCompany = new Map<string, number>()
+    for (const s of students || []) {
+      const cid = s.company_id as string
+      memberCountByCompany.set(cid, (memberCountByCompany.get(cid) || 0) + 1)
+    }
+
+    // Assemble standings entries
+    const standingsUnranked = (companies || []).map((c) => {
+      const latest = latestByCompany.get(c.id)
+      const previous = previousByCompany.get(c.id)
+      const score = latest ? Math.round(latest.gpa * 100) / 100 : 0
+      const trend = latest && previous ? Math.round((latest.gpa - previous.gpa) * 100) / 100 : undefined
+      return {
+        companyId: c.id,
+        name: c.name as string,
+        score,
+        members: memberCountByCompany.get(c.id) || 0,
+        rank: 0, // filled below
+        trend,
+      } as CompanyStanding
+    })
+
+    // Compute ranks using shared util (descending by score)
+    const rankMap = calculateCompanyRank(
+      standingsUnranked.map((s) => ({ id: s.companyId, holisticGPA: s.score }))
+    )
+
+    const standingsRanked = standingsUnranked
+      .map((s) => ({ ...s, rank: rankMap.get(s.companyId) || 0 }))
+      .sort((a, b) => a.rank - b.rank)
+
+    return { standings: standingsRanked }
+  } catch (error) {
+    console.error('Company standings fetch error:', error)
+    return {
+      standings: [],
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    }
+  }
 }
 
 /**
