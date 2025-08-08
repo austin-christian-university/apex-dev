@@ -8,16 +8,32 @@ export const BaseSubmissionDataSchema = z.object({
 
 export type BaseSubmissionData = z.infer<typeof BaseSubmissionDataSchema>;
 
-// Attendance Events
+// 1) Binary attendance used for several subcategories (chapel, GBE, fellow friday, company community events)
 export const AttendanceSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('attendance'),
   status: z.enum(['present', 'absent', 'excused']),
-  location: z.string().optional(), // Optional override for event location
+  location: z.string().optional(),
 });
-
 export type AttendanceSubmission = z.infer<typeof AttendanceSubmissionSchema>;
 
-// Community Service Events (Updated for non-routine submissions)
+// 2) Monthly checks (small group, dream team)
+export const SmallGroupMonthlyCheckSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('small_group'),
+  status: z.enum(['involved', 'not_involved']),
+});
+export type SmallGroupMonthlyCheckSubmission = z.infer<
+  typeof SmallGroupMonthlyCheckSubmissionSchema
+>;
+
+export const DreamTeamMonthlyCheckSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('dream_team'),
+  status: z.enum(['involved', 'not_involved']),
+});
+export type DreamTeamMonthlyCheckSubmission = z.infer<
+  typeof DreamTeamMonthlyCheckSubmissionSchema
+>;
+
+// 3) Community service (hours with caps applied downstream)
 export const CommunityServiceSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('community_service'),
   hours: z.number().min(0).max(24),
@@ -25,13 +41,25 @@ export const CommunityServiceSubmissionSchema = BaseSubmissionDataSchema.extend(
   supervisor_name: z.string().min(1),
   supervisor_contact: z.string().email(),
   description: z.string().min(10),
-  photos: z.array(z.string()).optional(), // Base64 encoded photos
-  date_of_service: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
+  photos: z.array(z.string()).optional(),
+  date_of_service: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
+export type CommunityServiceSubmission = z.infer<
+  typeof CommunityServiceSubmissionSchema
+>;
 
-export type CommunityServiceSubmission = z.infer<typeof CommunityServiceSubmissionSchema>;
+// 4) Staff-assigned points: credentials, job promotions (points assigned by staff)
+export const CredentialsSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('credentials'),
+  credential_name: z.string().min(1),
+  granting_organization: z.string().min(1),
+  description: z.string().min(10).optional(),
+  photos: z.array(z.string()).optional(),
+  date_of_credential: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  assigned_points: z.number().min(0).optional(), // set by staff upon approval
+});
+export type CredentialsSubmission = z.infer<typeof CredentialsSubmissionSchema>;
 
-// Job Promotion Events
 export const JobPromotionSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('job_promotion'),
   promotion_title: z.string().min(1),
@@ -39,156 +67,69 @@ export const JobPromotionSubmissionSchema = BaseSubmissionDataSchema.extend({
   supervisor_name: z.string().min(1),
   supervisor_contact: z.string().email(),
   description: z.string().min(10),
-  photos: z.array(z.string()).optional(), // Base64 encoded photos
-  date_of_promotion: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
+  photos: z.array(z.string()).optional(),
+  date_of_promotion: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  assigned_points: z.number().min(0).optional(), // set by staff upon approval
 });
-
 export type JobPromotionSubmission = z.infer<typeof JobPromotionSubmissionSchema>;
 
-// Credentials Events
-export const CredentialsSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('credentials'),
-  credential_name: z.string().min(1),
-  granting_organization: z.string().min(1),
-  description: z.string().min(10).optional(),
-  photos: z.array(z.string()).optional(), // Base64 encoded photos
-  date_of_credential: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // "2024-01-15"
+// 5) Performance ratings (1–5) for participation/engagement
+export const ChapelParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('chapel_participation'),
+  rating: z.number().min(1).max(5),
 });
+export type ChapelParticipationSubmission = z.infer<
+  typeof ChapelParticipationSubmissionSchema
+>;
 
-export type CredentialsSubmission = z.infer<typeof CredentialsSubmissionSchema>;
-
-// Team Meeting Events
-export const TeamMeetingSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('team_meeting'),
-  meeting_type: z.enum(['company_meeting', 'leadership_meeting', 'planning_session']),
-  duration_minutes: z.number().min(1).max(480), // 1 minute to 8 hours
-  participants: z.array(z.string()).min(1),
-  agenda_items: z.array(z.string()).min(1),
-  decisions_made: z.array(z.string()),
-  action_items: z.array(z.string()),
-  meeting_location: z.string().optional(),
+export const CompanyTeamBuildingSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('company_team_building'),
+  rating: z.number().min(1).max(5),
 });
+export type CompanyTeamBuildingSubmission = z.infer<
+  typeof CompanyTeamBuildingSubmissionSchema
+>;
 
-export type TeamMeetingSubmission = z.infer<typeof TeamMeetingSubmissionSchema>;
 
-// Leader Meeting Events
-export const LeaderMeetingSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('leader_meeting'),
-  meeting_type: z.enum(['officer_meeting', 'staff_meeting', 'planning_retreat']),
-  duration_minutes: z.number().min(1).max(480),
-  attendees: z.array(z.string()).min(1),
-  topics_discussed: z.array(z.string()).min(1),
-  decisions_made: z.array(z.string()),
-  follow_up_actions: z.array(z.string()),
-  meeting_notes: z.string().optional(),
-});
-
-export type LeaderMeetingSubmission = z.infer<typeof LeaderMeetingSubmissionSchema>;
-
-// Academic Events
-export const AcademicSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('academic'),
-  class_code: z.string().min(1),
-  participation_type: z.enum(['discussion', 'presentation', 'group_work', 'assignment']),
-  grade: z.number().min(0).max(100).optional(),
-  feedback: z.string().optional(),
-  materials_submitted: z.array(z.string()).optional(),
-});
-
-export type AcademicSubmission = z.infer<typeof AcademicSubmissionSchema>;
-
-// Spiritual Events
-export const SpiritualSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('spiritual'),
-  activity_type: z.enum(['chapel', 'small_group', 'prayer_meeting', 'bible_study']),
-  participation_level: z.enum(['active', 'passive', 'leading']),
-  reflection: z.string().optional(),
-  prayer_requests: z.array(z.string()).optional(),
-  group_size: z.number().min(1).optional(),
-});
-
-export type SpiritualSubmission = z.infer<typeof SpiritualSubmissionSchema>;
-
-// Professional Development Events
-export const ProfessionalSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('professional'),
-  activity_type: z.enum(['certification', 'workshop', 'conference', 'mentorship']),
-  duration_hours: z.number().min(0.5).max(40),
-  provider: z.string().min(1),
-  certificate_url: z.string().url().optional(),
-  skills_developed: z.array(z.string()).min(1),
-  networking_contacts: z.array(z.string()).optional(),
-});
-
-export type ProfessionalSubmission = z.infer<typeof ProfessionalSubmissionSchema>;
-
-// GBE Participation
-export const GBESubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('gbe_participation'),
-  event_name: z.string().min(1),
-  role: z.enum(['participant', 'leader', 'organizer', 'volunteer']),
-  hours_contributed: z.number().min(0).max(24),
-  responsibilities: z.array(z.string()).min(1),
-  team_size: z.number().min(1).optional(),
-  outcomes_achieved: z.array(z.string()).min(1),
-});
-
-export type GBESubmission = z.infer<typeof GBESubmissionSchema>;
-
-// Lions Games Participation
-export const LionsGamesSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('lions_games'),
-  sport: z.string().min(1),
-  team_placement: z.number().min(1).optional(),
-  performance_rating: z.number().min(1).max(10),
-  sportsmanship_rating: z.number().min(1).max(10),
-  participation_level: z.enum(['full', 'partial', 'spectator']),
-  team_contribution: z.string().min(1),
-});
-
-export type LionsGamesSubmission = z.infer<typeof LionsGamesSubmissionSchema>;
-
-// Dream Team Involvement
-export const DreamTeamSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('dream_team'),
-  team_name: z.string().min(1),
-  role: z.enum(['member', 'leader', 'coordinator']),
-  hours_contributed: z.number().min(0).max(24),
-  projects_completed: z.array(z.string()).min(1),
-  impact_description: z.string().min(10),
-  team_size: z.number().min(1),
-});
-
-export type DreamTeamSubmission = z.infer<typeof DreamTeamSubmissionSchema>;
-
-// Fellow Friday Participation
-export const FellowFridaySubmissionSchema = BaseSubmissionDataSchema.extend({
+export const FellowFridayPointsSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('fellow_friday'),
-  activity_type: z.enum(['workshop', 'presentation', 'networking', 'skill_building']),
-  duration_minutes: z.number().min(1).max(480),
-  skills_practiced: z.array(z.string()).min(1),
-  connections_made: z.array(z.string()).optional(),
-  takeaways: z.array(z.string()).min(1),
-  follow_up_planned: z.boolean().optional(),
+  points: z.number().min(1).max(5),
 });
+export type FellowFridayPointsSubmission = z.infer<
+  typeof FellowFridayPointsSubmissionSchema
+>;
 
-export type FellowFridaySubmission = z.infer<typeof FellowFridaySubmissionSchema>;
 
-// Union type for all submission types
+export const GBEParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('gbe_participation'),
+  bonus_points: z.number().min(1).max(5),
+});
+export type GBEParticipationSubmission = z.infer<
+  typeof GBEParticipationSubmissionSchema
+>;
+
+// 6) Lions Games involvement (staff-assigned points)
+export const LionsGamesPointsSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('lions_games'),
+  assigned_points: z.number().min(0),
+});
+export type LionsGamesPointsSubmission = z.infer<
+  typeof LionsGamesPointsSubmissionSchema
+>;
+
+// Union type for all submission types we support (aligned with SUBCATEGORIES)
 export const EventSubmissionDataSchema = z.discriminatedUnion('submission_type', [
   AttendanceSubmissionSchema,
+  SmallGroupMonthlyCheckSubmissionSchema,
+  DreamTeamMonthlyCheckSubmissionSchema,
   CommunityServiceSubmissionSchema,
-  JobPromotionSubmissionSchema,
   CredentialsSubmissionSchema,
-  TeamMeetingSubmissionSchema,
-  LeaderMeetingSubmissionSchema,
-  AcademicSubmissionSchema,
-  SpiritualSubmissionSchema,
-  ProfessionalSubmissionSchema,
-  GBESubmissionSchema,
-  LionsGamesSubmissionSchema,
-  DreamTeamSubmissionSchema,
-  FellowFridaySubmissionSchema,
+  JobPromotionSubmissionSchema,
+  ChapelParticipationSubmissionSchema,
+  CompanyTeamBuildingSubmissionSchema,
+  FellowFridayPointsSubmissionSchema,
+  GBEParticipationSubmissionSchema,
+  LionsGamesPointsSubmissionSchema,
 ]);
 
 export type EventSubmissionData = z.infer<typeof EventSubmissionDataSchema>;
@@ -199,7 +140,9 @@ export function validateSubmissionData(data: unknown): EventSubmissionData {
 }
 
 // Helper function to safely validate (returns null if invalid)
-export function safeValidateSubmissionData(data: unknown): EventSubmissionData | null {
+export function safeValidateSubmissionData(
+  data: unknown,
+): EventSubmissionData | null {
   const result = EventSubmissionDataSchema.safeParse(data);
   return result.success ? result.data : null;
 }
@@ -213,19 +156,17 @@ export function isValidSubmissionData(data: unknown): data is EventSubmissionDat
 export function getSubmissionSchema(submissionType: string) {
   const schemas = {
     attendance: AttendanceSubmissionSchema,
+    small_group: SmallGroupMonthlyCheckSubmissionSchema,
+    dream_team: DreamTeamMonthlyCheckSubmissionSchema,
     community_service: CommunityServiceSubmissionSchema,
-    job_promotion: JobPromotionSubmissionSchema,
     credentials: CredentialsSubmissionSchema,
-    team_meeting: TeamMeetingSubmissionSchema,
-    leader_meeting: LeaderMeetingSubmissionSchema,
-    academic: AcademicSubmissionSchema,
-    spiritual: SpiritualSubmissionSchema,
-    professional: ProfessionalSubmissionSchema,
-    gbe_participation: GBESubmissionSchema,
-    lions_games: LionsGamesSubmissionSchema,
-    dream_team: DreamTeamSubmissionSchema,
-    fellow_friday: FellowFridaySubmissionSchema,
-  };
-  
+    job_promotion: JobPromotionSubmissionSchema,
+    chapel_participation: ChapelParticipationSubmissionSchema,
+    company_team_building: CompanyTeamBuildingSubmissionSchema,
+    fellow_friday: FellowFridayPointsSubmissionSchema,
+    gbe_participation: GBEParticipationSubmissionSchema,
+    lions_games: LionsGamesPointsSubmissionSchema,
+  } as const;
+
   return schemas[submissionType as keyof typeof schemas];
-} 
+}
