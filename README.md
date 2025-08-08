@@ -1,6 +1,6 @@
 # ACU Apex App Monorepo
 
-A monorepo containing the ACU Apex application ecosystem with web, mobile, and backend services.
+A monorepo containing the ACU Apex application ecosystem with web, mobile, backend services, and Python scoring system.
 
 ## 🏗️ Project Structure
 
@@ -54,6 +54,21 @@ acu-apex-app-monorepo/
 │   │   ├── auth-api/            # Authentication Lambda functions (future)
 │   │   └── scores-api/          # Scores management Lambda functions (future)
 │
+├── scripts/
+│   ├── python/                  # 🐍 Python Scoring System
+│   │   ├── daily_score_calculation.py    # Main orchestration
+│   │   ├── bell_curve_calculator.py      # Bell curve logic
+│   │   ├── subcategory_aggregators.py    # Business logic
+│   │   ├── score_validator.py            # Validation
+│   │   ├── generate_dummy_data.py        # Test data
+│   │   ├── requirements.txt              # Python dependencies
+│   │   ├── Dockerfile                    # Container config
+│   │   ├── docker-compose.yml           # Local development
+│   │   ├── aws-deploy.sh                # AWS Lambda deployment
+│   │   └── README.md                    # Python system docs
+│   │
+│   └── [TypeScript scripts]     # TypeScript utilities
+│
 ├── tools/                       # Build tools and scripts
 ├── package.json                 # Root package.json
 ├── turbo.json                   # Turborepo configuration
@@ -66,6 +81,9 @@ acu-apex-app-monorepo/
 
 - Node.js 18+ 
 - pnpm 8+
+- Python 3.11+ (for scoring system)
+- Docker (optional, for containerized development)
+- AWS CLI (for production deployment)
 - Git
 
 ### Installation
@@ -98,140 +116,108 @@ pnpm dev
 ```bash
 # Web app only
 pnpm --filter @acu-apex/web dev
-
-# Mobile app only
-pnpm --filter @acu-apex/mobile start
-
-# Students Lambda API only
-pnpm --filter @acu-apex/students-lambda dev
 ```
 
-#### Build all applications
+## 🐍 Python Scoring System
+
+The ACU Apex Holistic GPA Scoring System is implemented in Python and processes event submissions to calculate student holistic GPAs using a bell curve distribution.
+
+### Quick Start (Python)
+
+1. **Navigate to Python directory:**
+   ```bash
+   cd scripts/python
+   ```
+
+2. **Set up Python environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. **Configure environment:**
+   ```bash
+   cp env.example .env
+   # Edit .env with your Supabase credentials
+   ```
+
+4. **Run scoring system:**
+   ```bash
+   python daily_score_calculation.py
+   ```
+
+### Docker Development
+
 ```bash
-pnpm build
+# Build and run with Docker Compose
+cd scripts/python
+docker-compose up --build
+
+# Run Jupyter notebook for development
+docker-compose --profile development up jupyter
+# Access at http://localhost:8888
 ```
 
-#### Type checking
+### Production Deployment
+
 ```bash
-pnpm type-check
+# Deploy to AWS Lambda
+cd scripts/python
+./aws-deploy.sh
+
+# Or deploy with Docker
+docker build -t apex-scoring-system .
+docker run -d \
+  --name apex-scoring \
+  -e SUPABASE_URL=$SUPABASE_URL \
+  -e SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY \
+  apex-scoring-system
 ```
 
-#### Linting
-```bash
-pnpm lint
+### Key Features
+
+- **Bell Curve Distribution**: 3.0 mean GPA with left-weighted distribution
+- **Business Logic**: Community service caps, attendance tracking, staff-assigned points
+- **Real-time Processing**: Direct database updates with service role key
+- **Scalable Architecture**: Ready for AWS Lambda deployment
+- **Comprehensive Testing**: Validation and integrity checks
+
+### Documentation
+
+For detailed Python system documentation, see [`scripts/python/README.md`](scripts/python/README.md).
+
+## 🏗️ Architecture Overview
+
+### Scoring System Flow
+
+```
+Event Submissions → Python Aggregators → Bell Curve → Holistic GPA → Database Updates
+     (Raw Data)        (Business Logic)   (3.0 Mean)    (Final Score)   (Real-time)
 ```
 
-## 📱 Applications
+### Technology Stack
 
-### Web App (`apps/web`)
-- **Framework**: Next.js 15 with App Router
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI + shadcn/ui
-- **Port**: 3000
+- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
+- **Backend**: Supabase (PostgreSQL, Auth, Real-time)
+- **Scoring System**: Python 3.11, Pandas, NumPy, SciPy
+- **Deployment**: AWS Lambda, Docker, Vercel
+- **Mobile**: React Native, Expo
 
-### Mobile App (`apps/mobile`)
-- **Framework**: React Native with Expo
-- **Navigation**: React Navigation
-- **Status**: In development
+## 📚 Documentation
 
-### Backend Services
-
-#### Students API (`services/lambdas/students-api`)
-- **Framework**: AWS Lambda + API Gateway
-- **Runtime**: Node.js 18.x
-- **Features**:
-  - CRUD operations for students
-  - DynamoDB integration
-  - Data validation with Zod
-  - Serverless deployment
-
-#### Future Lambda Services
-- **Auth API**: Authentication and authorization
-- **Scores API**: Advanced score calculations and analytics
-
-## 📦 Packages
-
-### UI Package (`packages/ui`)
-Shared React components built with Radix UI primitives and Tailwind CSS.
-
-```typescript
-import { Button, Card, Input } from '@acu-apex/ui'
-```
-
-### Utils Package (`packages/utils`)
-Shared utility functions for common operations.
-
-```typescript
-import { cn, formatDate, calculateAverageScore } from '@acu-apex/utils'
-```
-
-### Types Package (`packages/types`)
-Shared TypeScript type definitions.
-
-```typescript
-import type { Student, Score, ApiResponse } from '@acu-apex/types'
-```
-
-### Config Package (`packages/config`)
-Shared configurations for ESLint, TypeScript, and Tailwind CSS.
-
-## 🔧 Development Workflow
-
-### Adding a New Package
-1. Create the package directory in `packages/`
-2. Add `package.json` with workspace dependencies
-3. Create TypeScript configuration
-4. Export from the package's `src/index.ts`
-5. Add to workspace dependencies in consuming packages
-
-### Adding a New Service
-1. Create the service directory in `services/`
-2. Set up Express.js or other framework
-3. Add health check endpoint
-4. Configure CORS and security middleware
-5. Add to Turborepo pipeline
-
-### Code Quality
-- **ESLint**: Shared configuration in `packages/config/eslint`
-- **TypeScript**: Strict configuration with shared types
-- **Prettier**: Code formatting
-- **Turborepo**: Build caching and task orchestration
-
-## 🚀 Deployment
-
-### Web App
-- **Platform**: Vercel (recommended) or Netlify
-- **Build Command**: `pnpm build`
-- **Output Directory**: `apps/web/.next`
-
-### Mobile App
-- **Platform**: Expo Application Services (EAS)
-- **Build Command**: `pnpm build`
-- **Distribution**: App Store / Google Play Store
-
-### Backend Services
-- **Platform**: AWS Lambda + API Gateway
-- **Build Command**: `pnpm build`
-- **Deploy Command**: `pnpm deploy`
-
-## 📊 Monitoring & Analytics
-
-- **Health Checks**: `/health` endpoints on all services
-- **Logging**: Structured logging with Morgan
-- **Error Handling**: Centralized error responses
-- **Performance**: Turborepo build caching
+- [Python Scoring System](scripts/python/README.md) - Comprehensive Python system docs
+- [Database Schema](docs/DATABASE_SCHEMA_PLANNING.md) - Database design and planning
+- [Student App Context](docs/STUDENT_APP_CONTEXT.md) - Student development platform overview
+- [Scoring System](docs/scoring_system.md) - Scoring methodology and implementation
 
 ## 🤝 Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Run tests and type checking
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Make changes and test thoroughly
 4. Submit a pull request
 
 ## 📄 License
 
-This project is private and proprietary.
-
-## 🆘 Support
-
-For questions or issues, please contact the development team. 
+This project is part of the ACU Apex Student Development Platform. 
