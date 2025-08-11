@@ -15,7 +15,9 @@
     "clean": "turbo run clean",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "generate-dummy-data": "tsx scripts/generate-dummy-data.ts",
-    "generate-event-submissions": "tsx scripts/generate-event-submissions.ts"
+    "generate-event-submissions": "tsx scripts/generate-event-submissions.ts",
+    "seed-student-subcategory-submissions": "tsx scripts/generate-student-subcategory-submissions.ts",
+    "cleanup-seeded-submissions": "tsx scripts/cleanup-seeded-submissions.ts"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
