@@ -29,9 +29,9 @@ from dotenv import load_dotenv
 # Add the scripts directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from bell_curve_calculator import BellCurveCalculator
-from subcategory_aggregators import SubcategoryAggregator
-from score_validator import ScoreValidator
+from apex_scoring.bell_curve import BellCurveCalculator
+from apex_scoring.aggregators import SubcategoryAggregator
+from apex_scoring.validator import ScoreValidator
 
 # Load environment variables
 load_dotenv()
@@ -605,3 +605,37 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# AWS Lambda handler reusing the same orchestrator
+def lambda_handler(event, context):
+    """Lambda handler that runs the daily calculation.
+
+    Expected optional event fields: academic_year, calculation_date (YYYY-MM-DD),
+    batch_size, dry_run.
+    """
+    supabase_url = os.getenv('SUPABASE_URL') or os.getenv('NEXT_PUBLIC_SUPABASE_URL')
+    supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+
+    if not supabase_url or not supabase_key:
+        raise RuntimeError("Missing Supabase credentials in environment")
+
+    evt = event or {}
+    if not isinstance(evt, dict):
+        evt = {}
+
+    academic_year = int(evt.get('academic_year') or datetime.now().year)
+    date_str = evt.get('calculation_date')
+    calc_date = date.fromisoformat(date_str) if date_str else date.today()
+    batch_size = int(evt.get('batch_size') or 50)
+    dry_run = bool(evt.get('dry_run') or False)
+
+    calculator = DailyScoreCalculator(supabase_url, supabase_key)
+    result = asyncio.run(
+        calculator.run_daily_calculation(
+            academic_year=academic_year,
+            calculation_date=calc_date,
+            batch_size=batch_size,
+            dry_run=dry_run,
+        )
+    )
+    return {"statusCode": 200, "body": result}

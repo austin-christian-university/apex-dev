@@ -24,6 +24,17 @@ scripts/python/
 ├── subcategory_aggregators.py  # Business logic for subcategories
 ├── score_validator.py          # Score validation and integrity checks
 └── generate_dummy_data.py      # Test data generation
+
+# nbdev (Notebook-driven development)
+├── settings.ini                # nbdev config (lib_path=nbs export target: apex_scoring)
+├── nbs/                        # Development notebooks (source of truth)
+│   └── README.md               # How to work with nbdev notebooks
+└── apex_scoring/               # Exported library modules (imported by runtime)
+    ├── __init__.py
+    ├── bell_curve.py           # Facade → existing bell_curve_calculator
+    ├── aggregators.py          # Facade → existing subcategory_aggregators
+    ├── company_scores.py       # Facade → existing company_score_calculator
+    └── validator.py            # Facade → existing score_validator
 ```
 
 ## 🚀 Quick Start
@@ -63,6 +74,34 @@ scripts/python/
    ```bash
    python daily_score_calculation.py
    ```
+
+## 🧠 Notebook-driven Development with nbdev
+
+We use nbdev to keep notebooks as the authoring surface while exporting production code into `apex_scoring/*` modules used by CLI and Lambda.
+
+### Setup
+```bash
+cd scripts/python
+pip install -r requirements.txt
+nbdev_install_hooks
+```
+
+Open notebooks and iterate:
+```bash
+jupyter notebook nbs
+# Edit code cells marked with `#| export`
+nbdev_export  # write exported modules to apex_scoring/
+```
+
+Use the exported library from any script:
+```python
+from apex_scoring.bell_curve import BellCurveCalculator
+```
+
+### Why this matters
+- No copy/paste from notebooks to scripts
+- AWS Lambda and CLI import the same exported modules
+- Git-friendly notebook diffs via nbdev hooks
 
 ### Docker Development
 
@@ -151,6 +190,8 @@ print(results)
    ```bash
    ./aws-deploy.sh
    ```
+
+The handler is `daily_score_calculation.lambda_handler`, which reuses the same orchestrator used locally.
 
 3. **Set up Supabase cron job:**
    ```sql
