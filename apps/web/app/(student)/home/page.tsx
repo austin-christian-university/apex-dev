@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
-import { CalendarDays, Trophy, Users, TrendingUp } from "lucide-react"
+import { CalendarDays, Trophy, TrendingUp } from "lucide-react"
 import { getUserProfileWithEventsAction, getCompanyStandingsAction } from "@/lib/user-actions"
 import { EventCard } from "@/components/event-card"
 import { AddEventDialog } from "@/components/add-event-dialog"
@@ -15,7 +15,6 @@ interface CompanyStandingUI {
   name: string
   score: number
   rank: number
-  members: number
   trend?: number
 }
 
@@ -53,7 +52,6 @@ export default function HomePage() {
           name: s.name,
           score: s.score,
           rank: s.rank,
-          members: s.members,
           trend: s.trend,
         }))
       )
@@ -125,10 +123,6 @@ export default function HomePage() {
                     </div>
                     <div>
                       <p className="font-medium text-sm">{company.name}</p>
-                      <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                        <Users className="h-3 w-3" />
-                        <span>{company.members} members</span>
-                      </div>
                     </div>
                   </div>
                   <div className="text-right">

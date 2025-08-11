@@ -28,6 +28,7 @@ export async function fetchUserEvents(
       .from('event_instances')
       .select('*')
       .eq('is_active', true)
+      .neq('event_type', 'dev_event')
       .order('due_date', { ascending: true })
       .limit(limit)
 

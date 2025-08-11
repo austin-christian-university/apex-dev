@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@acu-apex/ui"
-import { CalendarDays, Trophy, Users } from "lucide-react"
+import { CalendarDays, Trophy } from "lucide-react"
 import { Skeleton } from "@acu-apex/ui"
 
 export default function HomePageLoading() {
@@ -37,30 +37,24 @@ export default function HomePageLoading() {
           <h2 className="text-lg font-semibold">Company Standings</h2>
         </div>
         
-        <div className="space-y-2">
-          {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Skeleton className="h-6 w-6 rounded" />
-                    <div className="space-y-1">
+          <div className="space-y-2">
+            {[1, 2, 3, 4].map((i) => (
+              <Card key={i}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Skeleton className="h-6 w-6 rounded" />
                       <Skeleton className="h-4 w-24" />
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        <Skeleton className="h-3 w-16" />
-                      </div>
+                    </div>
+                    <div className="text-right space-y-1">
+                      <Skeleton className="h-5 w-12" />
+                      <Skeleton className="h-3 w-8" />
                     </div>
                   </div>
-                  <div className="text-right space-y-1">
-                    <Skeleton className="h-5 w-12" />
-                    <Skeleton className="h-3 w-8" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
       </div>
 
       {/* Upcoming Events Loading */}
