@@ -102,7 +102,7 @@ export type FellowFridayPointsSubmission = z.infer<
 
 export const GBEParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('gbe_participation'),
-  bonus_points: z.number().min(1).max(5),
+  points: z.number().min(1).max(5),
 });
 export type GBEParticipationSubmission = z.infer<
   typeof GBEParticipationSubmissionSchema
