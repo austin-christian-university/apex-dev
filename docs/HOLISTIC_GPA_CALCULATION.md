@@ -44,17 +44,24 @@ Aggregation rules transform heterogeneous inputs into comparable raw points per 
 - Staff‑assigned points (e.g., credentials, job promotions)
   - Sum of `assigned_points`
 
-- Performance ratings (e.g., grades, participation quality)
-  - Sum(rating) / Sum(max_rating) × 100
+- Officer-assigned points (engagement quality)
+  - Fellow Friday Team engagement, GBE Team engagement, Chapel Team
+  - Score 1-5 for each
 
-- Engagement quality (1–5 scale)
-  - Average(rating) × 20 → 0–100
+- Grades
+  - spiritual formation grade, overall gpa, practicum grade
+  - All directly imported
 
-- Fellow Friday participation (points‐based)
-  - Sum(participation_points)
+- Community service
+  - Capped at 12, raw hours besides that
 
-- GBE participation (attendance + bonus)
-  - attendance_percent + Sum(bonus_points)
+- Lions Games
+  - For now, raw points assigned by officers or staff
+
+- Community Involvement (Small group, Dream Team)
+  - Monthly check-in, self-reported
+  - Shows
+
 
 Each subcategory record stores:
 - `raw_points`: aggregated value before curve

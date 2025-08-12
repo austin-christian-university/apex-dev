@@ -25,3 +25,4 @@ class ScoreValidator:  # noqa: D401
         return await self._impl.generate_validation_report(validation_results)
 
 
+

@@ -31,3 +31,4 @@ class CompanyScoreCalculator:  # noqa: D401
         return await self._impl.validate_company_scores(academic_year, calculation_date)
 
 
+

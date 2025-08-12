@@ -47,3 +47,4 @@ class SubcategoryAggregator:  # noqa: D401
         return await self._impl.aggregate_subcategory_score(student_id, subcategory_name, academic_year)
 
 
+

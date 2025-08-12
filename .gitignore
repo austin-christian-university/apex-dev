@@ -223,4 +223,9 @@ pids
 .yarn/install-state.gz
 .pnp.*
 
+
+#Cursor mcp servers
 .cursor/mcp.json
+
+#Python-related
+scripts/python/venv
