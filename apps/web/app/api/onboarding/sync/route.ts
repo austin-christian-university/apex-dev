@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { findBestPopuliPersonMatch } from '@/lib/populi'
+import { findBestPopuliPersonMatchServer } from '@/lib/populi-server'
 import type { OnboardingData, User, Student } from '@acu-apex/types'
 
 export interface SyncResult {
@@ -208,8 +208,15 @@ async function attemptPopuliLinking(
 ): Promise<PopuliSyncResult> {
   try {
     console.log(`Attempting to find Populi match for user: ${firstName} ${lastName} (${email})`)
+    console.log('Populi matching parameters:', { firstName, lastName, email, phoneNumber })
     
-    const matchResult = await findBestPopuliPersonMatch(firstName, lastName, email, phoneNumber)
+    const matchResult = await findBestPopuliPersonMatchServer(firstName, lastName, email, phoneNumber)
+    console.log('Populi match result:', { 
+      person: matchResult.person ? { id: matchResult.person.id, name: `${matchResult.person.first_name} ${matchResult.person.last_name}` } : null,
+      confidence: matchResult.confidence,
+      matchType: matchResult.matchType,
+      error: matchResult.error 
+    })
     
     if (matchResult.error) {
       console.warn('Populi search failed:', matchResult.error)
