@@ -1,56 +1,80 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@acu-apex/ui'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@acu-apex/ui'
 import { Input } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'
 import { Textarea } from '@acu-apex/ui'
+import { Separator } from '@acu-apex/ui'
+import { Avatar, AvatarFallback, AvatarImage } from '@acu-apex/ui'
 import { 
   Clock, 
   CheckCircle, 
   XCircle, 
-  Eye, 
   User, 
   Building2, 
   Calendar, 
   Award,
   Briefcase,
-  Heart
+  Heart,
+  MapPin,
+  Phone,
+  Mail,
+  FileText,
+  Star,
+  Hash,
+  ImageIcon,
+  RefreshCcw,
+  AlertCircle,
+  CheckCircle2,
+  Plus
 } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
-import { formatDate, formatDateTime } from '@acu-apex/utils'
+import { formatDate, formatDateTime, formatShortDate } from '@acu-apex/utils'
 import { getPendingSubmissionsAction, approveSubmissionAction, rejectSubmissionAction } from '@/lib/staff-actions'
 
 interface SubmissionData {
   id: string
   submission_data: any
-  created_at: string
+  submitted_at: string
   students: {
     id: string
+    company_id: string
+    academic_role: string
+    company_role: string
     users: {
       id: string
-      first_name: string
-      last_name: string
-      email: string
-    }
+      first_name: string | null
+      last_name: string | null
+      email: string | null
+      photo: string | null
+    } | null
     companies: {
       id: string
       name: string
-    }
-  }
+    } | null
+  } | null
+  event_instances: {
+    id: string
+    name: string
+    description: string
+    event_type: string
+  } | null
 }
 
 export default function StaffApprovalsPage() {
   const { user } = useAuth()
   const [submissions, setSubmissions] = useState<SubmissionData[]>([])
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionData | null>(null)
   const [showApprovalDialog, setShowApprovalDialog] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
   const [pointsToGrant, setPointsToGrant] = useState<number>(0)
+  const [approvalNotes, setApprovalNotes] = useState('')
   const [rejectionReason, setRejectionReason] = useState('')
   const [actionType, setActionType] = useState<'approve' | 'reject'>('approve')
 
@@ -59,12 +83,14 @@ export default function StaffApprovalsPage() {
     loadPendingSubmissions()
   }, [])
 
-  const loadPendingSubmissions = async () => {
+  const loadPendingSubmissions = async (showRefreshLoader = false) => {
     try {
-      setLoading(true)
+      if (showRefreshLoader) setRefreshing(true)
+      else setLoading(true)
+      
       const result = await getPendingSubmissionsAction()
       if (result.success) {
-        setSubmissions(result.submissions)
+        setSubmissions(result.submissions as any)
       } else {
         console.error('Failed to load submissions:', result.error)
       }
@@ -72,6 +98,7 @@ export default function StaffApprovalsPage() {
       console.error('Error loading submissions:', error)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -86,10 +113,10 @@ export default function StaffApprovalsPage() {
 
   const getEventTypeColor = (submissionType: string) => {
     switch (submissionType) {
-      case 'community_service': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-      case 'job_promotion': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-      case 'credentials': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300'
+      case 'community_service': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
+      case 'job_promotion': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
+      case 'credentials': return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
+      default: return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800'
     }
   }
 
@@ -102,10 +129,20 @@ export default function StaffApprovalsPage() {
     }
   }
 
+  const getSubmissionTypeRequirement = (submissionType: string) => {
+    switch (submissionType) {
+      case 'community_service': return 'Auto-approve with verification'
+      case 'job_promotion': return 'Assign point value'
+      case 'credentials': return 'Assign point value'
+      default: return 'Review required'
+    }
+  }
+
   const handleViewSubmission = (submission: SubmissionData, action: 'approve' | 'reject' = 'approve') => {
     setSelectedSubmission(submission)
     setActionType(action)
-    setPointsToGrant(0)
+    setPointsToGrant(action === 'approve' && submission.submission_data.submission_type === 'community_service' ? 1 : 0)
+    setApprovalNotes('')
     setRejectionReason('')
     setShowApprovalDialog(true)
   }
@@ -117,7 +154,7 @@ export default function StaffApprovalsPage() {
     try {
       let result
       if (actionType === 'approve') {
-        result = await approveSubmissionAction(selectedSubmission.id, pointsToGrant)
+        result = await approveSubmissionAction(selectedSubmission.id, pointsToGrant, approvalNotes)
       } else {
         result = await rejectSubmissionAction(selectedSubmission.id, rejectionReason)
       }
@@ -142,28 +179,58 @@ export default function StaffApprovalsPage() {
 
     if (type === 'community_service') {
       return (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-muted-foreground">Hours:</span>
-              <p>{submissionData.hours}</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                Hours Contributed
+              </div>
+              <p className="text-lg font-semibold">{submissionData.hours} hours</p>
             </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Date:</span>
-              <p>{formatDate(submissionData.date_of_service)}</p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Service Date
+              </div>
+              <p className="text-lg">{formatDate(submissionData.date_of_service)}</p>
             </div>
           </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Organization:</span>
-            <p>{submissionData.organization}</p>
-          </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Supervisor:</span>
-            <p>{submissionData.supervisor_name} ({submissionData.supervisor_contact})</p>
-          </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Description:</span>
-            <p className="text-sm">{submissionData.description}</p>
+          
+          <Separator />
+          
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <Building2 className="h-4 w-4" />
+                Organization
+              </div>
+              <p className="font-medium">{submissionData.organization}</p>
+            </div>
+            
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <User className="h-4 w-4" />
+                Supervisor Contact
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium">{submissionData.supervisor_name}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-3 w-3" />
+                  <a href={`mailto:${submissionData.supervisor_contact}`} className="hover:underline">
+                    {submissionData.supervisor_contact}
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <FileText className="h-4 w-4" />
+                Description
+              </div>
+              <p className="text-sm leading-relaxed">{submissionData.description}</p>
+            </div>
           </div>
         </div>
       )
@@ -171,28 +238,58 @@ export default function StaffApprovalsPage() {
 
     if (type === 'job_promotion') {
       return (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-muted-foreground">Title:</span>
-              <p>{submissionData.promotion_title}</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Briefcase className="h-4 w-4" />
+                New Position
+              </div>
+              <p className="text-lg font-semibold">{submissionData.promotion_title}</p>
             </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Date:</span>
-              <p>{formatDate(submissionData.date_of_promotion)}</p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Promotion Date
+              </div>
+              <p className="text-lg">{formatDate(submissionData.date_of_promotion)}</p>
             </div>
           </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Organization:</span>
-            <p>{submissionData.organization}</p>
-          </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Supervisor:</span>
-            <p>{submissionData.supervisor_name} ({submissionData.supervisor_contact})</p>
-          </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Description:</span>
-            <p className="text-sm">{submissionData.description}</p>
+          
+          <Separator />
+          
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <Building2 className="h-4 w-4" />
+                Organization
+              </div>
+              <p className="font-medium">{submissionData.organization}</p>
+            </div>
+            
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <User className="h-4 w-4" />
+                Supervisor Contact
+              </div>
+              <div className="space-y-1">
+                <p className="font-medium">{submissionData.supervisor_name}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Mail className="h-3 w-3" />
+                  <a href={`mailto:${submissionData.supervisor_contact}`} className="hover:underline">
+                    {submissionData.supervisor_contact}
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <FileText className="h-4 w-4" />
+                Description
+              </div>
+              <p className="text-sm leading-relaxed">{submissionData.description}</p>
+            </div>
           </div>
         </div>
       )
@@ -200,33 +297,52 @@ export default function StaffApprovalsPage() {
 
     if (type === 'credentials') {
       return (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-muted-foreground">Credential:</span>
-              <p>{submissionData.credential_name}</p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Award className="h-4 w-4" />
+                Credential Name
+              </div>
+              <p className="text-lg font-semibold">{submissionData.credential_name}</p>
             </div>
-            <div>
-              <span className="font-medium text-muted-foreground">Date:</span>
-              <p>{formatDate(submissionData.date_of_credential)}</p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Date Earned
+              </div>
+              <p className="text-lg">{formatDate(submissionData.date_of_credential)}</p>
             </div>
           </div>
-          <div>
-            <span className="font-medium text-muted-foreground">Granting Organization:</span>
-            <p>{submissionData.granting_organization}</p>
-          </div>
-          {submissionData.description && (
+          
+          <Separator />
+          
+          <div className="space-y-3">
             <div>
-              <span className="font-medium text-muted-foreground">Description:</span>
-              <p className="text-sm">{submissionData.description}</p>
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                <Building2 className="h-4 w-4" />
+                Granting Organization
+              </div>
+              <p className="font-medium">{submissionData.granting_organization}</p>
             </div>
-          )}
+            
+            {submissionData.description && (
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                  <FileText className="h-4 w-4" />
+                  Description
+                </div>
+                <p className="text-sm leading-relaxed">{submissionData.description}</p>
+              </div>
+            )}
+          </div>
         </div>
       )
     }
 
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-muted-foreground p-4 bg-muted/50 rounded-lg">
+        <AlertCircle className="h-4 w-4 inline mr-2" />
         Unknown submission type: {type}
       </div>
     )
@@ -234,109 +350,162 @@ export default function StaffApprovalsPage() {
 
   const SubmissionCard = ({ submission }: { submission: SubmissionData }) => {
     const IconComponent = getEventTypeIcon(submission.submission_data.submission_type)
+    const user = submission.students?.users
+    const studentName = user && user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : 'Unknown Student'
+    const initials = user && user.first_name && user.last_name ? `${user.first_name[0]}${user.last_name[0]}` : 'US'
+    const photoSrc = user?.photo || null
     
     return (
-      <Card className="hover:shadow-md transition-shadow">
+      <Card className="hover:shadow-lg transition-all duration-200 border-2 hover:border-primary/20">
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-start gap-3">
+            <Avatar className="h-10 w-10 border-2">
+              {photoSrc ? (
+                <AvatarImage src={photoSrc} alt={studentName} />
+              ) : null}
+              <AvatarFallback className="text-sm font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
                 <IconComponent className="h-4 w-4 text-primary" />
-                <CardTitle className="text-lg">
+                <Badge className={`${getEventTypeColor(submission.submission_data.submission_type)} text-xs font-medium`}>
                   {getEventTypeLabel(submission.submission_data.submission_type)}
-                </CardTitle>
-                <Badge className={getEventTypeColor(submission.submission_data.submission_type)}>
-                  Pending
                 </Badge>
               </div>
-              <CardDescription className="text-sm">
-                Submitted by {submission.students.users.first_name} {submission.students.users.last_name}
-              </CardDescription>
+              
+              <CardTitle className="text-base leading-tight">
+                {studentName}
+              </CardTitle>
+              
+              <div className="flex flex-col gap-1 mt-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Building2 className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{submission.students?.companies?.name || 'Unknown Company'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3 flex-shrink-0" />
+                  <span>{formatShortDate(submission.submitted_at)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </CardHeader>
+        
         <CardContent className="pt-0">
-          <div className="space-y-2 text-sm">
-            <div className="flex items-center space-x-2">
-              <User className="h-4 w-4 text-muted-foreground" />
-              <span>{submission.students.users.email}</span>
+          <div className="space-y-3">
+            <div className="p-3 bg-muted/30 rounded-lg">
+              <p className="text-xs text-muted-foreground mb-1">
+                {getSubmissionTypeRequirement(submission.submission_data.submission_type)}
+              </p>
+              
+              {submission.submission_data.submission_type === 'community_service' && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-3 w-3" />
+                  <span className="font-medium">{submission.submission_data.hours} hours</span>
+                  <span className="text-muted-foreground">at {submission.submission_data.organization}</span>
+                </div>
+              )}
+              
+              {submission.submission_data.submission_type === 'job_promotion' && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Briefcase className="h-3 w-3" />
+                  <span className="font-medium">{submission.submission_data.promotion_title}</span>
+                  <span className="text-muted-foreground">at {submission.submission_data.organization}</span>
+                </div>
+              )}
+              
+              {submission.submission_data.submission_type === 'credentials' && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Award className="h-3 w-3" />
+                  <span className="font-medium">{submission.submission_data.credential_name}</span>
+                  <span className="text-muted-foreground">from {submission.submission_data.granting_organization}</span>
+                </div>
+              )}
             </div>
-            <div className="flex items-center space-x-2">
-              <Building2 className="h-4 w-4 text-muted-foreground" />
-              <span>{submission.students.companies.name}</span>
+            
+            <div className="flex gap-2">
+              <Button 
+                variant="default" 
+                size="sm"
+                className="flex-1"
+                onClick={() => handleViewSubmission(submission, 'approve')}
+              >
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Approve
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex-1"
+                onClick={() => handleViewSubmission(submission, 'reject')}
+              >
+                <XCircle className="h-3 w-3 mr-1" />
+                Reject
+              </Button>
             </div>
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>Submitted {formatDateTime(submission.created_at)}</span>
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2 mt-4 pt-3 border-t">
-            <Button 
-              variant="default" 
-              size="sm"
-              onClick={() => handleViewSubmission(submission, 'approve')}
-            >
-              <CheckCircle className="h-3 w-3 mr-1" />
-              Approve
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => handleViewSubmission(submission, 'reject')}
-            >
-              <XCircle className="h-3 w-3 mr-1" />
-              Reject
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => handleViewSubmission(submission, 'approve')}
-            >
-              <Eye className="h-3 w-3 mr-1" />
-              View
-            </Button>
           </div>
         </CardContent>
       </Card>
     )
   }
 
-
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">Event Approvals</h1>
-              <p className="text-muted-foreground mt-1">
+      <div className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
+        <div className="container max-w-7xl px-4 py-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-bold tracking-tight">Event Approvals</h1>
+              <p className="text-muted-foreground">
                 Review and approve student-submitted events
               </p>
             </div>
-            <Badge variant="secondary" className="text-lg px-3 py-1">
-              {submissions.length} pending
-            </Badge>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-base px-3 py-1 font-medium">
+                {submissions.length} pending
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => loadPendingSubmissions(true)}
+                disabled={refreshing}
+                className="gap-2"
+              >
+                <RefreshCcw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="container px-4 py-6">
+      <div className="container max-w-7xl px-4 py-6">
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="animate-pulse">
                 <CardHeader>
-                  <div className="h-4 bg-muted rounded w-3/4"></div>
-                  <div className="h-3 bg-muted rounded w-1/2"></div>
+                  <div className="flex items-start gap-3">
+                    <div className="h-10 w-10 bg-muted rounded-full"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="h-3 bg-muted rounded w-1/2"></div>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <div className="h-3 bg-muted rounded"></div>
-                    <div className="h-3 bg-muted rounded w-2/3"></div>
+                  <div className="space-y-3">
+                    <div className="h-16 bg-muted rounded"></div>
+                    <div className="flex gap-2">
+                      <div className="h-8 bg-muted rounded flex-1"></div>
+                      <div className="h-8 bg-muted rounded flex-1"></div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -345,17 +514,27 @@ export default function StaffApprovalsPage() {
         ) : submissions.length === 0 ? (
           <Card className="p-12">
             <div className="text-center space-y-4">
-              <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto" />
-              <div>
-                <h3 className="text-lg font-semibold">All caught up!</h3>
-                <p className="text-muted-foreground">
-                  No pending submissions to review at this time.
+              <div className="mx-auto w-16 h-16 bg-green-50 dark:bg-green-950 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold">All caught up!</h3>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  No pending submissions to review at this time. New submissions will appear here when students submit them.
                 </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => loadPendingSubmissions(true)}
+                className="gap-2"
+              >
+                <RefreshCcw className="h-4 w-4" />
+                Check for New Submissions
+              </Button>
             </div>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {submissions.map(submission => (
               <SubmissionCard key={submission.id} submission={submission} />
             ))}
@@ -365,9 +544,14 @@ export default function StaffApprovalsPage() {
 
       {/* Approval Dialog */}
       <Dialog open={showApprovalDialog} onOpenChange={setShowApprovalDialog}>
-        <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col mx-4 sm:max-w-2xl sm:w-full">
+        <DialogContent className="max-w-2xl w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col mx-4">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {actionType === 'approve' ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <XCircle className="h-5 w-5 text-red-600" />
+              )}
               {actionType === 'approve' ? 'Approve' : 'Reject'} Submission
             </DialogTitle>
           </DialogHeader>
@@ -376,36 +560,78 @@ export default function StaffApprovalsPage() {
             {selectedSubmission && (
               <div className="space-y-6">
                 {/* Student Info */}
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">
-                      {selectedSubmission.students.users.first_name} {selectedSubmission.students.users.last_name}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <Building2 className="h-4 w-4" />
-                    <span>{selectedSubmission.students.companies.name}</span>
+                <div className="p-4 bg-muted/30 rounded-lg border">
+                  <div className="flex items-start gap-3">
+                    <Avatar className="h-12 w-12 border-2">
+                      {selectedSubmission.students?.users?.photo ? (
+                        <AvatarImage 
+                          src={selectedSubmission.students.users.photo} 
+                          alt={selectedSubmission.students?.users?.first_name && selectedSubmission.students?.users?.last_name ? 
+                            `${selectedSubmission.students.users.first_name} ${selectedSubmission.students.users.last_name}` : 
+                            'Student'
+                          } 
+                        />
+                      ) : null}
+                      <AvatarFallback className="text-sm font-semibold">
+                        {selectedSubmission.students?.users?.first_name && selectedSubmission.students?.users?.last_name ? 
+                          `${selectedSubmission.students.users.first_name[0]}${selectedSubmission.students.users.last_name[0]}` : 
+                          'US'
+                        }
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1">
+                      <div className="font-semibold text-lg">
+                        {selectedSubmission.students?.users?.first_name && selectedSubmission.students?.users?.last_name ? 
+                          `${selectedSubmission.students.users.first_name} ${selectedSubmission.students.users.last_name}` : 
+                          'Unknown Student'
+                        }
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Building2 className="h-3 w-3" />
+                          <span>{selectedSubmission.students?.companies?.name || 'Unknown Company'}</span>
+                        </div>
+                        {selectedSubmission.students?.users?.email && (
+                          <div className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            <a href={`mailto:${selectedSubmission.students.users.email}`} className="hover:underline">
+                              {selectedSubmission.students.users.email}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Submission Details */}
                 <div>
-                  <h4 className="font-medium mb-3">Submission Details</h4>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h4 className="font-semibold text-lg">Submission Details</h4>
+                    <Badge className={getEventTypeColor(selectedSubmission.submission_data.submission_type)}>
+                      {getEventTypeLabel(selectedSubmission.submission_data.submission_type)}
+                    </Badge>
+                  </div>
                   {renderSubmissionDetails(selectedSubmission.submission_data)}
                 </div>
 
                 {/* Photos */}
                 {selectedSubmission.submission_data.photos && selectedSubmission.submission_data.photos.length > 0 && (
                   <div>
-                    <h4 className="font-medium mb-3">Photo Evidence</h4>
+                    <div className="flex items-center gap-2 mb-3">
+                      <ImageIcon className="h-4 w-4" />
+                      <h4 className="font-medium">Photo Evidence</h4>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {selectedSubmission.submission_data.photos.map((photo: string, index: number) => (
                         <img
                           key={index}
                           src={photo}
                           alt={`Evidence ${index + 1}`}
-                          className="w-full h-20 object-cover rounded-lg border"
+                          className="w-full h-24 object-cover rounded-lg border hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open(photo, '_blank')}
                         />
                       ))}
                     </div>
@@ -414,9 +640,12 @@ export default function StaffApprovalsPage() {
 
                 {/* Action Form */}
                 {actionType === 'approve' ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="points">Points to Grant *</Label>
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="points" className="flex items-center gap-2">
+                        <Star className="h-4 w-4" />
+                        Points to Grant *
+                      </Label>
                       <Input
                         id="points"
                         type="number"
@@ -427,48 +656,84 @@ export default function StaffApprovalsPage() {
                         onChange={(e) => setPointsToGrant(parseFloat(e.target.value) || 0)}
                         placeholder="10.0"
                         required
+                        className="text-lg"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-xs text-muted-foreground">
                         Enter the point value this submission should contribute to the student's Holistic GPA
                       </p>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="reason">Rejection Reason (Optional)</Label>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="notes" className="flex items-center gap-2">
+                        <FileText className="h-4 w-4" />
+                        Approval Notes (Optional)
+                      </Label>
                       <Textarea
-                        id="reason"
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
-                        placeholder="Provide feedback to help the student improve future submissions..."
+                        id="notes"
+                        value={approvalNotes}
+                        onChange={(e) => setApprovalNotes(e.target.value)}
+                        placeholder="Add any notes or feedback for the student..."
                         rows={3}
                       />
                     </div>
                   </div>
+                ) : (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reason" className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        Rejection Reason *
+                      </Label>
+                      <Textarea
+                        id="reason"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="Provide clear feedback to help the student improve future submissions..."
+                        rows={4}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Please provide constructive feedback to help the student understand why their submission was rejected.
+                      </p>
+                    </div>
+                  </div>
                 )}
-
-                {/* Action Buttons */}
-                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowApprovalDialog(false)}
-                    disabled={isProcessing}
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleApproval}
-                    disabled={isProcessing || (actionType === 'approve' && pointsToGrant <= 0)}
-                    className="w-full sm:w-auto"
-                    variant={actionType === 'approve' ? 'default' : 'destructive'}
-                  >
-                    {isProcessing ? 'Processing...' : actionType === 'approve' ? 'Approve & Assign Points' : 'Reject Submission'}
-                  </Button>
-                </div>
               </div>
             )}
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t flex-shrink-0">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowApprovalDialog(false)}
+              disabled={isProcessing}
+              className="w-full sm:w-auto"
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleApproval}
+              disabled={isProcessing || (actionType === 'approve' && pointsToGrant <= 0) || (actionType === 'reject' && !rejectionReason.trim())}
+              className="w-full sm:w-auto"
+              variant={actionType === 'approve' ? 'default' : 'destructive'}
+            >
+              {isProcessing ? (
+                <>
+                  <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  {actionType === 'approve' ? (
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                  ) : (
+                    <XCircle className="h-4 w-4 mr-2" />
+                  )}
+                  {actionType === 'approve' ? 'Approve & Assign Points' : 'Reject Submission'}
+                </>
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

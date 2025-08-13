@@ -20,8 +20,12 @@ export async function getPendingSubmissionsAction() {
 /**
  * Server action to approve a submission
  */
-export async function approveSubmissionAction(submissionId: string, pointsGranted: number) {
-  return await approveSubmission(submissionId, pointsGranted)
+export async function approveSubmissionAction(
+  submissionId: string, 
+  pointsGranted: number, 
+  approvalNotes?: string
+) {
+  return await approveSubmission(submissionId, pointsGranted, approvalNotes)
 }
 
 /**
