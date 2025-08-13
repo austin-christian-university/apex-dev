@@ -311,25 +311,12 @@ export async function getPendingSubmissions() {
       throw new Error('Staff access required')
     }
     
-    // Use raw SQL approach for better reliability with complex joins
-    console.log('🔍 Calling RPC function: get_pending_submissions_with_details')
+    // Use RPC function for efficient data fetching
     const { data: submissions, error } = await supabase.rpc('get_pending_submissions_with_details')
     
     if (error) {
-      console.error('❌ RPC function failed:', error)
-      console.log('🔄 Falling back to manual approach')
+      console.error('RPC function failed, falling back to manual approach:', error)
       return await getPendingSubmissionsManual(supabase)
-    }
-
-    console.log('✅ RPC function succeeded. Data:', submissions)
-    console.log('📊 Number of submissions:', submissions?.length || 0)
-    if (submissions && submissions.length > 0) {
-      submissions.forEach((submission, index) => {
-        console.log(`📋 Submission ${index + 1}:`)
-        console.log(`   Student ID: ${submission.student_id}`)
-        console.log(`   User data:`, submission.students?.users)
-        console.log(`   Company data:`, submission.students?.companies)
-      })
     }
     
     return { success: true, submissions: submissions || [] }
@@ -442,8 +429,6 @@ async function getPendingSubmissionsManual(supabase: any) {
         event_instances: eventInstance || null
       }
     }).filter((submission: any) => submission.students) // Only include submissions with valid student data
-
-    console.log('Manual submissions with users:', enrichedSubmissions)
     
     return { success: true, submissions: enrichedSubmissions }
   } catch (error) {
