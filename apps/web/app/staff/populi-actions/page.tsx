@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Loader2, Users, Database, AlertCircle, CheckCircle, Info, TestTube } from 'lucide-react'
+import { Loader2, Users, Database, CheckCircle, Info, TestTube } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 
 interface PopuliStudent {
@@ -102,21 +102,7 @@ export default function PopuliActionsPage() {
     )
   }
 
-  if (!user || !user.role || !['staff', 'admin'].includes(user.role)) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
-            <p className="text-muted-foreground">
-              You need staff permissions to access this page.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+
 
   return (
     <div className="min-h-screen bg-background">
