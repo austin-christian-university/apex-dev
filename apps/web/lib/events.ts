@@ -222,21 +222,21 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       return { profile, error: eventsError }
     }
 
-    // For students and officers, check which attendance events they've already submitted
+    // For students and officers, check which interactive events they've already submitted
     let submittedEventIds = new Set<string>()
     if ((user.role === 'student' || user.role === 'officer') && profile.student) {
-      const attendanceEventIds = allEvents
-        .filter(event => event.event.event_type === 'attendance')
+      const interactiveEventIds = allEvents
+        .filter(event => event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin')
         .map(event => event.event.id)
       
-      submittedEventIds = await getStudentSubmissions(profile.student.id, attendanceEventIds, supabase)
+      submittedEventIds = await getStudentSubmissions(profile.student.id, interactiveEventIds, supabase)
     }
 
     // Enhance events with submission status and eligibility
     const enhancedEvents = allEvents.map(event => {
-      const isAttendanceEvent = event.event.event_type === 'attendance'
-      const hasSubmitted = isAttendanceEvent ? submittedEventIds.has(event.event.id) : false
-      const isEligibleForAttendance = isAttendanceEvent && event.event.due_date 
+      const isInteractiveEvent = event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin'
+      const hasSubmitted = isInteractiveEvent ? submittedEventIds.has(event.event.id) : false
+      const isEligibleForAttendance = event.event.event_type === 'attendance' && event.event.due_date 
         ? isEventEligibleForAttendance(event.event.due_date) 
         : false
       
@@ -247,12 +247,12 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       }
     })
 
-    // Filter urgent events: exclude attendance events that have been submitted
+    // Filter urgent events: exclude interactive events that have been submitted
     const urgentEvents = enhancedEvents.filter(event => {
       if (!event.isPastDue) return false
       
-      // For attendance events, only show as urgent if not submitted
-      if (event.event.event_type === 'attendance') {
+      // For interactive events (attendance & monthly check-ins), only show as urgent if not submitted
+      if (event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin') {
         return !event.hasSubmitted
       }
       

@@ -26,7 +26,7 @@ interface EventFormProps {
 type FormData = {
   name: string
   description: string
-  event_type: 'self_report' | 'attendance'
+  event_type: 'self_report' | 'attendance' | 'monthly_checkin'
   required_roles: string[]
   subcategory_id: string
 
@@ -49,7 +49,8 @@ type FormData = {
 
 const EVENT_TYPES = [
   { value: 'attendance', label: 'Attendance', description: 'Attendance tracking for classes or events' },
-  { value: 'self_report', label: 'Participation', description: 'Student participation in activities' }
+  { value: 'self_report', label: 'Participation', description: 'Student participation in activities' },
+  { value: 'monthly_checkin', label: 'Monthly Check-In', description: 'Monthly involvement check-ins for Dream Team and Small Group' }
 ]
 
 const ROLE_OPTIONS = [
@@ -70,6 +71,11 @@ const PARTICIPATION_SUBCATEGORIES = [
   { id: '78606cf2-7866-4ed5-8384-1e464a0b5d66', name: 'Company Team-Building' },
   { id: '865e0e15-c14d-4b23-abd2-5f1b6ccf5dbc', name: 'Chapel Team Participation' },
   { id: '0ceea111-1485-4a80-98a9-d82f3c12321c', name: 'GBE Participation' }
+]
+
+const MONTHLY_CHECKIN_SUBCATEGORIES = [
+  { id: 'e0bd5604-0692-42fe-8b4b-7ea2d339abc7', name: 'Dream Team Involvement' },
+  { id: 'a32c3898-dbf1-4a92-a5db-811dfb6fcd0f', name: 'Small Group Involvement' }
 ]
 
 const ALL_SUBCATEGORIES = [
@@ -141,9 +147,15 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
       return ALL_SUBCATEGORIES
     }
     
-    return formData.event_type === 'attendance' 
-      ? ATTENDANCE_SUBCATEGORIES 
-      : PARTICIPATION_SUBCATEGORIES
+    switch (formData.event_type) {
+      case 'attendance':
+        return ATTENDANCE_SUBCATEGORIES
+      case 'monthly_checkin':
+        return MONTHLY_CHECKIN_SUBCATEGORIES
+      case 'self_report':
+      default:
+        return PARTICIPATION_SUBCATEGORIES
+    }
   }
 
   // Reset subcategory when event type changes (but only after initial load)
@@ -394,7 +406,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
 
           <div>
             <Label htmlFor="event_type">Event Type *</Label>
-            <Select value={formData.event_type} onValueChange={(value: RecurringEvent['event_type']) => 
+            <Select value={formData.event_type} onValueChange={(value: 'self_report' | 'attendance' | 'monthly_checkin') => 
               setFormData(prev => ({ ...prev, event_type: value }))
             }>
               <SelectTrigger className={errors.event_type ? 'border-destructive' : ''}>

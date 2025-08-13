@@ -6,6 +6,7 @@ import { Badge } from '@acu-apex/ui'
 import { Dialog, DialogContent } from '@acu-apex/ui'
 import { Clock, CheckCircle } from 'lucide-react'
 import { AttendanceForm } from './attendance-form'
+import { MonthlyCheckinForm } from './monthly-checkin-form'
 import { toast } from '@acu-apex/ui'
 
 interface EventCardProps {
@@ -15,6 +16,7 @@ interface EventCardProps {
     description: string | null
     due_date: string | null
     event_type: string
+    subcategory_id?: string
   }
   studentId: string
   formattedDueDate: string
@@ -36,6 +38,7 @@ export const EventCard = memo(function EventCard({
   isEligibleForAttendance: initialIsEligible = false
 }: EventCardProps) {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false)
+  const [showMonthlyCheckinForm, setShowMonthlyCheckinForm] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
   
   // Use server-provided eligibility, no need for useEffect
@@ -44,6 +47,8 @@ export const EventCard = memo(function EventCard({
   const handleCardClick = () => {
     if (event.event_type === 'attendance' && isEligible && !hasSubmitted) {
       setShowAttendanceForm(true)
+    } else if (event.event_type === 'monthly_checkin' && !hasSubmitted) {
+      setShowMonthlyCheckinForm(true)
     }
   }
 
@@ -59,7 +64,20 @@ export const EventCard = memo(function EventCard({
     // The optimistic update above ensures immediate UI feedback
   }
 
-  const isClickable = event.event_type === 'attendance' && isEligible && !hasSubmitted
+  const handleMonthlyCheckinSuccess = () => {
+    setShowMonthlyCheckinForm(false)
+    setHasSubmitted(true)
+    toast({
+      title: "Monthly Check-In Submitted",
+      description: "Your monthly involvement check-in has been successfully submitted.",
+    })
+    
+    // The server action already calls revalidatePath('/home') which will refresh the data
+    // The optimistic update above ensures immediate UI feedback
+  }
+
+  const isClickable = (event.event_type === 'attendance' && isEligible && !hasSubmitted) || 
+                     (event.event_type === 'monthly_checkin' && !hasSubmitted)
   const cardClassName = `
     ${variant === 'urgent' ? 'border-destructive/20 bg-destructive/5' : ''}
     ${isClickable ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}
@@ -73,7 +91,7 @@ export const EventCard = memo(function EventCard({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-medium">{event.name}</h3>
-                {event.event_type === 'attendance' && hasSubmitted && (
+                {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin') && hasSubmitted && (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 )}
               </div>
@@ -87,7 +105,11 @@ export const EventCard = memo(function EventCard({
                 {isClickable && (
                   <div className="flex items-center gap-1 text-xs text-blue-600">
                     <Clock className="h-3 w-3" />
-                    <span>Tap to record attendance</span>
+                    <span>
+                      {event.event_type === 'attendance' ? 'Tap to record attendance' : 
+                       event.event_type === 'monthly_checkin' ? 'Tap to submit check-in' : 
+                       'Tap to submit'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -106,7 +128,7 @@ export const EventCard = memo(function EventCard({
                   {isUrgent ? 'Due Soon' : event.event_type.replace('_', ' ')}
                 </Badge>
               )}
-              {event.event_type === 'attendance' && hasSubmitted && (
+              {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin') && hasSubmitted && (
                 <Badge variant="outline" className="text-xs text-green-600 border-green-200">
                   Submitted
                 </Badge>
@@ -124,6 +146,18 @@ export const EventCard = memo(function EventCard({
             studentId={studentId}
             onSuccess={handleAttendanceSuccess}
             onCancel={() => setShowAttendanceForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Monthly Check-In Form Dialog */}
+      <Dialog open={showMonthlyCheckinForm} onOpenChange={setShowMonthlyCheckinForm}>
+        <DialogContent className="sm:max-w-md">
+          <MonthlyCheckinForm
+            event={event}
+            studentId={studentId}
+            onSuccess={handleMonthlyCheckinSuccess}
+            onCancel={() => setShowMonthlyCheckinForm(false)}
           />
         </DialogContent>
       </Dialog>

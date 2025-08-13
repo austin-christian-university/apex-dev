@@ -2,7 +2,8 @@
 
 import { getUserProfileWithEvents } from '@/lib/events'
 import { submitAttendance } from '@/lib/attendance-actions'
-import type { AttendanceSubmission } from '@acu-apex/types'
+import { submitMonthlyCheckin } from '@/lib/monthly-checkin-actions'
+import type { AttendanceSubmission, SmallGroupMonthlyCheckSubmission, DreamTeamMonthlyCheckSubmission } from '@acu-apex/types'
 import { getCompanyStandings } from '@/lib/company'
 
 /**
@@ -21,6 +22,17 @@ export async function submitAttendanceAction(
   submissionData: AttendanceSubmission
 ) {
   return await submitAttendance(eventId, studentId, submissionData)
+}
+
+/**
+ * Server action to submit monthly check-in
+ */
+export async function submitMonthlyCheckinAction(
+  eventId: string,
+  studentId: string,
+  submissionData: SmallGroupMonthlyCheckSubmission | DreamTeamMonthlyCheckSubmission
+) {
+  return await submitMonthlyCheckin(eventId, studentId, submissionData)
 }
 
 /**
