@@ -131,7 +131,7 @@ export default function StaffApprovalsPage() {
 
   const getSubmissionTypeRequirement = (submissionType: string) => {
     switch (submissionType) {
-      case 'community_service': return 'Auto-approve with verification'
+      case 'community_service': return 'Review and approve (points auto-assigned)'
       case 'job_promotion': return 'Assign point value'
       case 'credentials': return 'Assign point value'
       default: return 'Review required'
@@ -141,7 +141,9 @@ export default function StaffApprovalsPage() {
   const handleViewSubmission = (submission: SubmissionData, action: 'approve' | 'reject' = 'approve') => {
     setSelectedSubmission(submission)
     setActionType(action)
-    setPointsToGrant(action === 'approve' && submission.submission_data.submission_type === 'community_service' ? 1 : 0)
+    // For community service, don't set points (they're handled automatically)
+    // For other types, default to 0 and let staff assign points
+    setPointsToGrant(submission.submission_data.submission_type === 'community_service' ? 1 : 0)
     setApprovalNotes('')
     setRejectionReason('')
     setShowApprovalDialog(true)
@@ -154,7 +156,11 @@ export default function StaffApprovalsPage() {
     try {
       let result
       if (actionType === 'approve') {
-        result = await approveSubmissionAction(selectedSubmission.id, pointsToGrant, approvalNotes)
+        // For community service, use the hours as points (1 point per hour)
+        const finalPoints = selectedSubmission.submission_data.submission_type === 'community_service' 
+          ? selectedSubmission.submission_data.hours 
+          : pointsToGrant
+        result = await approveSubmissionAction(selectedSubmission.id, finalPoints, approvalNotes)
       } else {
         result = await rejectSubmissionAction(selectedSubmission.id, rejectionReason)
       }
@@ -641,27 +647,44 @@ export default function StaffApprovalsPage() {
                 {/* Action Form */}
                 {actionType === 'approve' ? (
                   <div className="space-y-4 border-t pt-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="points" className="flex items-center gap-2">
-                        <Star className="h-4 w-4" />
-                        Points to Grant *
-                      </Label>
-                      <Input
-                        id="points"
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value={pointsToGrant}
-                        onChange={(e) => setPointsToGrant(parseFloat(e.target.value) || 0)}
-                        placeholder="10.0"
-                        required
-                        className="text-lg"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Enter the point value this submission should contribute to the student's Holistic GPA
-                      </p>
-                    </div>
+                    {/* Only show points input for non-community service submissions */}
+                    {selectedSubmission.submission_data.submission_type !== 'community_service' && (
+                      <div className="space-y-2">
+                        <Label htmlFor="points" className="flex items-center gap-2">
+                          <Star className="h-4 w-4" />
+                          Points to Grant *
+                        </Label>
+                        <Input
+                          id="points"
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                          value={pointsToGrant}
+                          onChange={(e) => setPointsToGrant(parseFloat(e.target.value) || 0)}
+                          placeholder="10.0"
+                          required
+                          className="text-lg"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Enter the point value this submission should contribute to the student's Holistic GPA
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Show info message for community service */}
+                    {selectedSubmission.submission_data.submission_type === 'community_service' && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                          <Star className="h-4 w-4" />
+                          <span className="text-sm font-medium">Community Service Points</span>
+                        </div>
+                        <p className="text-xs text-blue-600 dark:text-blue-300 mt-1">
+                          Points for community service are automatically calculated based on hours contributed (1 point per hour). 
+                          This submission will award <strong>{selectedSubmission.submission_data.hours} point{selectedSubmission.submission_data.hours !== 1 ? 's' : ''}</strong>.
+                        </p>
+                      </div>
+                    )}
                     
                     <div className="space-y-2">
                       <Label htmlFor="notes" className="flex items-center gap-2">
@@ -714,7 +737,9 @@ export default function StaffApprovalsPage() {
             </Button>
             <Button 
               onClick={handleApproval}
-              disabled={isProcessing || (actionType === 'approve' && pointsToGrant <= 0) || (actionType === 'reject' && !rejectionReason.trim())}
+              disabled={isProcessing || 
+                (actionType === 'approve' && selectedSubmission?.submission_data.submission_type !== 'community_service' && pointsToGrant <= 0) || 
+                (actionType === 'reject' && !rejectionReason.trim())}
               className="w-full sm:w-auto"
               variant={actionType === 'approve' ? 'default' : 'destructive'}
             >
