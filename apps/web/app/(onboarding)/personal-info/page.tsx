@@ -28,7 +28,7 @@ interface FormErrors {
 }
 
 export default function PersonalInfoPage() {
-  const { user } = useAuth()
+  const { user, supabaseUser } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [role, setRole] = useState<string>('')
@@ -59,11 +59,11 @@ export default function PersonalInfoPage() {
     setFormData({
       first_name: onboardingData.first_name || '',
       last_name: onboardingData.last_name || '',
-      email: onboardingData.email || user?.email || '',
+      email: onboardingData.email || supabaseUser?.email || '',
       phone_number: onboardingData.phone_number || '',
       date_of_birth: onboardingData.date_of_birth || ''
     })
-  }, [user, router])
+  }, [supabaseUser, router])
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -233,7 +233,7 @@ export default function PersonalInfoPage() {
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email}</p>
             )}
-            {user?.email && formData.email === user.email && (
+            {supabaseUser?.email && formData.email === supabaseUser.email && (
               <p className="text-sm text-muted-foreground">
                 This email is from your account registration
               </p>

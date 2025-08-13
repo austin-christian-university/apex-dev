@@ -22,7 +22,7 @@ interface PopuliSyncResult {
 type SyncStatus = 'pending' | 'syncing' | 'populi_syncing' | 'success' | 'error'
 
 export default function CompletePage() {
-  const { user } = useAuth()
+  const { user, supabaseUser } = useAuth()
   const router = useRouter()
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('pending')
   const [error, setError] = useState<string>('')
@@ -59,7 +59,7 @@ export default function CompletePage() {
   }
 
   const handleSync = async () => {
-    if (!user?.id || !validationResult.isValid) return
+    if (!supabaseUser?.id || !validationResult.isValid) return
 
     setSyncStatus('syncing')
     setError('')
@@ -74,7 +74,7 @@ export default function CompletePage() {
         },
         body: JSON.stringify({
           onboardingData: onboardingData as OnboardingData,
-          authUserId: user.id
+          authUserId: supabaseUser.id
         })
       })
 
