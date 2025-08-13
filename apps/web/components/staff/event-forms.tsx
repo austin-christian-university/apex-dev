@@ -28,13 +28,14 @@ type FormData = {
   description: string
   event_type: 'self_report' | 'attendance'
   required_roles: string[]
-  required_years: number[]
+  subcategory_id: string
+
   class_code: string
   required_company: string
   is_active: boolean
   
   // Recurring event specific - now matches database JSONB format
-  recurrence_type: 'daily' | 'weekly' | 'monthly' | null
+  recurrence_type: 'weekly' // Only weekly is currently supported
   recurrence_day_of_week: number | null // 0-6 for weekly pattern
   recurrence_time: string // HH:MM format
   recurrence_timezone: string
@@ -53,23 +54,49 @@ const EVENT_TYPES = [
 
 const ROLE_OPTIONS = [
   { value: 'student', label: 'Students' },
-  { value: 'officer', label: 'Officers' },
-  { value: 'staff', label: 'Staff' },
-  { value: 'admin', label: 'Admins' }
+  { value: 'officer', label: 'Officers' }
 ]
 
-const YEAR_OPTIONS = [
-  { value: 1, label: 'Freshmen (Year 1)' },
-  { value: 2, label: 'Sophomores (Year 2)' },
-  { value: 3, label: 'Juniors (Year 3)' },
-  { value: 4, label: 'Seniors (Year 4)' },
-  { value: 5, label: 'Graduate Students (Year 5+)' }
+// Subcategory mappings based on event type
+const ATTENDANCE_SUBCATEGORIES = [
+  { id: '296e0201-be1f-4a9b-bebb-e4288046431d', name: 'GBE Attendance' },
+  { id: 'c94c68d4-661c-4378-9c63-c505ee7ed4de', name: 'Chapel Attendance' },
+  { id: '221c3ba8-42e5-4f4f-a553-ba3134b6d433', name: 'Fellow Friday Attendance' },
+  { id: '1a83ee45-7869-4f24-a70f-12ff3e1bc243', name: 'Company Community Events' }
 ]
+
+const PARTICIPATION_SUBCATEGORIES = [
+  { id: 'df11fbad-26c8-452c-97ca-9d5009b1b591', name: 'Fellow Friday Team Participation' },
+  { id: '78606cf2-7866-4ed5-8384-1e464a0b5d66', name: 'Company Team-Building' },
+  { id: '865e0e15-c14d-4b23-abd2-5f1b6ccf5dbc', name: 'Chapel Team Participation' },
+  { id: '0ceea111-1485-4a80-98a9-d82f3c12321c', name: 'GBE Participation' }
+]
+
+const ALL_SUBCATEGORIES = [
+  { id: 'd1d972a4-2484-4b9a-a53c-0b63bb2e952c', name: 'Academic Class Attendance & Grades' },
+  { id: 'c94c68d4-661c-4378-9c63-c505ee7ed4de', name: 'Chapel Attendance' },
+  { id: '865e0e15-c14d-4b23-abd2-5f1b6ccf5dbc', name: 'Chapel Team Participation' },
+  { id: 'bc062d8d-6e16-4f0a-84ca-5fd9d7c10f8c', name: 'Community Service Hours' },
+  { id: '1a83ee45-7869-4f24-a70f-12ff3e1bc243', name: 'Company Community Events' },
+  { id: '78606cf2-7866-4ed5-8384-1e464a0b5d66', name: 'Company Team-Building' },
+  { id: 'efdbc642-a52d-4872-ada5-2687fc03be73', name: 'Credentials or Certifications' },
+  { id: 'e0bd5604-0692-42fe-8b4b-7ea2d339abc7', name: 'Dream Team Involvement' },
+  { id: '221c3ba8-42e5-4f4f-a553-ba3134b6d433', name: 'Fellow Friday Attendance' },
+  { id: 'df11fbad-26c8-452c-97ca-9d5009b1b591', name: 'Fellow Friday Team Participation' },
+  { id: '296e0201-be1f-4a9b-bebb-e4288046431d', name: 'GBE Attendance' },
+  { id: '0ceea111-1485-4a80-98a9-d82f3c12321c', name: 'GBE Participation' },
+  { id: 'a3bab151-0ce1-402f-b507-7d6c3489bc8c', name: 'Job or Campus Role Promotion/Resume-Building Opportunities' },
+  { id: '49ccaacd-d437-4421-809a-f957c8b4baf8', name: 'Lions Games Involvement' },
+  { id: 'f50830fe-b820-4223-89e2-e69241b459af', name: 'Practicum Grade' },
+  { id: 'a32c3898-dbf1-4a92-a5db-811dfb6fcd0f', name: 'Small Group Involvement' },
+  { id: '8d13f1b9-33e1-4a62-be45-488a6834112f', name: 'Spiritual Formation Grade' }
+]
+
+
 
 const RECURRENCE_PATTERNS = [
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' }
+  { value: 'weekly', label: 'Weekly' }
+  // Note: daily and monthly patterns are not yet implemented in database triggers
 ]
 
 const DAYS_OF_WEEK = [
@@ -88,11 +115,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
     description: '',
     event_type: 'attendance',
     required_roles: [],
-    required_years: [],
+    subcategory_id: '',
+
     class_code: '',
     required_company: '',
     is_active: true,
-    recurrence_type: null,
+    recurrence_type: 'weekly',
     recurrence_day_of_week: null,
     recurrence_time: '09:00',
     recurrence_timezone: 'America/Chicago',
@@ -102,8 +130,29 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
     recurring_event_id: ''
   })
   
+  const [showAllSubcategories, setShowAllSubcategories] = useState(false)
+  
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Get available subcategories based on event type and show all state
+  const getAvailableSubcategories = () => {
+    if (showAllSubcategories) {
+      return ALL_SUBCATEGORIES
+    }
+    
+    return formData.event_type === 'attendance' 
+      ? ATTENDANCE_SUBCATEGORIES 
+      : PARTICIPATION_SUBCATEGORIES
+  }
+
+  // Reset subcategory when event type changes (but only after initial load)
+  useEffect(() => {
+    if (formData.event_type && mode === 'create') {
+      setFormData(prev => ({ ...prev, subcategory_id: '' }))
+      setShowAllSubcategories(false)
+    }
+  }, [formData.event_type, mode])
 
   // Initialize form data if editing
   useEffect(() => {
@@ -115,11 +164,12 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           description: data.description || '',
           event_type: data.event_type,
           required_roles: data.required_roles || [],
-          required_years: data.required_years || [],
+          subcategory_id: data.subcategory_id || '',
+
           class_code: data.class_code || '',
           required_company: data.required_company || '',
           is_active: data.is_active,
-          recurrence_type: data.recurrence_pattern?.type || null,
+          recurrence_type: 'weekly', // Always weekly
           recurrence_day_of_week: data.recurrence_pattern?.day_of_week || null,
           recurrence_time: data.recurrence_pattern?.time || '09:00',
           recurrence_timezone: data.recurrence_pattern?.timezone || 'America/Chicago',
@@ -133,15 +183,16 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
         setFormData({
           name: data.name,
           description: data.description || '',
-          event_type: data.event_type,
+          event_type: data.event_type === 'dev_event' ? 'self_report' : data.event_type,
           required_roles: data.required_roles || [],
-          required_years: data.required_years || [],
+          subcategory_id: data.subcategory_id || '',
+
           class_code: data.class_code || '',
           required_company: data.required_company || '',
           is_active: data.is_active,
           due_date: data.due_date ? data.due_date.split('T')[0] : '',
           recurring_event_id: data.recurring_event_id || '',
-          recurrence_type: null,
+          recurrence_type: 'weekly',
           recurrence_day_of_week: null,
           recurrence_time: '09:00',
           recurrence_timezone: 'America/Chicago',
@@ -163,12 +214,19 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
       newErrors.event_type = 'Event type is required'
     }
 
+    if (!formData.subcategory_id) {
+      newErrors.subcategory_id = 'Holistic GPA Subcategory is required'
+    }
+
     if (eventType === 'recurring') {
       if (!formData.start_date) {
         newErrors.start_date = 'Start date is required'
       }
-      if (formData.recurrence_type === 'weekly' && formData.recurrence_day_of_week === null) {
-        newErrors.recurrence_day_of_week = 'Select a day of week for weekly recurrence'
+      if (!formData.end_date) {
+        newErrors.end_date = 'End date is required'
+      }
+      if (formData.recurrence_day_of_week === null) {
+        newErrors.recurrence_day_of_week = 'Select a day of week for the recurring event'
       }
       if (!formData.recurrence_time) {
         newErrors.recurrence_time = 'Event time is required'
@@ -179,9 +237,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
       }
     }
 
-    if (formData.event_type === 'attendance' && !formData.class_code.trim()) {
-      newErrors.class_code = 'Class code is required for attendance events'
-    }
+
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -205,8 +261,8 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           timezone: formData.recurrence_timezone
         }
 
-        // Add day_of_week for weekly patterns
-        if (formData.recurrence_type === 'weekly' && formData.recurrence_day_of_week !== null) {
+        // Add day_of_week (required for weekly patterns)
+        if (formData.recurrence_day_of_week !== null) {
           recurrencePattern.day_of_week = formData.recurrence_day_of_week
         }
 
@@ -215,17 +271,17 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           description: formData.description || null,
           event_type: formData.event_type,
           required_roles: formData.required_roles.length > 0 ? formData.required_roles : null,
-          required_years: formData.required_years.length > 0 ? formData.required_years : null,
+          required_years: null, // No longer used
           class_code: formData.class_code || null,
+          subcategory_id: formData.subcategory_id,
           recurrence_pattern: recurrencePattern,
-          recurrence_interval: null, // Not used in new structure
-          recurrence_days: null, // Not used in new structure  
           start_date: formData.start_date,
           end_date: formData.end_date || null,
-          time_due: null, // Time is now in recurrence_pattern
           is_active: formData.is_active,
+          show_on_homepage: true, // Staff-created events always show on homepage
           created_by: userId,
-          required_company: formData.required_company || null
+          required_company: formData.required_company || null,
+          instances_generated: false // Will be set to true by the trigger
         }
 
         if (mode === 'create') {
@@ -244,8 +300,9 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           description: formData.description || null,
           event_type: formData.event_type,
           required_roles: formData.required_roles.length > 0 ? formData.required_roles : null,
-          required_years: formData.required_years.length > 0 ? formData.required_years : null,
+          required_years: null, // No longer used
           class_code: formData.class_code || null,
+          subcategory_id: formData.subcategory_id,
           due_date: formData.due_date || null,
           is_active: formData.is_active,
           show_on_homepage: true,
@@ -281,14 +338,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
     }))
   }
 
-  const toggleYear = (year: number) => {
-    setFormData(prev => ({
-      ...prev,
-      required_years: prev.required_years.includes(year)
-        ? prev.required_years.filter(y => y !== year)
-        : [...prev.required_years, year]
-    }))
-  }
+
 
   const handleDaySelect = (day: number) => {
     setFormData(prev => ({
@@ -366,29 +416,41 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
             )}
           </div>
 
-          {formData.event_type === 'attendance' && (
-            <div>
-              <Label htmlFor="class_code">Class Code *</Label>
-              <Input
-                id="class_code"
-                value={formData.class_code}
-                onChange={(e) => setFormData(prev => ({ ...prev, class_code: e.target.value }))}
-                placeholder="e.g., MATH101, HIST205"
-                className={errors.class_code ? 'border-destructive' : ''}
-              />
-              {errors.class_code && (
-                <p className="text-sm text-destructive mt-1">{errors.class_code}</p>
-              )}
-            </div>
-          )}
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_active"
-              checked={formData.is_active}
-              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, is_active: !!checked }))}
-            />
-            <Label htmlFor="is_active">Event is active</Label>
+
+          <div>
+            <Label htmlFor="subcategory_id">Holistic GPA Subcategory *</Label>
+            <Select value={formData.subcategory_id} onValueChange={(value: string) => {
+              if (value === 'see_all') {
+                setShowAllSubcategories(true)
+                return
+              }
+              setFormData(prev => ({ ...prev, subcategory_id: value }))
+            }}>
+              <SelectTrigger className={errors.subcategory_id ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Select subcategory" />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableSubcategories().map(subcategory => (
+                  <SelectItem key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                  </SelectItem>
+                ))}
+                {!showAllSubcategories && (
+                  <SelectItem value="see_all" className="text-primary font-medium">
+                    See all subcategories...
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            {errors.subcategory_id && (
+              <p className="text-sm text-destructive mt-1">{errors.subcategory_id}</p>
+            )}
+            {showAllSubcategories && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Showing all subcategories. Change event type to see filtered options.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -398,7 +460,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium">Target Audience</CardTitle>
           <CardDescription className="text-xs">
-            Leave empty to target all users. Select specific roles, years, or companies to limit the audience.
+            Leave empty to target all users. Select specific roles or companies to limit the audience.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 pt-0">
@@ -421,24 +483,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
             </div>
           </div>
 
-          <div>
-            <Label>Required Academic Years</Label>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {YEAR_OPTIONS.map(year => (
-                <Badge
-                  key={year.value}
-                  variant={formData.required_years.includes(year.value) ? 'default' : 'outline'}
-                  className="cursor-pointer text-xs py-1 px-2"
-                  onClick={() => toggleYear(year.value)}
-                >
-                  {year.label}
-                  {formData.required_years.includes(year.value) && (
-                    <X className="h-3 w-3 ml-1" />
-                  )}
-                </Badge>
-              ))}
-            </div>
-          </div>
+
 
           <div>
             <Label htmlFor="required_company">Required Company</Label>
@@ -487,58 +532,44 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
                 </div>
 
                 <div>
-                  <Label htmlFor="end_date">End Date (Optional)</Label>
+                  <Label htmlFor="end_date">End Date *</Label>
                   <Input
                     id="end_date"
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => setFormData(prev => ({ ...prev, end_date: e.target.value }))}
+                    className={errors.end_date ? 'border-destructive' : ''}
                   />
+                  {errors.end_date && (
+                    <p className="text-sm text-destructive mt-1">{errors.end_date}</p>
+                  )}
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="recurrence_type">Recurrence Pattern</Label>
-                <Select value={formData.recurrence_type || 'none'} onValueChange={(value: string) => 
-                  setFormData(prev => ({ ...prev, recurrence_type: value === 'none' ? null : value as 'daily' | 'weekly' | 'monthly' }))
-                }>
-                  <SelectTrigger>
-                    <SelectValue placeholder="No recurrence (single event)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No recurrence (single event)</SelectItem>
-                    {RECURRENCE_PATTERNS.map(pattern => (
-                      <SelectItem key={pattern.value} value={pattern.value}>
-                        {pattern.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.recurrence_type === 'weekly' && (
-                <div>
-                  <Label>Day of Week</Label>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {DAYS_OF_WEEK.map(day => (
-                      <Badge
-                        key={day.value}
-                        variant={formData.recurrence_day_of_week === day.value ? 'default' : 'outline'}
-                        className="cursor-pointer text-xs py-1 px-2"
-                        onClick={() => handleDaySelect(day.value)}
-                      >
-                        {day.short}
-                        {formData.recurrence_day_of_week === day.value && (
-                          <X className="h-3 w-3 ml-1" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  {errors.recurrence_day_of_week && (
-                    <p className="text-sm text-destructive mt-1">{errors.recurrence_day_of_week}</p>
-                  )}
+                <Label>Day of Week *</Label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  Select which day of the week this event should occur
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {DAYS_OF_WEEK.map(day => (
+                    <Badge
+                      key={day.value}
+                      variant={formData.recurrence_day_of_week === day.value ? 'default' : 'outline'}
+                      className="cursor-pointer text-xs py-1 px-2"
+                      onClick={() => handleDaySelect(day.value)}
+                    >
+                      {day.short}
+                      {formData.recurrence_day_of_week === day.value && (
+                        <X className="h-3 w-3 ml-1" />
+                      )}
+                    </Badge>
+                  ))}
                 </div>
-              )}
+                {errors.recurrence_day_of_week && (
+                  <p className="text-sm text-destructive mt-1">{errors.recurrence_day_of_week}</p>
+                )}
+              </div>
 
               <div>
                 <Label htmlFor="recurrence_time">Event Time *</Label>
@@ -554,22 +585,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
                 )}
               </div>
 
-              <div>
-                <Label htmlFor="recurrence_timezone">Timezone</Label>
-                <Select value={formData.recurrence_timezone} onValueChange={(value: string) => 
-                  setFormData(prev => ({ ...prev, recurrence_timezone: value }))
-                }>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="America/Chicago">Central Time (America/Chicago)</SelectItem>
-                    <SelectItem value="America/New_York">Eastern Time (America/New_York)</SelectItem>
-                    <SelectItem value="America/Denver">Mountain Time (America/Denver)</SelectItem>
-                    <SelectItem value="America/Los_Angeles">Pacific Time (America/Los_Angeles)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
             </>
           ) : (
             <div>

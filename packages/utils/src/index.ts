@@ -38,6 +38,13 @@ export function formatDateTime(date: string | Date): string {
   })
 }
 
+export function formatShortDate(date: string | Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
 // Score calculation utilities
 export function calculateAverageScore(scores: number[]): number {
   if (scores.length === 0) return 0

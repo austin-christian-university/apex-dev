@@ -308,23 +308,21 @@ export interface RecurringEvent {
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;
-  subcategory_id?: string | null;
+  subcategory_id: string | null;
   recurrence_pattern: {
     type: 'daily' | 'weekly' | 'monthly';
     day_of_week?: number; // 0-6 for weekly patterns
     time: string; // HH:MM format
     timezone: string;
   };
-  recurrence_interval: number | null; // Legacy field
-  recurrence_days: number[] | null; // Legacy field
   start_date: string;
   end_date: string | null;
-  time_due: string | null; // Legacy field
   is_active: boolean;
   show_on_homepage: boolean; // controls visibility on general home feed
   created_at: string;
   created_by: string | null;
   required_company: string | null;
+  instances_generated: boolean;
 }
 
 // Event instances - matches Supabase event_instances table

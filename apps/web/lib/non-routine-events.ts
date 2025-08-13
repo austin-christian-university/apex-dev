@@ -311,32 +311,25 @@ export async function getPendingSubmissions() {
       throw new Error('Staff access required')
     }
     
-    // Fetch pending submissions with student and user information
-    const { data: submissions, error } = await supabase
-      .from('event_submissions')
-      .select(`
-        *,
-        students!inner (
-          id,
-          users!inner (
-            id,
-            first_name,
-            last_name,
-            email
-          ),
-          companies (
-            id,
-            name
-          )
-        )
-      `)
-      .eq('approval_status', 'pending')
-      .eq('needs_approval', true)
-      .order('created_at', { ascending: false })
+    // Use raw SQL approach for better reliability with complex joins
+    console.log('🔍 Calling RPC function: get_pending_submissions_with_details')
+    const { data: submissions, error } = await supabase.rpc('get_pending_submissions_with_details')
     
     if (error) {
-      console.error('Database error:', error)
-      throw new Error('Failed to fetch pending submissions')
+      console.error('❌ RPC function failed:', error)
+      console.log('🔄 Falling back to manual approach')
+      return await getPendingSubmissionsManual(supabase)
+    }
+
+    console.log('✅ RPC function succeeded. Data:', submissions)
+    console.log('📊 Number of submissions:', submissions?.length || 0)
+    if (submissions && submissions.length > 0) {
+      submissions.forEach((submission, index) => {
+        console.log(`📋 Submission ${index + 1}:`)
+        console.log(`   Student ID: ${submission.student_id}`)
+        console.log(`   User data:`, submission.students?.users)
+        console.log(`   Company data:`, submission.students?.companies)
+      })
     }
     
     return { success: true, submissions: submissions || [] }
@@ -352,11 +345,124 @@ export async function getPendingSubmissions() {
 }
 
 /**
+ * Manual fallback for getting pending submissions when RPC is not available
+ */
+async function getPendingSubmissionsManual(supabase: any) {
+  try {
+    // Get pending submissions first
+    const { data: submissions, error: submissionsError } = await supabase
+      .from('event_submissions')
+      .select(`
+        id,
+        event_id,
+        student_id,
+        submitted_by,
+        submission_data,
+        submitted_at,
+        subcategory_id,
+        needs_approval,
+        approval_status
+      `)
+      .eq('approval_status', 'pending')
+      .eq('needs_approval', true)
+      .order('submitted_at', { ascending: false })
+    
+    if (submissionsError) {
+      throw new Error('Failed to fetch submissions')
+    }
+
+    if (!submissions || submissions.length === 0) {
+      return { success: true, submissions: [] }
+    }
+
+    // Get unique student IDs
+    const studentIds = [...new Set(submissions.map((sub: any) => sub.student_id))]
+    
+    // Get student data with company information
+    const { data: students, error: studentsError } = await supabase
+      .from('students')
+      .select(`
+        id,
+        company_id,
+        academic_role,
+        company_role,
+        companies (
+          id,
+          name
+        )
+      `)
+      .in('id', studentIds)
+    
+    if (studentsError) {
+      throw new Error('Failed to fetch student data')
+    }
+
+    // Get user data
+    const { data: users, error: usersError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name, email, photo')
+      .in('id', studentIds)
+    
+    if (usersError) {
+      throw new Error('Failed to fetch user data')
+    }
+
+    // Get unique event IDs
+    const eventIds = [...new Set(submissions.map((sub: any) => sub.event_id))]
+    
+    // Get event instance data
+    const { data: eventInstances, error: eventsError } = await supabase
+      .from('event_instances')
+      .select('id, name, description, event_type')
+      .in('id', eventIds)
+    
+    if (eventsError) {
+      throw new Error('Failed to fetch event instances')
+    }
+
+    // Create lookup maps
+    const studentsMap = new Map(students?.map((s: any) => [s.id, s]) || [])
+    const usersMap = new Map(users?.map((u: any) => [u.id, u]) || [])
+    const eventsMap = new Map(eventInstances?.map((e: any) => [e.id, e]) || [])
+
+    // Combine all data
+    const enrichedSubmissions = submissions.map((submission: any) => {
+      const student: any = studentsMap.get(submission.student_id)
+      const user = usersMap.get(submission.student_id)
+      const eventInstance = eventsMap.get(submission.event_id)
+
+      return {
+        ...submission,
+        students: student ? {
+          ...student,
+          // student.companies is an array from nested query, take first element
+          companies: Array.isArray(student.companies) ? student.companies[0] : student.companies,
+          users: user || null
+        } : null,
+        event_instances: eventInstance || null
+      }
+    }).filter((submission: any) => submission.students) // Only include submissions with valid student data
+
+    console.log('Manual submissions with users:', enrichedSubmissions)
+    
+    return { success: true, submissions: enrichedSubmissions }
+  } catch (error) {
+    console.error('Manual fetch error:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error occurred', 
+      submissions: [] 
+    }
+  }
+}
+
+/**
  * Approve a submission and assign points
  */
 export async function approveSubmission(
   submissionId: string,
-  pointsGranted: number
+  pointsGranted: number,
+  approvalNotes?: string
 ) {
   const supabase = await createClient()
   
@@ -378,6 +484,28 @@ export async function approveSubmission(
       throw new Error('Staff access required')
     }
     
+    // Get the current submission to update the submission_data with assigned points if needed
+    const { data: currentSubmission, error: fetchError } = await supabase
+      .from('event_submissions')
+      .select('submission_data')
+      .eq('id', submissionId)
+      .single()
+    
+    if (fetchError || !currentSubmission) {
+      throw new Error('Submission not found')
+    }
+    
+    let updatedSubmissionData = currentSubmission.submission_data
+    
+    // For job promotion and credentials submissions, update the submission_data with assigned_points
+    if (updatedSubmissionData?.submission_type === 'job_promotion' || 
+        updatedSubmissionData?.submission_type === 'credentials') {
+      updatedSubmissionData = {
+        ...updatedSubmissionData,
+        assigned_points: pointsGranted
+      }
+    }
+    
     // Update the submission
     const { data, error } = await supabase
       .from('event_submissions')
@@ -385,6 +513,8 @@ export async function approveSubmission(
         approval_status: 'approved',
         approved_by: user.id,
         points_granted: pointsGranted,
+        approval_notes: approvalNotes || null,
+        submission_data: updatedSubmissionData,
         updated_at: new Date().toISOString()
       })
       .eq('id', submissionId)
@@ -451,7 +581,7 @@ export async function rejectSubmission(
         approval_status: 'rejected',
         approved_by: user.id,
         points_granted: 0,
-        notes: rejectionReason || null,
+        approval_notes: rejectionReason || null,
         updated_at: new Date().toISOString()
       })
       .eq('id', submissionId)
