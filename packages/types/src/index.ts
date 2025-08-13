@@ -363,6 +363,24 @@ export interface EventFilters {
   limit?: number;
 }
 
+// Event submissions - matches Supabase event_submissions table
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+
+export interface EventSubmission {
+  id: string;
+  event_id: string;
+  student_id: string;
+  submitted_by: string;
+  submission_data: any; // This will be EventSubmissionData from the other file
+  submitted_at: string | null;
+  subcategory_id: string;
+  needs_approval: boolean;
+  approval_status: ApprovalStatus;
+  approved_by: string | null;
+  points_granted: number | null;
+  approval_notes: string | null;
+}
+
 // Supabase Database types (for direct database operations)
 export type Database = {
   public: {
@@ -407,6 +425,15 @@ export type Database = {
           created_at?: string | null;
         };
         Update: Partial<Omit<EventInstance, 'id'>>;
+      };
+      event_submissions: {
+        Row: EventSubmission;
+        Insert: Omit<EventSubmission, 'id' | 'submitted_at' | 'subcategory_id'> & {
+          id?: string;
+          submitted_at?: string | null;
+          subcategory_id?: string | null;
+        };
+        Update: Partial<Omit<EventSubmission, 'id'>>;
       };
     };
   };

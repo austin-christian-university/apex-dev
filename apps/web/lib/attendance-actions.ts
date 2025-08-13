@@ -47,7 +47,10 @@ export async function submitAttendance(
         event_id: eventId,
         student_id: studentId,
         submitted_by: user.id,
-        submission_data: validatedData
+        submission_data: validatedData,
+        needs_approval: false,
+        approval_status: 'approved',
+        approval_notes: 'auto-approval'
       })
       .select()
       .single()
