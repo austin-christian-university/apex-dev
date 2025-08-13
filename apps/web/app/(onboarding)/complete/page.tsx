@@ -94,11 +94,6 @@ export default function CompletePage() {
         
         // Clear local storage after successful sync
         clearOnboardingData()
-        
-        // Wait a moment for the success animation, then redirect
-        setTimeout(() => {
-          redirectToDashboard()
-        }, 3000) // Slightly longer to show Populi status
       } else {
         setSyncStatus('error')
         setError(result.error || 'Failed to complete onboarding')
@@ -210,7 +205,7 @@ export default function CompletePage() {
         </h1>
         <p className="text-lg text-muted-foreground">
           {syncStatus === 'success' 
-            ? 'Your onboarding is complete. Redirecting to your dashboard...'
+            ? 'Your onboarding is complete. Ready to get started?'
             : syncStatus === 'syncing'
             ? 'Please wait while we sync your data with Populi...'
             : 'Review your information and complete your onboarding'
@@ -363,42 +358,55 @@ export default function CompletePage() {
                 Onboarding Complete!
               </h3>
               <p className="text-sm text-green-700 dark:text-green-300">
-                Your profile has been successfully created. You'll be redirected to your dashboard momentarily.
+                Your profile has been successfully created. Click below to access your dashboard.
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {syncStatus !== 'success' && (
-        <div className="flex justify-between pt-6">
-          <Button variant="outline" onClick={handleGoBack} disabled={syncStatus === 'syncing'}>
-            Back
-          </Button>
-          
-          <div className="space-x-3">
-            {syncStatus === 'error' && (
-              <Button variant="outline" onClick={handleRetry}>
-                Try Again
-              </Button>
-            )}
+      <div className="flex justify-between pt-6">
+        {syncStatus === 'success' ? (
+          <>
+            <div></div>
             <Button 
-              onClick={handleSync}
-              disabled={syncStatus === 'syncing'}
+              onClick={redirectToDashboard}
               size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
-              {syncStatus === 'syncing' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Completing...
-                </>
-              ) : (
-                'Complete Onboarding'
-              )}
+              Continue to Dashboard
             </Button>
-          </div>
-        </div>
-      )}
+          </>
+        ) : (
+          <>
+            <Button variant="outline" onClick={handleGoBack} disabled={syncStatus === 'syncing'}>
+              Back
+            </Button>
+            
+            <div className="space-x-3">
+              {syncStatus === 'error' && (
+                <Button variant="outline" onClick={handleRetry}>
+                  Try Again
+                </Button>
+              )}
+              <Button 
+                onClick={handleSync}
+                disabled={syncStatus === 'syncing'}
+                size="lg"
+              >
+                {syncStatus === 'syncing' ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Completing...
+                  </>
+                ) : (
+                  'Complete Onboarding'
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   )
 }
