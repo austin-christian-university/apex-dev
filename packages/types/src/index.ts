@@ -308,6 +308,7 @@ export interface RecurringEvent {
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;
+  subcategory_id?: string | null;
   recurrence_pattern: {
     type: 'daily' | 'weekly' | 'monthly';
     day_of_week?: number; // 0-6 for weekly patterns
@@ -336,10 +337,12 @@ export interface EventInstance {
   class_code: string | null;
   due_date: string | null;
   is_active: boolean;
+  show_on_homepage: boolean; // controls visibility on general home feed
   created_at: string;
   created_by: string | null;
   recurring_event_id: string | null;
   required_company: string | null;
+  subcategory_id?: string | null;
 }
 
 // Event filtering and categorization

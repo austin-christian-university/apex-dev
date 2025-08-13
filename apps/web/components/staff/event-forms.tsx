@@ -248,6 +248,7 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
           class_code: formData.class_code || null,
           due_date: formData.due_date || null,
           is_active: formData.is_active,
+          show_on_homepage: true,
           created_by: userId,
           recurring_event_id: formData.recurring_event_id || null,
           required_company: formData.required_company || null

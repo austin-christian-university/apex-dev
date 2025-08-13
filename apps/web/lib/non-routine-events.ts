@@ -30,19 +30,54 @@ export async function submitCommunityServiceEvent(
       throw new Error('Authentication required')
     }
     
-    // Submit the non-routine event
+    // Create a private event instance first
+    const { data: createdEvent, error: createEventError } = await supabase
+      .from('event_instances')
+      .insert([
+        {
+          name: 'Community Service Submission',
+          description: 'Student self-reported community service event',
+          event_type: 'self_report',
+          required_roles: null,
+          required_years: null,
+          class_code: null,
+          due_date: null,
+          is_active: true,
+          show_on_homepage: false,
+          created_by: user.id,
+          recurring_event_id: null,
+          required_company: null,
+          // subcategory: community_service_hours
+          subcategory_id: (await (async () => {
+            const { data: sc } = await supabase
+              .from('subcategories')
+              .select('id, name')
+              .eq('name', 'community_service_hours')
+              .single()
+            return sc?.id || null
+          })()),
+        },
+      ])
+      .select()
+      .single()
+
+    if (createEventError) {
+      throw new Error('Failed to create event instance')
+    }
+
+    // Submit the non-routine event referencing the new event instance
     const { data, error } = await supabase
       .from('event_submissions')
       .insert({
-        event_id: null, // Non-routine events don't have a specific event_id
+        event_id: createdEvent.id,
         student_id: studentId,
         submitted_by: user.id,
         submission_data: validatedData,
-        // NOTE: These columns need to be added to the database schema
         needs_approval: true,
         approval_status: 'pending',
         approved_by: null,
-        points_granted: null
+        points_granted: null,
+        subcategory_id: createdEvent.subcategory_id,
       })
       .select()
       .single()
@@ -87,19 +122,54 @@ export async function submitJobPromotionEvent(
       throw new Error('Authentication required')
     }
     
-    // Submit the non-routine event
+    // Create a private event instance first
+    const { data: createdEvent, error: createEventError } = await supabase
+      .from('event_instances')
+      .insert([
+        {
+          name: 'Job Promotion Submission',
+          description: 'Student self-reported job promotion event',
+          event_type: 'self_report',
+          required_roles: null,
+          required_years: null,
+          class_code: null,
+          due_date: null,
+          is_active: true,
+          show_on_homepage: false,
+          created_by: user.id,
+          recurring_event_id: null,
+          required_company: null,
+          // subcategory: job_promotion_opportunities
+          subcategory_id: (await (async () => {
+            const { data: sc } = await supabase
+              .from('subcategories')
+              .select('id, name')
+              .eq('name', 'job_promotion_opportunities')
+              .single()
+            return sc?.id || null
+          })()),
+        },
+      ])
+      .select()
+      .single()
+
+    if (createEventError) {
+      throw new Error('Failed to create event instance')
+    }
+
+    // Submit the non-routine event referencing the new event instance
     const { data, error } = await supabase
       .from('event_submissions')
       .insert({
-        event_id: null, // Non-routine events don't have a specific event_id
+        event_id: createdEvent.id,
         student_id: studentId,
         submitted_by: user.id,
         submission_data: validatedData,
-        // NOTE: These columns need to be added to the database schema
         needs_approval: true,
         approval_status: 'pending',
         approved_by: null,
-        points_granted: null
+        points_granted: null,
+        subcategory_id: createdEvent.subcategory_id,
       })
       .select()
       .single()
@@ -144,19 +214,54 @@ export async function submitCredentialsEvent(
       throw new Error('Authentication required')
     }
     
-    // Submit the non-routine event
+    // Create a private event instance first
+    const { data: createdEvent, error: createEventError } = await supabase
+      .from('event_instances')
+      .insert([
+        {
+          name: 'Credentials Submission',
+          description: 'Student self-reported credential/certification event',
+          event_type: 'self_report',
+          required_roles: null,
+          required_years: null,
+          class_code: null,
+          due_date: null,
+          is_active: true,
+          show_on_homepage: false,
+          created_by: user.id,
+          recurring_event_id: null,
+          required_company: null,
+          // subcategory: credentials_certifications
+          subcategory_id: (await (async () => {
+            const { data: sc } = await supabase
+              .from('subcategories')
+              .select('id, name')
+              .eq('name', 'credentials_certifications')
+              .single()
+            return sc?.id || null
+          })()),
+        },
+      ])
+      .select()
+      .single()
+
+    if (createEventError) {
+      throw new Error('Failed to create event instance')
+    }
+
+    // Submit the non-routine event referencing the new event instance
     const { data, error } = await supabase
       .from('event_submissions')
       .insert({
-        event_id: null, // Non-routine events don't have a specific event_id
+        event_id: createdEvent.id,
         student_id: studentId,
         submitted_by: user.id,
         submission_data: validatedData,
-        // NOTE: These columns need to be added to the database schema
         needs_approval: true,
         approval_status: 'pending',
         approved_by: null,
-        points_granted: null
+        points_granted: null,
+        subcategory_id: createdEvent.subcategory_id,
       })
       .select()
       .single()

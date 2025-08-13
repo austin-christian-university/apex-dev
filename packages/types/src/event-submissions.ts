@@ -75,7 +75,7 @@ export type JobPromotionSubmission = z.infer<typeof JobPromotionSubmissionSchema
 
 // 5) Performance ratings (1–5) for participation/engagement
 export const ChapelParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('participation'),
+  submission_type: z.literal('chapel_participation'),
   points: z.number().min(1).max(5),
 });
 export type ChapelParticipationSubmission = z.infer<
@@ -83,7 +83,7 @@ export type ChapelParticipationSubmission = z.infer<
 >;
 
 export const CompanyTeamBuildingSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('participation'),
+  submission_type: z.literal('company_team_building'),
   points: z.number().min(1).max(5),
 });
 export type CompanyTeamBuildingSubmission = z.infer<
@@ -92,7 +92,7 @@ export type CompanyTeamBuildingSubmission = z.infer<
 
 
 export const FellowFridayPointsSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('participation'),
+  submission_type: z.literal('fellow_friday'),
   points: z.number().min(1).max(5),
 });
 export type FellowFridayPointsSubmission = z.infer<
@@ -101,7 +101,7 @@ export type FellowFridayPointsSubmission = z.infer<
 
 
 export const GBEParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('participation'),
+  submission_type: z.literal('gbe_participation'),
   points: z.number().min(1).max(5),
 });
 export type GBEParticipationSubmission = z.infer<

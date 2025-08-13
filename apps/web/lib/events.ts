@@ -29,6 +29,9 @@ export async function fetchUserEvents(
       .select('*')
       .eq('is_active', true)
       .neq('event_type', 'dev_event')
+      // RLS already hides non-homepage events for other users; this filter keeps
+      // client logic explicit and efficient for public feed scenarios
+      .eq('show_on_homepage', true)
       .order('due_date', { ascending: true })
       .limit(limit)
 
