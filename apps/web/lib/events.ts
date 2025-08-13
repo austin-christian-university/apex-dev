@@ -187,8 +187,8 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
     let profile: any = { user }
     let userCompanyId: string | undefined
 
-    // If user is a student, get student and company data
-    if (user.role === 'student') {
+    // If user is a student or officer, get student and company data
+    if (user.role === 'student' || user.role === 'officer') {
       const { data: student, error: studentError } = await supabase
         .from('students')
         .select(`
@@ -222,9 +222,9 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       return { profile, error: eventsError }
     }
 
-    // For students, check which attendance events they've already submitted
+    // For students and officers, check which attendance events they've already submitted
     let submittedEventIds = new Set<string>()
-    if (user.role === 'student' && profile.student) {
+    if ((user.role === 'student' || user.role === 'officer') && profile.student) {
       const attendanceEventIds = allEvents
         .filter(event => event.event.event_type === 'attendance')
         .map(event => event.event.id)

@@ -262,8 +262,8 @@ export async function getUserProfile(authUserId: string): Promise<{
       throw new Error(`Failed to fetch user: ${userError.message}`)
     }
 
-    // If user is a student, also fetch student and company data
-    if (user.role === 'student') {
+    // If user is a student or officer, also fetch student and company data
+    if (user.role === 'student' || user.role === 'officer') {
       const { data: student, error: studentError } = await supabase
         .from('students')
         .select(`

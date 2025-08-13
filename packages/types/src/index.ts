@@ -64,7 +64,7 @@ export type UserProfile = StudentProfile | StaffProfile;
 
 // Type guard to check if user is a student
 export function isStudent(user: User): user is StudentUser {
-  return user.role === 'student';
+  return user.role === 'student' || user.role === 'officer';
 }
 
 // Type guard to check if user is staff/admin
@@ -321,6 +321,7 @@ export interface RecurringEvent {
   end_date: string | null;
   time_due: string | null; // Legacy field
   is_active: boolean;
+  show_on_homepage: boolean; // controls visibility on general home feed
   created_at: string;
   created_by: string | null;
   required_company: string | null;
