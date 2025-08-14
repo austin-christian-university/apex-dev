@@ -5,7 +5,8 @@ import {
   isEventApplicableToUser, 
   categorizeEventByDueDate, 
   filterAndSortEvents,
-  isEventEligibleForAttendance
+  isEventEligibleForAttendance,
+  isEventEligibleForMonthlyCheckin
 } from '@acu-apex/utils'
 
 /**
@@ -239,11 +240,15 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       const isEligibleForAttendance = event.event.event_type === 'attendance' && event.event.due_date 
         ? isEventEligibleForAttendance(event.event.due_date) 
         : false
+      const isEligibleForMonthlyCheckin = event.event.event_type === 'monthly_checkin' && event.event.due_date
+        ? isEventEligibleForMonthlyCheckin(event.event.due_date)
+        : false
       
       return {
         ...event,
         hasSubmitted,
-        isEligibleForAttendance
+        isEligibleForAttendance,
+        isEligibleForMonthlyCheckin
       }
     })
 

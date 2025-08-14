@@ -215,6 +215,15 @@ export function isEventEligibleForAttendance(eventDueDate: string): boolean {
 }
 
 /**
+ * Check if an event is eligible for monthly check-in submission
+ * Uses the same logic as attendance events - eligible if past due or within the next hour
+ */
+export function isEventEligibleForMonthlyCheckin(eventDueDate: string): boolean {
+  // Monthly check-ins use the same timing logic as attendance
+  return isEventEligibleForAttendance(eventDueDate)
+}
+
+/**
  * Calculate company ranking based on holistic GPA
  * This is a placeholder - will be implemented when scoring system is built
  */

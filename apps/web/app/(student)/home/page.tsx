@@ -98,6 +98,7 @@ export default function HomePage() {
               variant="urgent"
               hasSubmitted={userEvent.hasSubmitted}
               isEligibleForAttendance={userEvent.isEligibleForAttendance}
+              isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
             />
           ))}
         </div>
@@ -170,6 +171,7 @@ export default function HomePage() {
                 variant="upcoming"
                 hasSubmitted={userEvent.hasSubmitted}
                 isEligibleForAttendance={userEvent.isEligibleForAttendance}
+                isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
               />
             ))}
           </div>

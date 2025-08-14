@@ -351,8 +351,9 @@ export interface UserEvent {
   isPastDue: boolean;
   daysUntilDue: number;
   formattedDueDate: string;
-  hasSubmitted?: boolean; // For attendance events
+  hasSubmitted?: boolean; // For interactive events (attendance, monthly check-ins)
   isEligibleForAttendance?: boolean; // For attendance events
+  isEligibleForMonthlyCheckin?: boolean; // For monthly check-in events
 }
 
 export interface EventFilters {

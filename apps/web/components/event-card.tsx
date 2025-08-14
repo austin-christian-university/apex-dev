@@ -25,6 +25,7 @@ interface EventCardProps {
   variant?: 'urgent' | 'upcoming'
   hasSubmitted?: boolean
   isEligibleForAttendance?: boolean
+  isEligibleForMonthlyCheckin?: boolean
 }
 
 export const EventCard = memo(function EventCard({ 
@@ -35,7 +36,8 @@ export const EventCard = memo(function EventCard({
   isPastDue,
   variant = 'upcoming',
   hasSubmitted: initialHasSubmitted = false,
-  isEligibleForAttendance: initialIsEligible = false
+  isEligibleForAttendance: initialIsEligible = false,
+  isEligibleForMonthlyCheckin: initialIsEligibleForCheckin = false
 }: EventCardProps) {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false)
   const [showMonthlyCheckinForm, setShowMonthlyCheckinForm] = useState(false)
@@ -47,7 +49,7 @@ export const EventCard = memo(function EventCard({
   const handleCardClick = () => {
     if (event.event_type === 'attendance' && isEligible && !hasSubmitted) {
       setShowAttendanceForm(true)
-    } else if (event.event_type === 'monthly_checkin' && !hasSubmitted) {
+    } else if (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted) {
       setShowMonthlyCheckinForm(true)
     }
   }
@@ -77,7 +79,7 @@ export const EventCard = memo(function EventCard({
   }
 
   const isClickable = (event.event_type === 'attendance' && isEligible && !hasSubmitted) || 
-                     (event.event_type === 'monthly_checkin' && !hasSubmitted)
+                     (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted)
   const cardClassName = `
     ${variant === 'urgent' ? 'border-destructive/20 bg-destructive/5' : ''}
     ${isClickable ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}
