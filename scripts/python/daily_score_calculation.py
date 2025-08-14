@@ -29,9 +29,11 @@ from dotenv import load_dotenv
 # Add the scripts directory to the Python path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from apex_scoring.bell_curve import BellCurveCalculator
 from apex_scoring.aggregators import SubcategoryAggregator
-from apex_scoring.validator import ScoreValidator
+from apex_scoring.company_scores import (
+    StudentCategoryHolisticCalculator,
+    CompanyScoreCalculator,
+)
 
 # Load environment variables
 load_dotenv()
@@ -59,9 +61,10 @@ class DailyScoreCalculator:
     def __init__(self, supabase_url: str, supabase_key: str):
         """Initialize the calculator with Supabase client."""
         self.supabase: Client = create_client(supabase_url, supabase_key)
-        self.bell_curve = BellCurveCalculator()
-        self.aggregator = SubcategoryAggregator(self.supabase)
-        self.validator = ScoreValidator(self.supabase)
+        # Use notebook-exported calculators (no DB RPCs)
+        self.subcategory_aggregator = SubcategoryAggregator(self.supabase)
+        self.student_calculator = StudentCategoryHolisticCalculator(self.supabase)
+        self.company_calculator = CompanyScoreCalculator(self.supabase)
         
     async def run_daily_calculation(
         self, 
@@ -109,73 +112,54 @@ class DailyScoreCalculator:
             total_students = len(students)
             logger.info(f"Found {total_students} students to process")
             
-            # Phase 2: Calculate raw subcategory scores
-            phase_start = datetime.now()
-            subcategory_results = await self._calculate_subcategory_scores(
-                students, academic_year, calculation_date, batch_size, dry_run
-            )
-            phase_time = (datetime.now() - phase_start).total_seconds()
-            results['phases'].append({
-                'phase': 'Calculate Raw Subcategory Scores',
-                'students_processed': subcategory_results['students_processed'],
-                'subcategories_processed': subcategory_results['subcategories_processed'],
-                'execution_time_seconds': phase_time,
-                'status': 'completed'
-            })
-            
-            # Phase 3: Apply bell curve normalization
+            # Phase 2: Normalize latest-day subcategory scores (non-GPA via bell curve, GPA = score)
             if not dry_run:
                 phase_start = datetime.now()
-                bell_curve_results = await self._apply_bell_curve_normalization(
-                    academic_year, calculation_date
-                )
+                norm_result = self.subcategory_aggregator.normalize_all_subcategories_for_latest_day()
                 phase_time = (datetime.now() - phase_start).total_seconds()
                 results['phases'].append({
-                    'phase': 'Apply Bell Curve Normalization',
-                    'students_processed': bell_curve_results['students_processed'],
-                    'subcategories_processed': bell_curve_results['subcategories_processed'],
+                    'phase': 'Normalize Subcategory Scores (latest day)',
+                    'subcategories_processed': len(norm_result.get('results', {})),
                     'execution_time_seconds': phase_time,
                     'status': 'completed'
                 })
-            
-            # Phase 4: Calculate category scores
+
+            # Phase 3: Student category scores
             if not dry_run:
                 phase_start = datetime.now()
-                category_results = await self._calculate_category_scores(
-                    students, academic_year, calculation_date, batch_size
-                )
+                cat_res = self.student_calculator.compute_student_category_scores_for_day(calculation_date.isoformat())
                 phase_time = (datetime.now() - phase_start).total_seconds()
                 results['phases'].append({
-                    'phase': 'Calculate Category Scores',
-                    'students_processed': category_results['students_processed'],
+                    'phase': 'Calculate Student Category Scores',
+                    'rows_upserted': cat_res.get('student_category_rows_upserted', 0),
                     'execution_time_seconds': phase_time,
                     'status': 'completed'
                 })
-                
-            # Phase 5: Calculate holistic GPAs
+
+            # Phase 4: Student holistic GPAs
             if not dry_run:
                 phase_start = datetime.now()
-                gpa_results = await self._calculate_holistic_gpas(
-                    students, academic_year, calculation_date, batch_size
-                )
+                hol_res = self.student_calculator.compute_student_holistic_gpa_for_day(calculation_date.isoformat())
                 phase_time = (datetime.now() - phase_start).total_seconds()
                 results['phases'].append({
-                    'phase': 'Calculate Holistic GPAs',
-                    'students_processed': gpa_results['students_processed'],
+                    'phase': 'Calculate Student Holistic GPAs',
+                    'rows_upserted': hol_res.get('student_holistic_rows_upserted', 0),
                     'execution_time_seconds': phase_time,
                     'status': 'completed'
                 })
-                
-            # Phase 6: Update company standings
+
+            # Phase 5: Company scores
             if not dry_run:
                 phase_start = datetime.now()
-                company_results = await self._update_company_standings(
-                    academic_year, calculation_date
-                )
+                comp_sub = self.company_calculator.compute_company_subcategory_scores_for_day(calculation_date.isoformat())
+                comp_cat = self.company_calculator.compute_company_category_scores_for_day(calculation_date.isoformat())
+                comp_hol = self.company_calculator.compute_company_holistic_gpa_for_day(calculation_date.isoformat())
                 phase_time = (datetime.now() - phase_start).total_seconds()
                 results['phases'].append({
-                    'phase': 'Update Company Standings',
-                    'companies_processed': company_results['companies_processed'],
+                    'phase': 'Update Company Scores',
+                    'subcategory_rows': comp_sub.get('company_subcategory_rows_upserted', 0),
+                    'category_rows': comp_cat.get('company_category_rows_upserted', 0),
+                    'holistic_rows': comp_hol.get('company_holistic_rows_upserted', 0),
                     'execution_time_seconds': phase_time,
                     'status': 'completed'
                 })
