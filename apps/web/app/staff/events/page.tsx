@@ -16,8 +16,6 @@ import {
   Calendar, 
   Users, 
   Clock, 
-  Eye, 
-  EyeOff, 
   Edit, 
   Trash2, 
   Repeat, 
@@ -127,13 +125,6 @@ export default function StaffEventsPage() {
               {event.description || 'No description provided'}
             </CardDescription>
           </div>
-          <div className="flex items-center space-x-1">
-            {event.is_active ? (
-              <Eye className="h-4 w-4 text-green-500" />
-            ) : (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            )}
-          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -160,27 +151,26 @@ export default function StaffEventsPage() {
         </div>
         
         <div className="flex items-center space-x-2 mt-4 pt-3 border-t">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled>
             <Edit className="h-3 w-3 mr-1" />
             Edit
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled>
             <CalendarDays className="h-3 w-3 mr-1" />
             View Instances
           </Button>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setSelectedEventToDelete({
-              id: event.id,
-              name: event.name,
-              type: 'recurring'
-            })}
+            disabled
           >
             <Trash2 className="h-3 w-3 mr-1" />
             Delete
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Edit, view instances, and delete functionality coming soon
+        </p>
       </CardContent>
     </Card>
   )
@@ -207,13 +197,6 @@ export default function StaffEventsPage() {
               {event.description || 'No description provided'}
             </CardDescription>
           </div>
-          <div className="flex items-center space-x-1">
-            {event.is_active ? (
-              <Eye className="h-4 w-4 text-green-500" />
-            ) : (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            )}
-          </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -237,23 +220,22 @@ export default function StaffEventsPage() {
         </div>
         
         <div className="flex items-center space-x-2 mt-4 pt-3 border-t">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" disabled>
             <Edit className="h-3 w-3 mr-1" />
             Edit
           </Button>
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => setSelectedEventToDelete({
-              id: event.id,
-              name: event.name,
-              type: 'instance'
-            })}
+            disabled
           >
             <Trash2 className="h-3 w-3 mr-1" />
             Delete
           </Button>
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Edit and delete functionality coming soon
+        </p>
       </CardContent>
     </Card>
   )
@@ -267,7 +249,7 @@ export default function StaffEventsPage() {
             <div>
               <h1 className="text-3xl font-bold">Event Management</h1>
               <p className="text-muted-foreground mt-1">
-                Manage recurring events and individual event instances for students
+                Create and manage recurring events and individual event instances for students
               </p>
             </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -283,32 +265,30 @@ export default function StaffEventsPage() {
                 </DialogHeader>
                 
                 {/* Mode Selection - Fixed at top */}
-                <div className="flex-shrink-0 space-y-4 pb-4 border-b">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button 
-                      variant={createMode === 'recurring' ? 'default' : 'outline'}
-                      onClick={() => setCreateMode('recurring')}
-                      className="flex-1"
-                    >
-                      <Repeat className="h-4 w-4 mr-2" />
-                      Recurring Event
-                    </Button>
-                    <Button 
-                      variant={createMode === 'instance' ? 'default' : 'outline'}
-                      onClick={() => setCreateMode('instance')}
-                      className="flex-1"
-                    >
-                      <CalendarDays className="h-4 w-4 mr-2" />
-                      Single Event
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {createMode === 'recurring' 
-                      ? 'Create a template that will generate multiple event instances automatically'
-                      : 'Create a single, standalone event instance'
-                    }
-                  </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button 
+                    variant={createMode === 'recurring' ? 'default' : 'outline'}
+                    onClick={() => setCreateMode('recurring')}
+                    className="flex-1"
+                  >
+                    <Repeat className="h-4 w-4 mr-2" />
+                    Recurring Event
+                  </Button>
+                  <Button 
+                    variant={createMode === 'instance' ? 'default' : 'outline'}
+                    onClick={() => setCreateMode('instance')}
+                    className="flex-1"
+                  >
+                    <CalendarDays className="h-4 w-4 mr-2" />
+                    Single Event
+                  </Button>
                 </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {createMode === 'recurring' 
+                    ? 'Create a template that will generate multiple event instances automatically'
+                    : 'Create a single, standalone event instance'
+                  }
+                </p>
                 
                 {/* Scrollable Form Content */}
                 <div className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0">
@@ -375,19 +355,6 @@ export default function StaffEventsPage() {
                   {company.name}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={filters.isActive?.toString() || 'all'} onValueChange={(value) => 
-            setFilters(prev => ({ ...prev, isActive: value === 'all' ? undefined : value === 'true' }))
-          }>
-            <SelectTrigger className="w-32">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="true">Active</SelectItem>
-              <SelectItem value="false">Inactive</SelectItem>
             </SelectContent>
           </Select>
         </div>

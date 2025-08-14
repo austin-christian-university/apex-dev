@@ -1,3 +1,5 @@
+// This is a hidden page that's not currently accessible from the main navigation
+// but may have future use for testing and development purposes
 'use client'
 
 import { useState } from 'react'
@@ -5,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Loader2, Users, Database, CheckCircle, Info, TestTube } from 'lucide-react'
+import { Loader2, Users, Database, CheckCircle, Info, TestTube, AlertCircle } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 
 interface PopuliStudent {

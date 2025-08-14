@@ -1,310 +1,186 @@
 'use client'
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
-import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Sheet, SheetContent, SheetTrigger } from '@acu-apex/ui'
-import { Construction, Users, BarChart3, Settings, ArrowLeft, Menu, Database } from 'lucide-react'
+import { Crown, Star, Trophy, Zap, Coffee, Target, BarChart3, Settings } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function StaffPage() {
-  const [isOpen, setIsOpen] = useState(false)
-  const { user, signOut } = useAuth()
+  const { user } = useAuth()
+
+  const funFacts = [
+    "🎯 You're literally the backbone of student success!",
+    "⚡ Your spreadsheet skills are legendary among mortals",
+    "🏆 Coffee consumption: Approximately ∞ cups per day",
+    "🌟 You make magic happen behind the scenes",
+    "🚀 Student development expert extraordinaire",
+    "📊 Data wizard and analytics ninja combined",
+    "💡 The unsung hero of academic excellence",
+    "🎨 Master of turning chaos into organized beauty"
+  ]
+
+  const achievements = [
+    { icon: Crown, title: "Excel Overlord", description: "Mastered the ancient art of VLOOKUP" },
+    { icon: Trophy, title: "Student Whisperer", description: "Can motivate students with a single email" },
+    { icon: Star, title: "Event Orchestrator", description: "Makes complex schedules look effortless" },
+    { icon: Zap, title: "Problem Solver Supreme", description: "Fixes things before they even break" },
+    { icon: Coffee, title: "Caffeine Connoisseur", description: "Maintains optimal productivity levels" },
+    { icon: Target, title: "Goal Crusher", description: "Turns ambitious visions into reality" },
+  ]
+
+  const availableFeatures = [
+    {
+      icon: BarChart3,
+      title: "Event Management",
+      description: "Create and manage recurring events and event instances for students",
+      href: "/staff/events",
+      color: "text-blue-600"
+    },
+    {
+      icon: Settings,
+      title: "Event Approvals",
+      description: "Review and approve student-submitted events and achievements",
+      href: "/staff/approvals",
+      color: "text-green-600"
+    }
+  ]
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold">ACU Apex - Staff Portal</h1>
-            <Badge variant="secondary">Coming Soon</Badge>
-          </div>
-          
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">Toggle menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-80">
-              <div className="flex flex-col h-full">
-                {/* Header */}
-                <div className="flex items-center space-x-2 pb-4 border-b">
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold">Staff Portal</h2>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
-                  </div>
-                </div>
-
-                {/* Navigation */}
-                <nav className="flex-1 py-6 space-y-2">
-                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Staff Portal
-                  </div>
-                  <a 
-                    href="/staff/home" 
-                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <Users className="h-4 w-4 mr-3" />
-                    Home
-                  </a>
-                  <a 
-                    href="/staff/events" 
-                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <BarChart3 className="h-4 w-4 mr-3" />
-                    Event Management
-                  </a>
-                  <a 
-                    href="/staff/approvals" 
-                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <Settings className="h-4 w-4 mr-3" />
-                    Event Approvals
-                  </a>
-                  <a 
-                    href="/staff/populi-actions" 
-                    className="flex items-center px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
-                  >
-                    <Database className="h-4 w-4 mr-3" />
-                    Populi Actions
-                  </a>
-                  <div className="px-3 py-2 text-xs text-muted-foreground">
-                    More features coming soon!
-                  </div>
-                </nav>
-
-                {/* Footer */}
-                <div className="border-t pt-4">
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
-                    onClick={() => {
-                      setIsOpen(false)
-                      signOut()
-                    }}
-                  >
-                    Sign Out
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          {/* Welcome Section */}
-          <div className="text-center space-y-4">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-secondary/5 to-background">
+        <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,transparent,black)] dark:bg-grid-slate-700/25" />
+        <div className="relative container px-4 py-16">
+          <div className="text-center space-y-6">
             <div className="flex justify-center mb-6">
-              <div className="p-6 bg-secondary/10 rounded-full">
-                <Construction className="h-12 w-12 text-secondary" />
+              <div className="relative">
+                <div className="p-6 bg-gradient-to-br from-primary to-secondary rounded-full shadow-2xl">
+                  <Crown className="h-16 w-16 text-primary-foreground" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Badge variant="secondary" className="px-3 py-1 text-xs font-bold">
+                    STAFF
+                  </Badge>
+                </div>
               </div>
             </div>
-            <h1 className="text-4xl font-bold">Staff Portal</h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              The comprehensive staff dashboard is currently under development. 
-              We're building powerful tools to help you manage the ACU Apex program effectively.
+            
+            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+              Welcome, Staff Superstar! 🌟
+            </h1>
+            
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
+              {user?.first_name ? `Hey ${user.first_name}! ` : 'Hey there! '}
+              You're not just staff... you're the <span className="text-primary font-semibold">architect of excellence</span>, 
+              the <span className="text-secondary font-semibold">guardian of student success</span>, and quite possibly 
+              the <span className="text-primary font-semibold">most caffeinated person</span> in the building! ☕
             </p>
           </div>
-
-          {/* Coming Soon Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-secondary/20 rounded-lg">
-                    <Users className="h-6 w-6 text-secondary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Student Management</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  View and manage all students across companies, track their progress, 
-                  and access detailed performance analytics.
-                </CardDescription>
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  <li>• Student roster management</li>
-                  <li>• Cross-company analytics</li>
-                  <li>• Performance tracking</li>
-                  <li>• Individual student profiles</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-secondary/20 rounded-lg">
-                    <BarChart3 className="h-6 w-6 text-secondary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Advanced Reporting</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Generate comprehensive reports on program effectiveness, 
-                  student outcomes, and company performance metrics.
-                </CardDescription>
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  <li>• Program-wide analytics</li>
-                  <li>• Custom report generation</li>
-                  <li>• Trend analysis</li>
-                  <li>• Export capabilities</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-secondary/20 rounded-lg">
-                    <Settings className="h-6 w-6 text-secondary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Program Administration</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>
-                  Configure program settings, manage companies, approve role requests, 
-                  and oversee system-wide configurations.
-                </CardDescription>
-                <ul className="mt-3 space-y-1 text-sm text-muted-foreground">
-                  <li>• Role approval management</li>
-                  <li>• Company configuration</li>
-                  <li>• System settings</li>
-                  <li>• User access control</li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Quick Access */}
-          <Card className="bg-primary/5 border-primary/20">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <span>🎉</span>
-                <span>Available Now</span>
-              </CardTitle>
-              <CardDescription>
-                Get started with these staff features that are ready to use
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <a href="/staff/home" className="group">
-                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Users className="h-5 w-5 text-primary" />
-                      <h4 className="font-medium group-hover:text-primary">Staff Home</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Your personal staff dashboard with motivation and updates
-                    </p>
-                  </div>
-                </a>
-                <a href="/staff/events" className="group">
-                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <BarChart3 className="h-5 w-5 text-primary" />
-                      <h4 className="font-medium group-hover:text-primary">Event Management</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Create and manage recurring events and event instances for students
-                    </p>
-                  </div>
-                </a>
-                <a href="/staff/approvals" className="group">
-                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Settings className="h-5 w-5 text-primary" />
-                      <h4 className="font-medium group-hover:text-primary">Event Approvals</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Review and approve student-submitted events and achievements
-                    </p>
-                  </div>
-                </a>
-                <a href="/staff/populi-actions" className="group">
-                  <div className="p-4 border rounded-lg hover:border-primary/50 transition-colors">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Database className="h-5 w-5 text-primary" />
-                      <h4 className="font-medium group-hover:text-primary">Populi Actions</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Test and interact with the Populi API for data management
-                    </p>
-                  </div>
-                </a>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Development Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Development Timeline</CardTitle>
-              <CardDescription>
-                Here's what we're working on for the staff portal
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-secondary rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Phase 1: Student Overview Dashboard</p>
-                    <p className="text-sm text-muted-foreground">Basic student roster and company overview</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-muted rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Phase 2: Advanced Analytics</p>
-                    <p className="text-sm text-muted-foreground">Comprehensive reporting and data visualization</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-muted rounded-full"></div>
-                  <div>
-                    <p className="font-medium">Phase 3: Administrative Tools</p>
-                    <p className="text-sm text-muted-foreground">Role management and system configuration</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Temporary Access Note */}
-          <Card className="bg-muted/30">
-            <CardContent className="pt-6">
-              <div className="text-center space-y-3">
-                <h3 className="text-lg font-semibold">Need Access Now?</h3>
-                <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                  If you need immediate access to student data or administrative functions, 
-                  please contact the development team. We can provide temporary access to 
-                  essential features while the full staff portal is being developed.
-                </p>
-                <Button variant="outline">
-                  Contact Development Team
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      </main>
+      </div>
+
+      {/* Available Features Section */}
+      <div className="container px-4 py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Available Staff Tools</h2>
+          <p className="text-muted-foreground">Get started with these staff features that are ready to use</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+          {availableFeatures.map((feature, index) => (
+            <a key={index} href={feature.href} className="group">
+              <Card className="border-2 hover:border-primary/50 transition-all hover:shadow-lg">
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className={`p-3 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors`}>
+                      <feature.icon className={`h-8 w-8 ${feature.color}`} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                        {feature.title}
+                      </h3>
+                      <p className="text-muted-foreground mt-2">
+                        {feature.description}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </a>
+          ))}
+        </div>
+
+        {/* Fun Facts Section */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-4">Daily Reminders of Your Awesomeness</h2>
+          <p className="text-muted-foreground">Because someone needs to appreciate your incredible work!</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          {funFacts.map((fact, index) => (
+            <Card key={index} className="border-2 hover:border-primary/50 transition-colors">
+              <CardContent className="p-6">
+                <p className="text-center font-medium leading-relaxed">{fact}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Achievements Section */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-4">Your Epic Achievements</h2>
+          <p className="text-muted-foreground">Unlocked through years of dedication and countless cups of coffee</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {achievements.map((achievement, index) => (
+            <Card key={index} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-primary/10 rounded-lg">
+                    <achievement.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{achievement.title}</CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-sm">
+                  {achievement.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Stats Section */}
+        <Card className="bg-gradient-to-r from-primary/5 to-secondary/5 border-2">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">Your Impact by the Numbers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">∞</div>
+                <div className="text-sm text-muted-foreground">Students Helped</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-secondary mb-2">247</div>
+                <div className="text-sm text-muted-foreground">Events Organized</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-primary mb-2">99.9%</div>
+                <div className="text-sm text-muted-foreground">Success Rate</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-secondary mb-2">💯</div>
+                <div className="text-sm text-muted-foreground">Awesome Level</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
