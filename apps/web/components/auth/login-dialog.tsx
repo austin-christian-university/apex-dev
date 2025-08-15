@@ -111,15 +111,7 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Login</Button>}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader className="text-center">
-          <DialogTitle className="text-2xl font-bold">
-            Welcome to Blueprint
-          </DialogTitle>
-          <DialogDescription className="text-base">
-            Sign in with your school account to continue
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="max-w-[95%] rounded-lg mx-auto">
 
         <div className="py-6">
           {/* Error display */}
