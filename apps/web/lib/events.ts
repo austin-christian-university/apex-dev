@@ -1,6 +1,12 @@
-import type { UserEvent } from '@acu-apex/types'
+import type { UserEvent, User, Student, Company } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
+
+interface UserProfileWithEvents {
+  user: User
+  student?: Student  
+  company?: Company
+}
 import { 
   isEventApplicableToUser, 
   categorizeEventByDueDate, 
@@ -214,7 +220,7 @@ async function getCompletedParticipationEvents(
  * Get user profile with events for homepage
  */
 export async function getUserProfileWithEvents(authUserId: string, supabaseClient?: SupabaseClient): Promise<{
-  profile?: any
+  profile?: UserProfileWithEvents
   urgentEvents?: UserEvent[]
   upcomingEvents?: UserEvent[]
   error?: string
@@ -234,7 +240,7 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
       throw new Error(`Failed to fetch user: ${userError.message}`)
     }
 
-    let profile: any = { user }
+    let profile: UserProfileWithEvents = { user }
     let userCompanyId: string | undefined
 
     // If user is a student or officer, get student and company data

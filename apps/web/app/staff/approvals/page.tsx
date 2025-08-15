@@ -32,7 +32,7 @@ import {
   Plus,
   Minus
 } from 'lucide-react'
-import { useAuth } from "@/components/auth/auth-provider"
+
 import { formatDate, formatShortDate } from '@acu-apex/utils'
 import { getPendingSubmissionsAction, approveSubmissionAction, rejectSubmissionAction } from '@/lib/staff-actions'
 
@@ -66,7 +66,7 @@ interface SubmissionData {
 }
 
 export default function StaffApprovalsPage() {
-  const { user } = useAuth()
+
   const [submissions, setSubmissions] = useState<SubmissionData[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)

@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState } from 'react'
 import { extractTermShortName } from '@acu-apex/utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'

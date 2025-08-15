@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
 async function syncStudentData(
   userId: string,
   companyId: string,
-  supabase: any
+  supabase: SupabaseClient
 ): Promise<SyncResult> {
   try {
     // Check if student record already exists
@@ -204,7 +204,7 @@ async function attemptPopuliLinking(
   lastName: string, 
   email: string,
   phoneNumber: string | undefined,
-  supabase: any
+  supabase: SupabaseClient
 ): Promise<PopuliSyncResult> {
   try {
     console.log(`Attempting to find Populi match for user: ${firstName} ${lastName} (${email})`)

@@ -19,6 +19,19 @@ import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
 import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company } from '@acu-apex/types'
 
+interface CategoryBreakdown {
+  category_id: string
+  category_name: string
+  category_display_name: string
+  category_score: number
+  subcategories: Array<{
+    subcategory_id: string
+    subcategory_name: string
+    subcategory_display_name: string
+    subcategory_score: number
+  }>
+}
+
 // Mock data removed - using real data from API
 
 
@@ -171,8 +184,8 @@ export default function ProfilePage() {
   }
 
   // Generate radar chart data from real holistic GPA data
-  const breakdownList = holisticGPA ? Object.values((holisticGPA as any).category_breakdown || {}) as any[] : []
-  const radarChartData = breakdownList.map((cat: any) => ({
+  const breakdownList = holisticGPA ? Object.values((holisticGPA as any).category_breakdown || {}) as CategoryBreakdown[] : []
+  const radarChartData = breakdownList.map((cat: CategoryBreakdown) => ({
     categoryId: cat.category_id,
     pillar: (cat.category_display_name || cat.category_name || '').replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
     score: Number(cat.category_score) || 0,
@@ -590,8 +603,8 @@ export default function ProfilePage() {
             </DialogDescription>
           </DialogHeader>
           {selectedPillar && holisticGPA && (() => {
-            const breakdownEntries = Object.values((holisticGPA as any).category_breakdown || {}) as any[]
-            const category = breakdownEntries.find((cat: any) => (cat.category_display_name || cat.category_name) === selectedPillar)
+            const breakdownEntries = Object.values((holisticGPA as any).category_breakdown || {}) as CategoryBreakdown[]
+            const category = breakdownEntries.find((cat: CategoryBreakdown) => (cat.category_display_name || cat.category_name) === selectedPillar)
             if (!category) return null
             
             return (
@@ -601,7 +614,7 @@ export default function ProfilePage() {
                   <span className="text-2xl font-bold">{Number(category.category_score || 0).toFixed(2)}/4.0</span>
                 </div>
                 <div className="space-y-3">
-                  {category.subcategories.map((subcategory: any) => (
+                  {category.subcategories.map((subcategory) => (
                     <div key={subcategory.subcategory_id} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{subcategory.subcategory_display_name || subcategory.subcategory_name}</span>

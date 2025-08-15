@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   // Handle email verification (token_hash)
   if (token_hash && type) {
     const { error } = await supabase.auth.verifyOtp({
-      type: type as any,
+      type: type as 'signup' | 'invite' | 'magiclink' | 'recovery' | 'email_change',
       token_hash,
     })
     if (!error) {

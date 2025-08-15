@@ -8,7 +8,7 @@ import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
 import { Loader2, Users, Database, CheckCircle, Info, TestTube, AlertCircle } from 'lucide-react'
-import { useAuth } from "@/components/auth/auth-provider"
+
 
 interface PopuliStudent {
   id: string

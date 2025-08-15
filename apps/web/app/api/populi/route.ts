@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-interface PopuliApiResponse<T = any> {
+interface PopuliApiResponse<T = unknown> {
   data?: T
   error?: string
   status?: number
 }
 
-async function makePopuliRequest<T = any>(
+async function makePopuliRequest<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<PopuliApiResponse<T>> {
