@@ -12,11 +12,14 @@ import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
 import { fetchCompanies } from '@/lib/onboarding/sync'
 import type { Company } from '@acu-apex/types'
 
+// Type for companies as returned by fetchCompanies (subset of Company)
+type CompanySummary = Pick<Company, 'id' | 'name' | 'description' | 'is_active'>
+
 export default function CompanySelectionPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [companies, setCompanies] = useState<Company[]>([])
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([])
+  const [companies, setCompanies] = useState<CompanySummary[]>([])
+  const [filteredCompanies, setFilteredCompanies] = useState<CompanySummary[]>([])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoadingCompanies, setIsLoadingCompanies] = useState(true)
@@ -86,7 +89,7 @@ export default function CompanySelectionPage() {
   }
 
   // Mock companies for development/fallback
-  const getMockCompanies = (): Company[] => [
+  const getMockCompanies = (): CompanySummary[] => [
     {
       id: 'alpha',
       name: 'Alpha Company',
