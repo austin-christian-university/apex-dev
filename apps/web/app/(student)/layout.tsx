@@ -8,6 +8,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@acu-apex/utils"
 import { useAuth } from "@/components/auth/auth-provider"
+import Image from "next/image"
 
 const navigation = [
   {
@@ -45,7 +46,14 @@ export default function StudentLayout({
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold">ACU Blueprint</h1>
+            <Image
+              src="/images/ace_logo.png"
+              alt="ACE Logo"
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+              priority
+            />
           </div>
           
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -59,9 +67,20 @@ export default function StudentLayout({
               <div className="flex flex-col h-full">
                 {/* Header */}
                 <div className="flex items-center space-x-2 pb-4 border-b">
-                  <div className="flex-1">
-                    <h2 className="text-lg font-semibold">ACU Blueprint</h2>
-                    <p className="text-sm text-muted-foreground">{user?.email}</p>
+                  <div className="flex items-center space-x-2">
+                    <Image
+                      src="/images/ace_logo.png"
+                      alt="ACE Logo"
+                      width={24}
+                      height={24}
+                      className="h-6 w-auto"
+                      priority
+                    />
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold">
+                        {user?.first_name || 'User'}
+                      </h2>
+                    </div>
                   </div>
                 </div>
 
