@@ -6,7 +6,8 @@ import {
   categorizeEventByDueDate, 
   filterAndSortEvents,
   isEventEligibleForAttendance,
-  isEventEligibleForMonthlyCheckin
+  isEventEligibleForMonthlyCheckin,
+  isEventEligibleForParticipation
 } from '@acu-apex/utils'
 
 /**
@@ -162,6 +163,54 @@ async function getStudentSubmissions(
 }
 
 /**
+ * Check if participation events are completed for an officer
+ * A participation event is completed when all company members have submissions
+ */
+async function getCompletedParticipationEvents(
+  studentId: string,
+  participationEventIds: string[],
+  supabase: SupabaseClient
+): Promise<Set<string>> {
+  if (participationEventIds.length === 0) return new Set()
+  
+  // Get the officer's company
+  const { data: student } = await supabase
+    .from('students')
+    .select('company_id')
+    .eq('id', studentId)
+    .single()
+    
+  if (!student?.company_id) return new Set()
+  
+  // Get all company members
+  const { data: companyMembers } = await supabase
+    .from('students')
+    .select('id')
+    .eq('company_id', student.company_id)
+    
+  if (!companyMembers) return new Set()
+  
+  const completedEvents = new Set<string>()
+  
+  // Check each participation event
+  for (const eventId of participationEventIds) {
+    // Get submissions for this event from company members
+    const { data: submissions } = await supabase
+      .from('event_submissions')
+      .select('student_id')
+      .eq('event_id', eventId)
+      .in('student_id', companyMembers.map(m => m.id))
+    
+    // If all company members have submissions, mark as completed
+    if (submissions && submissions.length === companyMembers.length) {
+      completedEvents.add(eventId)
+    }
+  }
+  
+  return completedEvents
+}
+
+/**
  * Get user profile with events for homepage
  */
 export async function getUserProfileWithEvents(authUserId: string, supabaseClient?: SupabaseClient): Promise<{
@@ -225,30 +274,60 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
 
     // For students and officers, check which interactive events they've already submitted
     let submittedEventIds = new Set<string>()
+    let completedParticipationEventIds = new Set<string>()
+    
     if ((user.role === 'student' || user.role === 'officer') && profile.student) {
-      const interactiveEventIds = allEvents
-        .filter(event => event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin')
+      // Get attendance and monthly checkin events that the individual has submitted
+      const individualEventIds = allEvents
+        .filter(event => 
+          event.event.event_type === 'attendance' || 
+          event.event.event_type === 'monthly_checkin'
+        )
         .map(event => event.event.id)
       
-      submittedEventIds = await getStudentSubmissions(profile.student.id, interactiveEventIds, supabase)
+      submittedEventIds = await getStudentSubmissions(profile.student.id, individualEventIds, supabase)
+      
+      // For officers, also check participation events (completed when all company members have submissions)
+      if (user.role === 'officer') {
+        const participationEventIds = allEvents
+          .filter(event => event.event.event_type === 'participation')
+          .map(event => event.event.id)
+          
+        completedParticipationEventIds = await getCompletedParticipationEvents(profile.student.id, participationEventIds, supabase)
+      }
     }
 
     // Enhance events with submission status and eligibility
     const enhancedEvents = allEvents.map(event => {
-      const isInteractiveEvent = event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin'
-      const hasSubmitted = isInteractiveEvent ? submittedEventIds.has(event.event.id) : false
+      const isInteractiveEvent = event.event.event_type === 'attendance' || 
+                                event.event.event_type === 'monthly_checkin' ||
+                                event.event.event_type === 'participation'
+      
+      // For participation events, check if completed by officer (all company members have submissions)
+      // For other events, check if individual has submitted
+      let hasSubmitted = false
+      if (event.event.event_type === 'participation') {
+        hasSubmitted = completedParticipationEventIds.has(event.event.id)
+      } else if (isInteractiveEvent) {
+        hasSubmitted = submittedEventIds.has(event.event.id)
+      }
+      
       const isEligibleForAttendance = event.event.event_type === 'attendance' && event.event.due_date 
         ? isEventEligibleForAttendance(event.event.due_date) 
         : false
       const isEligibleForMonthlyCheckin = event.event.event_type === 'monthly_checkin' && event.event.due_date
         ? isEventEligibleForMonthlyCheckin(event.event.due_date)
         : false
+      const isEligibleForParticipation = event.event.event_type === 'participation' && event.event.due_date
+        ? isEventEligibleForParticipation(event.event.due_date)
+        : false
       
       return {
         ...event,
         hasSubmitted,
         isEligibleForAttendance,
-        isEligibleForMonthlyCheckin
+        isEligibleForMonthlyCheckin,
+        isEligibleForParticipation
       }
     })
 
@@ -256,8 +335,10 @@ export async function getUserProfileWithEvents(authUserId: string, supabaseClien
     const urgentEvents = enhancedEvents.filter(event => {
       if (!event.isPastDue) return false
       
-      // For interactive events (attendance & monthly check-ins), only show as urgent if not submitted
-      if (event.event.event_type === 'attendance' || event.event.event_type === 'monthly_checkin') {
+      // For interactive events (attendance, monthly check-ins, and participation), only show as urgent if not submitted
+      if (event.event.event_type === 'attendance' || 
+          event.event.event_type === 'monthly_checkin' ||
+          event.event.event_type === 'participation') {
         return !event.hasSubmitted
       }
       

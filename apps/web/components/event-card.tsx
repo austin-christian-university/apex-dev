@@ -7,6 +7,7 @@ import { Dialog, DialogContent } from '@acu-apex/ui'
 import { Clock, CheckCircle } from 'lucide-react'
 import { AttendanceForm } from './attendance-form'
 import { MonthlyCheckinForm } from './monthly-checkin-form'
+import { CompanyParticipationForm } from './event-forms'
 import { toast } from '@acu-apex/ui'
 
 interface EventCardProps {
@@ -26,6 +27,7 @@ interface EventCardProps {
   hasSubmitted?: boolean
   isEligibleForAttendance?: boolean
   isEligibleForMonthlyCheckin?: boolean
+  isEligibleForParticipation?: boolean
 }
 
 export const EventCard = memo(function EventCard({ 
@@ -37,10 +39,12 @@ export const EventCard = memo(function EventCard({
   variant = 'upcoming',
   hasSubmitted: initialHasSubmitted = false,
   isEligibleForAttendance: initialIsEligible = false,
-  isEligibleForMonthlyCheckin: initialIsEligibleForCheckin = false
+  isEligibleForMonthlyCheckin: initialIsEligibleForCheckin = false,
+  isEligibleForParticipation: initialIsEligibleForParticipation = false
 }: EventCardProps) {
   const [showAttendanceForm, setShowAttendanceForm] = useState(false)
   const [showMonthlyCheckinForm, setShowMonthlyCheckinForm] = useState(false)
+  const [showParticipationForm, setShowParticipationForm] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
   
   // Use server-provided eligibility, no need for useEffect
@@ -51,6 +55,8 @@ export const EventCard = memo(function EventCard({
       setShowAttendanceForm(true)
     } else if (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted) {
       setShowMonthlyCheckinForm(true)
+    } else if (event.event_type === 'participation' && initialIsEligibleForParticipation && !hasSubmitted) {
+      setShowParticipationForm(true)
     }
   }
 
@@ -78,8 +84,21 @@ export const EventCard = memo(function EventCard({
     // The optimistic update above ensures immediate UI feedback
   }
 
+  const handleParticipationSuccess = () => {
+    setShowParticipationForm(false)
+    setHasSubmitted(true)
+    toast({
+      title: "Participation Scores Submitted",
+      description: "Participation scores have been successfully submitted.",
+    })
+    
+    // The server action already calls revalidatePath('/home') which will refresh the data
+    // The optimistic update above ensures immediate UI feedback
+  }
+
   const isClickable = (event.event_type === 'attendance' && isEligible && !hasSubmitted) || 
-                     (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted)
+                     (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted) ||
+                     (event.event_type === 'participation' && initialIsEligibleForParticipation && !hasSubmitted)
   const cardClassName = `
     ${variant === 'urgent' ? 'border-destructive/20 bg-destructive/5' : ''}
     ${isClickable ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}
@@ -93,7 +112,7 @@ export const EventCard = memo(function EventCard({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-medium">{event.name}</h3>
-                {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin') && hasSubmitted && (
+                {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin' || event.event_type === 'participation') && hasSubmitted && (
                   <CheckCircle className="h-4 w-4 text-green-600" />
                 )}
               </div>
@@ -110,6 +129,7 @@ export const EventCard = memo(function EventCard({
                     <span>
                       {event.event_type === 'attendance' ? 'Tap to record attendance' : 
                        event.event_type === 'monthly_checkin' ? 'Tap to submit check-in' : 
+                       event.event_type === 'participation' ? 'Tap to score participation' :
                        'Tap to submit'}
                     </span>
                   </div>
@@ -130,7 +150,7 @@ export const EventCard = memo(function EventCard({
                   {isUrgent ? 'Due Soon' : event.event_type.replace('_', ' ')}
                 </Badge>
               )}
-              {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin') && hasSubmitted && (
+              {(event.event_type === 'attendance' || event.event_type === 'monthly_checkin' || event.event_type === 'participation') && hasSubmitted && (
                 <Badge variant="outline" className="text-xs text-green-600 border-green-200">
                   Submitted
                 </Badge>
@@ -160,6 +180,18 @@ export const EventCard = memo(function EventCard({
             studentId={studentId}
             onSuccess={handleMonthlyCheckinSuccess}
             onCancel={() => setShowMonthlyCheckinForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Participation Form Dialog */}
+      <Dialog open={showParticipationForm} onOpenChange={setShowParticipationForm}>
+        <DialogContent className="sm:max-w-lg">
+          <CompanyParticipationForm
+            event={event}
+            studentId={studentId}
+            onSuccess={handleParticipationSuccess}
+            onCancel={() => setShowParticipationForm(false)}
           />
         </DialogContent>
       </Dialog>

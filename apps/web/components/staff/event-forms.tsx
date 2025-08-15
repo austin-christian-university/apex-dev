@@ -26,7 +26,7 @@ interface EventFormProps {
 type FormData = {
   name: string
   description: string
-  event_type: 'self_report' | 'attendance' | 'monthly_checkin'
+  event_type: 'self_report' | 'attendance' | 'monthly_checkin' | 'participation' | 'optional_team_participation'
   required_roles: string[]
   subcategory_id: string
 
@@ -49,8 +49,9 @@ type FormData = {
 
 const EVENT_TYPES = [
   { value: 'attendance', label: 'Attendance', description: 'Attendance tracking for classes or events' },
-  { value: 'self_report', label: 'Participation', description: 'Student participation in activities' },
-  { value: 'monthly_checkin', label: 'Monthly Check-In', description: 'Monthly involvement check-ins for Dream Team and Small Group' }
+  { value: 'monthly_checkin', label: 'Monthly Check-In', description: 'Monthly involvement check-ins for Dream Team and Small Group' },
+  { value: 'participation', label: 'Team Participation', description: 'Officer-led participation scoring for company events' },
+  { value: 'self_report', label: 'Self-Report Participation', description: 'Student self-reported participation activities' }
 ]
 
 const ROLE_OPTIONS = [
@@ -150,6 +151,8 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
         return ATTENDANCE_SUBCATEGORIES
       case 'monthly_checkin':
         return MONTHLY_CHECKIN_SUBCATEGORIES
+      case 'participation':
+        return PARTICIPATION_SUBCATEGORIES
       case 'self_report':
       default:
         return PARTICIPATION_SUBCATEGORIES
@@ -159,7 +162,14 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
   // Reset subcategory when event type changes (but only after initial load)
   useEffect(() => {
     if (formData.event_type && mode === 'create') {
-      setFormData(prev => ({ ...prev, subcategory_id: '' }))
+      const updates: Partial<FormData> = { subcategory_id: '' }
+      
+      // Auto-select officer role for participation events
+      if (formData.event_type === 'participation') {
+        updates.required_roles = ['officer']
+      }
+      
+      setFormData(prev => ({ ...prev, ...updates }))
       setShowAllSubcategories(false)
     }
   }, [formData.event_type, mode])
@@ -476,21 +486,33 @@ export function EventForm({ mode, eventType, companies, initialData, onSuccess, 
         <CardContent className="space-y-3 pt-0">
           <div>
             <Label>Required Roles</Label>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {ROLE_OPTIONS.map(role => (
-                <Badge
-                  key={role.value}
-                  variant={formData.required_roles.includes(role.value) ? 'default' : 'outline'}
-                  className="cursor-pointer text-xs py-1 px-2"
-                  onClick={() => toggleRole(role.value)}
-                >
-                  {role.label}
-                  {formData.required_roles.includes(role.value) && (
-                    <X className="h-3 w-3 ml-1" />
-                  )}
+            {formData.event_type === 'participation' ? (
+              <div className="mt-2 space-y-2">
+                <Badge variant="default" className="text-xs py-1 px-2">
+                  Officers
+                  <CheckCircle2 className="h-3 w-3 ml-1" />
                 </Badge>
-              ))}
-            </div>
+                <p className="text-xs text-muted-foreground">
+                  Participation events are automatically set to officers only, as they manage scoring for company members.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {ROLE_OPTIONS.map(role => (
+                  <Badge
+                    key={role.value}
+                    variant={formData.required_roles.includes(role.value) ? 'default' : 'outline'}
+                    className="cursor-pointer text-xs py-1 px-2"
+                    onClick={() => toggleRole(role.value)}
+                  >
+                    {role.label}
+                    {formData.required_roles.includes(role.value) && (
+                      <X className="h-3 w-3 ml-1" />
+                    )}
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
 

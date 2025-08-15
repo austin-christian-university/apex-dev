@@ -224,6 +224,18 @@ export function isEventEligibleForMonthlyCheckin(eventDueDate: string): boolean 
 }
 
 /**
+ * Check if an event is eligible for participation submission
+ * Participation events are only available after the event is over (past due)
+ */
+export function isEventEligibleForParticipation(eventDueDate: string): boolean {
+  const now = new Date()
+  const eventDate = new Date(eventDueDate)
+  
+  // Participation events are only eligible after the event is over
+  return eventDate <= now
+}
+
+/**
  * Calculate company ranking based on holistic GPA
  * This is a placeholder - will be implemented when scoring system is built
  */
