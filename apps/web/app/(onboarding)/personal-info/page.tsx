@@ -28,10 +28,9 @@ interface FormErrors {
 }
 
 export default function PersonalInfoPage() {
-  const { user, supabaseUser } = useAuth()
+  const { supabaseUser } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [role, setRole] = useState<string>('')
 
   const [formData, setFormData] = useState<FormData>({
     first_name: '',
@@ -52,8 +51,6 @@ export default function PersonalInfoPage() {
       router.push('/role-selection')
       return
     }
-
-    setRole(onboardingData.role)
 
     // Pre-populate form with existing data
     setFormData({
