@@ -5,11 +5,11 @@ import type {
   User, 
   Student, 
   StudentHolisticGPA, 
- 
   PopuliAcademicRecord, 
   PopuliFinancialInfo, 
   RecentActivity,
-  Company
+  Company,
+  StudentSubcategoryScore
 } from '@acu-apex/types'
 import { 
   getStudentEnrollmentsServer, 
@@ -20,6 +20,174 @@ import {
   getCourseOfferingServer
 } from '@/lib/populi-server'
 import { extractTermShortName } from '@acu-apex/utils'
+
+// Database query result types
+interface SubcategoryScoreWithRelations extends StudentSubcategoryScore {
+  subcategories: {
+    id: string;
+    name: string;
+    display_name: string;
+    category_id: string;
+    categories: {
+      id: string;
+      name: string;
+      display_name: string;
+    };
+  };
+}
+
+interface EventSubmissionWithEvent {
+  id: string;
+  submission_data: unknown;
+  submitted_at: string;
+  event_instances: {
+    id: string;
+    name: string;
+    description: string | null;
+    event_type: string;
+  }[] | null;
+}
+
+
+
+interface CategoryBreakdown {
+  category_id: string;
+  category_name: string;
+  category_display_name: string;
+  category_score: number;
+  subcategories: Array<{
+    subcategory_id: string;
+    subcategory_name: string;
+    subcategory_display_name: string;
+    subcategory_score: number;
+  }>;
+}
+
+// Populi API response types
+interface PopuliPersonResponse {
+  data?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    student_id?: string;
+  };
+  error?: string;
+}
+
+interface PopuliEnrollmentResponse {
+  data?: {
+    data?: Array<{
+      id: string;
+      course_offering_id: string;
+      academic_term_id?: string;
+      final_grade?: number;
+      credits?: number;
+      letter_grade?: string;
+    }>;
+  } | Array<{
+    id: string;
+    course_offering_id: string;
+    academic_term_id?: string;
+    final_grade?: number;
+    credits?: number;
+    letter_grade?: string;
+  }>;
+  error?: string;
+}
+
+interface PopuliBalanceResponse {
+  data?: {
+    data?: Array<{
+      person_id: string;
+      balance: number;
+    }>;
+  };
+  error?: string;
+}
+
+interface PopuliTermsResponse {
+  data?: {
+    data?: Array<{
+      id: string;
+      display_name: string;
+      name: string;
+    }>;
+  };
+  error?: string;
+}
+
+interface PopuliEnrollmentDetailResponse {
+  data?: {
+    final_grade?: number;
+    credits?: number;
+    letter_grade?: string;
+  };
+  error?: string;
+}
+
+interface PopuliCourseOfferingResponse {
+  data?: {
+    data?: Array<{
+      id: string;
+      academic_term_id?: string;
+      term_id?: string;
+      abbrv?: string;
+      name?: string;
+      credits?: number;
+      catalog_courses?: Array<{
+        abbrv: string;
+        name: string;
+      }>;
+    }>;
+  } | {
+    id: string;
+    academic_term_id?: string;
+    term_id?: string;
+    abbrv?: string;
+    name?: string;
+    credits?: number;
+    catalog_courses?: Array<{
+      abbrv: string;
+      name: string;
+    }>;
+  };
+  error?: string;
+}
+
+// Specific types for enrollment and offering data
+interface EnrollmentData {
+  id: string;
+  course_offering_id: string;
+  academic_term_id?: string;
+  final_grade?: number;
+  credits?: number;
+  letter_grade?: string;
+}
+
+interface CourseOfferingData {
+  id: string;
+  academic_term_id?: string;
+  term_id?: string;
+  abbrv?: string;
+  name?: string;
+  credits?: number;
+  catalog_courses?: Array<{
+    abbrv: string;
+    name: string;
+  }>;
+}
+
+interface PopuliSearchResult {
+  data?: Array<{
+    id: string;
+    first_name: string;
+    last_name: string;
+    email?: string;
+    student_id?: string;
+  }>;
+  error?: string;
+}
 
 /**
  * Get student profile data including personal info, holistic GPA, recent activity, and Populi data
@@ -77,7 +245,7 @@ export async function getStudentProfileData(userId: string): Promise<{
         .select('*')
         .eq('id', student.company_id)
         .single()
-      company = (companyRow as unknown as Company) || null
+      company = companyRow as Company || null
     }
 
     // Get holistic GPA data
@@ -160,10 +328,10 @@ async function getStudentHolisticGPA(userId: string): Promise<StudentHolisticGPA
     }
 
     // Organize scores by category
-    const categoryBreakdown: Record<string, any> = {}
+    const categoryBreakdown: Record<string, CategoryBreakdown> = {}
     
     if (subcategoryScores) {
-      subcategoryScores.forEach((score: any) => {
+      subcategoryScores.forEach((score: SubcategoryScoreWithRelations) => {
         const category = score.subcategories?.categories
         if (category) {
           if (!categoryBreakdown[category.id]) {
@@ -186,9 +354,9 @@ async function getStudentHolisticGPA(userId: string): Promise<StudentHolisticGPA
       })
 
       // Calculate category scores (average of subcategory normalized scores)
-      Object.values(categoryBreakdown).forEach((category: any) => {
+      Object.values(categoryBreakdown).forEach((category: CategoryBreakdown) => {
         if (category.subcategories.length > 0) {
-          const totalScore = category.subcategories.reduce((sum: number, sub: any) => sum + (Number(sub.subcategory_score) || 0), 0)
+          const totalScore = category.subcategories.reduce((sum: number, sub) => sum + (Number(sub.subcategory_score) || 0), 0)
           category.category_score = totalScore / category.subcategories.length
         }
       })
@@ -234,17 +402,17 @@ async function getStudentRecentActivity(userId: string): Promise<RecentActivity[
       return []
     }
 
-    return (submissions || []).map((submission: any) => ({
+    return (submissions || []).map((submission: EventSubmissionWithEvent) => ({
       id: submission.id,
-      event_name: submission.event_instances?.name || 'Unknown Event',
-      submission_type: submission.event_instances?.event_type || 'unknown',
+      event_name: submission.event_instances?.[0]?.name || 'Unknown Event',
+      submission_type: submission.event_instances?.[0]?.event_type || 'unknown',
       submitted_at: submission.submitted_at,
-      description: submission.event_instances?.description || '',
+      description: submission.event_instances?.[0]?.description || '',
       points_earned: undefined
     }))
 
   } catch (error) {
-    console.error('Error in getStudentRecentActivity:', error)
+    console.error('Error fetching recent activity:', error)
     return []
   }
 }
@@ -259,26 +427,26 @@ async function getPopuliData(populiId: string): Promise<{
 }> {
   try {
     // Ensure person exists
-    const personResult = await getPersonExpandedServer(populiId, 'student')
+    const personResult = await getPersonExpandedServer(populiId, 'student') as PopuliPersonResponse
     if (personResult.error || !personResult.data) {
       return { academic: null, financial: null, error: `Person data: ${personResult.error || 'Person not found'}` }
     }
 
     // Enrollments (non-expanded) and terms; we'll fetch offerings to ensure catalog course fields
-    const enrollmentsResult = await getStudentEnrollmentsServer(populiId)
+    const enrollmentsResult = await getStudentEnrollmentsServer(populiId) as PopuliEnrollmentResponse
 
     // Fetch all balances and filter by person_id
-    const balancesList = await getPersonBalancesServer()
-    const personBalance = (Array.isArray((balancesList as any).data?.data)
-      ? (balancesList as any).data.data.find((row: any) => String(row.person_id) === String(populiId))
+    const balancesList = await getPersonBalancesServer() as PopuliBalanceResponse
+    const personBalance = (Array.isArray(balancesList.data?.data)
+      ? balancesList.data.data.find((row: { person_id: string }) => String(row.person_id) === String(populiId))
       : null)
 
     // Fetch terms to map academic_term_id to human-readable names
-    const termsResult = await getAcademicTermsServer()
+    const termsResult = await getAcademicTermsServer() as PopuliTermsResponse
     const termMap: Record<string, string> = {}
     const termSortKey: Record<string, number> = {}
-    if (Array.isArray((termsResult as any).data?.data)) {
-      ;(termsResult as any).data.data.forEach((t: any) => {
+    if (Array.isArray(termsResult.data?.data)) {
+      termsResult.data.data.forEach((t: { id: string; display_name: string; name: string }) => {
         if (t && t.id) {
           const idStr = String(t.id)
           const shortName = extractTermShortName(t.display_name) || t.display_name || t.name
@@ -303,18 +471,22 @@ async function getPopuliData(populiId: string): Promise<{
 
     // Academic processing with course names, codes (from catalog_courses), and letter grades
     let academic: PopuliAcademicRecord[] | null = null
-    const enrollmentsArray = Array.isArray((enrollmentsResult as any).data?.data)
-      ? (enrollmentsResult as any).data.data
-      : Array.isArray(enrollmentsResult.data)
-        ? enrollmentsResult.data
-        : null
+    const enrollmentsArray = (() => {
+      if (enrollmentsResult.data && typeof enrollmentsResult.data === 'object' && 'data' in enrollmentsResult.data && Array.isArray(enrollmentsResult.data.data)) {
+        return enrollmentsResult.data.data
+      }
+      if (Array.isArray(enrollmentsResult.data)) {
+        return enrollmentsResult.data
+      }
+      return null
+    })()
 
     if (enrollmentsArray) {
       // Optionally enrich enrollments with letter grades/credits where missing
       const enriched = await Promise.all(
-        enrollmentsArray.map(async (en: any) => {
+        enrollmentsArray.map(async (en: EnrollmentData) => {
           if (en.final_grade == null || en.credits == null) {
-            const d = await getEnrollmentServer(String(en.id))
+            const d = await getEnrollmentServer(String(en.id)) as PopuliEnrollmentDetailResponse
             if (d.data) return { ...en, ...d.data }
           }
           return en
@@ -323,19 +495,19 @@ async function getPopuliData(populiId: string): Promise<{
 
       // Fetch offerings for unique course_offering_id
       const uniqueOfferingIds = Array.from(new Set(
-        enriched.map((en: any) => en.course_offering_id).filter(Boolean)
+        enriched.map((en: EnrollmentData) => en.course_offering_id).filter(Boolean)
       ))
-      const offeringMap: Record<string, any> = {}
-      await Promise.all(uniqueOfferingIds.map(async (id: any) => {
-        const o = await getCourseOfferingServer(String(id))
-        const payload = (o as any).data?.data ?? o.data
+      const offeringMap: Record<string, CourseOfferingData | undefined> = {}
+      await Promise.all(uniqueOfferingIds.map(async (id: string) => {
+        const o = await getCourseOfferingServer(String(id)) as PopuliCourseOfferingResponse
+        const payload = (o.data && typeof o.data === 'object' && 'data' in o.data) ? o.data.data : o.data
         const offering = Array.isArray(payload) ? payload[0] : payload
-        offeringMap[String(id)] = offering
+        offeringMap[String(id)] = offering as CourseOfferingData | undefined
       }))
 
-      const termGroups: Record<string, any[]> = {}
-      enriched.forEach((enrollment: any) => {
-        const off = offeringMap[String(enrollment.course_offering_id)] || {}
+      const termGroups: Record<string, Array<{ enrollment: EnrollmentData; offering: CourseOfferingData | undefined }>> = {}
+      enriched.forEach((enrollment: EnrollmentData) => {
+        const off = offeringMap[String(enrollment.course_offering_id)]
         const termId = off?.academic_term_id ?? off?.term_id ?? enrollment.academic_term_id ?? null
         const termKey = termId ? String(termId) : 'Unknown Term'
         if (!termGroups[termKey]) termGroups[termKey] = []
@@ -352,7 +524,7 @@ async function getPopuliData(populiId: string): Promise<{
 
       academic = sortedEntries.map(([termId, rows]) => ({
         semester: termMap[termId] || termId,
-        courses: (rows as any[]).map(({ enrollment, offering }) => {
+        courses: rows.map(({ enrollment, offering }) => {
           const catalogCourse = Array.isArray(offering?.catalog_courses) ? offering.catalog_courses[0] : undefined
           return {
             code: catalogCourse?.abbrv ?? offering?.abbrv ?? String(enrollment.course_offering_id || 'Unknown Code'),
@@ -363,7 +535,10 @@ async function getPopuliData(populiId: string): Promise<{
             credits: enrollment.credits ?? offering?.credits ?? 0
           }
         }),
-        gpa: calculateTermGPA((rows as any[]).map(r => r.enrollment))
+        gpa: calculateTermGPA(rows.map(r => ({ 
+          final_grade: r.enrollment.final_grade ?? null, 
+          credits: r.enrollment.credits ?? null 
+        })))
       }))
     }
 
@@ -395,7 +570,7 @@ async function getPopuliData(populiId: string): Promise<{
 /**
  * Calculate GPA for a term based on enrollments
  */
-function calculateTermGPA(enrollments: any[]): number {
+function calculateTermGPA(enrollments: Array<{ final_grade: number | null; credits: number | null }>): number {
   let totalPoints = 0
   let totalCredits = 0
 
@@ -449,7 +624,7 @@ export async function searchPopuliPerson(firstName: string, lastName: string, em
     ]
 
     for (const params of searchStrategies) {
-      const result = await searchPopuliPeople(params)
+      const result = await searchPopuliPeople(params) as PopuliSearchResult
       
       if (result.data && Array.isArray(result.data) && result.data.length > 0) {
         // Filter results to find best matches
@@ -493,7 +668,7 @@ export async function searchPopuliPerson(firstName: string, lastName: string, em
 /**
  * Calculate match confidence for Populi person search
  */
-function calculateMatchConfidence(person: any, firstName: string, lastName: string, email: string): number {
+function calculateMatchConfidence(person: { first_name?: string; last_name?: string; email?: string }, firstName: string, lastName: string, email: string): number {
   let score = 0
   let maxScore = 0
 

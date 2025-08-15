@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { findBestPopuliPersonMatchServer } from '@/lib/populi-server'
 import type { User, Student } from '@acu-apex/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 export interface SyncResult {
   success: boolean
@@ -210,7 +211,7 @@ async function attemptPopuliLinking(
     console.log(`Attempting to find Populi match for user: ${firstName} ${lastName} (${email})`)
     console.log('Populi matching parameters:', { firstName, lastName, email, phoneNumber })
     
-    const matchResult = await findBestPopuliPersonMatchServer(firstName, lastName, email, phoneNumber)
+    const matchResult = await findBestPopuliPersonMatchServer(firstName, lastName, email)
     console.log('Populi match result:', { 
       person: matchResult.person ? { id: matchResult.person.id, name: `${matchResult.person.first_name} ${matchResult.person.last_name}` } : null,
       confidence: matchResult.confidence,

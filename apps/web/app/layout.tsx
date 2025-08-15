@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Roboto, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { cn } from "@acu-apex/utils"
@@ -25,17 +25,7 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   applicationName: "ACE Blueprint",
   referrer: "origin-when-cross-origin",
-  colorScheme: "dark light",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FFFAF0" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A0D11" }
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   robots: {
     index: true,
     follow: true,
@@ -99,6 +89,18 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
     'theme-color': '#0A0D11',
   },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  colorScheme: "dark light",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFAF0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0D11" }
+  ],
 }
 
 export default function RootLayout({

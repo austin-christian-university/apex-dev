@@ -86,6 +86,7 @@ export function TeamParticipationForm({ onSubmit, onCancel, isSubmitting = false
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleInputChange = (field: keyof TeamParticipationSubmission, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
     // Clear error for this field

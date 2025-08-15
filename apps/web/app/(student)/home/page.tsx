@@ -52,7 +52,7 @@ export default function HomePage() {
       if (eventsError) console.error('Failed to fetch events:', eventsError)
       if (standingsError) console.error('Failed to fetch company standings:', standingsError)
 
-      setProfile(profile)
+      setProfile(profile || null)
       setUrgentEvents(urgentEvents || [])
       setUpcomingEvents(upcomingEvents || [])
       setCompanyStandings(
@@ -85,6 +85,10 @@ export default function HomePage() {
     return <div className="px-4 py-6 max-w-md mx-auto">Loading...</div>
   }
 
+  if (!profile?.student) {
+    return <div className="px-4 py-6 max-w-md mx-auto">Student profile not found</div>
+  }
+
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
       {/* Action Required */}
@@ -99,7 +103,7 @@ export default function HomePage() {
             <EventCard
               key={userEvent.event.id}
               event={userEvent.event}
-              studentId={profile?.student.id || ''}
+              studentId={profile.student!.id}
               formattedDueDate={userEvent.formattedDueDate}
               isUrgent={userEvent.isUrgent}
               isPastDue={userEvent.isPastDue}
@@ -173,7 +177,7 @@ export default function HomePage() {
               <EventCard
                 key={userEvent.event.id}
                 event={userEvent.event}
-                studentId={profile?.student.id || ''}
+                studentId={profile.student!.id}
                 formattedDueDate={userEvent.formattedDueDate}
                 isUrgent={userEvent.isUrgent}
                 isPastDue={userEvent.isPastDue}

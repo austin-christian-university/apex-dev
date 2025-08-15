@@ -1,4 +1,4 @@
-import type { OnboardingData, User, Student, Company } from '@acu-apex/types'
+import type { OnboardingData, User, Student, Company, UserProfile } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/client'
 import { clearOnboardingData } from './storage'
 import { findBestPopuliPersonMatch } from '@/lib/populi'
@@ -245,7 +245,7 @@ export async function fetchCompanies(): Promise<{
  * Get complete user profile (user + student data if applicable)
  */
 export async function getUserProfile(authUserId: string): Promise<{
-  profile?: any // You can type this more specifically based on your needs
+  profile?: UserProfile
   error?: string
 }> {
   try {
@@ -309,12 +309,12 @@ async function attemptPopuliLinking(
   firstName: string, 
   lastName: string, 
   email: string,
-  phoneNumber?: string
+  phoneNumber?: string // eslint-disable-line @typescript-eslint/no-unused-vars
 ): Promise<PopuliSyncResult> {
   try {
     console.log(`Attempting to find Populi match for user: ${firstName} ${lastName} (${email})`)
     
-    const matchResult = await findBestPopuliPersonMatch(firstName, lastName, email, phoneNumber)
+    const matchResult = await findBestPopuliPersonMatch(firstName, lastName, email)
     
     if (matchResult.error) {
       console.warn('Populi search failed:', matchResult.error)

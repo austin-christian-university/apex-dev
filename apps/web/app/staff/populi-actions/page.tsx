@@ -16,7 +16,7 @@ interface PopuliStudent {
   last_name?: string
   email?: string
   student_id?: string
-  [key: string]: any
+  [key: string]: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export default function PopuliActionsPage() {

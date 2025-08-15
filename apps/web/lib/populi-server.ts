@@ -1,3 +1,5 @@
+//Populi API is complicated, so we just disable the eslint rules for any on this file
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface PopuliApiResponse<T = any> {
   data?: T
   error?: string

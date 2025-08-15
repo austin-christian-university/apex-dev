@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
@@ -65,7 +66,7 @@ export default function PhotoUploadPage() {
       const reader = new FileReader()
       
       reader.onload = (e) => {
-        const img = new Image()
+        const img = new window.Image()
         img.onload = () => {
           // Create canvas to resize image
           const canvas = document.createElement('canvas')
@@ -246,9 +247,11 @@ export default function PhotoUploadPage() {
           {previewUrl && (
             <div className="flex justify-center">
               <div className="relative">
-                <img
+                <Image
                   src={previewUrl}
                   alt="Profile preview"
+                  width={128}
+                  height={128}
                   className="w-32 h-32 rounded-full object-cover border-4 border-secondary/20"
                 />
                 <Button

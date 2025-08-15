@@ -17,7 +17,7 @@ interface EventCardProps {
     description: string | null
     due_date: string | null
     event_type: string
-    subcategory_id?: string
+    subcategory_id?: string | null
   }
   studentId: string
   formattedDueDate: string
@@ -46,12 +46,9 @@ export const EventCard = memo(function EventCard({
   const [showMonthlyCheckinForm, setShowMonthlyCheckinForm] = useState(false)
   const [showParticipationForm, setShowParticipationForm] = useState(false)
   const [hasSubmitted, setHasSubmitted] = useState(initialHasSubmitted)
-  
-  // Use server-provided eligibility, no need for useEffect
-  const isEligible = initialIsEligible
 
   const handleCardClick = () => {
-    if (event.event_type === 'attendance' && isEligible && !hasSubmitted) {
+    if (event.event_type === 'attendance' && initialIsEligible && !hasSubmitted) {
       setShowAttendanceForm(true)
     } else if (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted) {
       setShowMonthlyCheckinForm(true)
@@ -96,7 +93,7 @@ export const EventCard = memo(function EventCard({
     // The optimistic update above ensures immediate UI feedback
   }
 
-  const isClickable = (event.event_type === 'attendance' && isEligible && !hasSubmitted) || 
+  const isClickable = (event.event_type === 'attendance' && initialIsEligible && !hasSubmitted) || 
                      (event.event_type === 'monthly_checkin' && initialIsEligibleForCheckin && !hasSubmitted) ||
                      (event.event_type === 'participation' && initialIsEligibleForParticipation && !hasSubmitted)
   const cardClassName = `
@@ -164,7 +161,11 @@ export const EventCard = memo(function EventCard({
       <Dialog open={showAttendanceForm} onOpenChange={setShowAttendanceForm}>
         <DialogContent className="sm:max-w-md">
           <AttendanceForm
-            event={event}
+            event={{
+              id: event.id,
+              name: event.name,
+              due_date: event.due_date
+            }}
             studentId={studentId}
             onSuccess={handleAttendanceSuccess}
             onCancel={() => setShowAttendanceForm(false)}
@@ -176,7 +177,12 @@ export const EventCard = memo(function EventCard({
       <Dialog open={showMonthlyCheckinForm} onOpenChange={setShowMonthlyCheckinForm}>
         <DialogContent className="sm:max-w-md">
           <MonthlyCheckinForm
-            event={event}
+            event={{
+              id: event.id,
+              name: event.name,
+              due_date: event.due_date,
+              subcategory_id: event.subcategory_id || undefined
+            }}
             studentId={studentId}
             onSuccess={handleMonthlyCheckinSuccess}
             onCancel={() => setShowMonthlyCheckinForm(false)}
@@ -188,7 +194,12 @@ export const EventCard = memo(function EventCard({
       <Dialog open={showParticipationForm} onOpenChange={setShowParticipationForm}>
         <DialogContent className="sm:max-w-lg">
           <CompanyParticipationForm
-            event={event}
+            event={{
+              id: event.id,
+              name: event.name,
+              description: event.description,
+              subcategory_id: event.subcategory_id || undefined
+            }}
             studentId={studentId}
             onSuccess={handleParticipationSuccess}
             onCancel={() => setShowParticipationForm(false)}

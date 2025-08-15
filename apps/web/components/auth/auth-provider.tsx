@@ -130,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Use setTimeout to avoid potential race conditions
       setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         router.push(redirectPath as any)
       }, 100)
     }

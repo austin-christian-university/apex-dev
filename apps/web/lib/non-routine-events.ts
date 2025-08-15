@@ -12,6 +12,68 @@ import {
   type TeamParticipationSubmission
 } from '@acu-apex/types'
 import { revalidatePath } from 'next/cache'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+// Database entity interfaces based on Supabase schema
+
+// Partial submission data for queries that don't select all fields
+interface PartialEventSubmission {
+  id: string
+  event_id: string
+  student_id: string
+  submitted_by: string
+  submission_data: Record<string, unknown>
+  submitted_at: string
+  subcategory_id: string
+  needs_approval: boolean
+  approval_status: 'pending' | 'approved' | 'rejected'
+}
+
+
+
+// Partial student data for queries that don't select all fields
+interface PartialStudent {
+  id: string
+  company_id: string
+  academic_role: string | null
+  company_role: string | null
+  companies?: PartialCompany[]
+}
+
+
+
+// Partial company data for queries that don't select all fields
+interface PartialCompany {
+  id: string
+  name: string
+}
+
+interface User {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  email: string
+  photo: string | null
+}
+
+interface EventInstance {
+  id: string
+  name: string
+  description: string | null
+  event_type: string
+}
+
+interface EnrichedSubmission extends PartialEventSubmission {
+  students: {
+    id: string
+    company_id: string
+    academic_role: string | null
+    company_role: string | null
+    companies: PartialCompany | undefined
+    users: User | null
+  } | null
+  event_instances: EventInstance | null
+}
 
 /**
  * Submit a community service event
@@ -436,7 +498,7 @@ export async function getPendingSubmissions() {
 /**
  * Manual fallback for getting pending submissions when RPC is not available
  */
-async function getPendingSubmissionsManual(supabase: any) {
+async function getPendingSubmissionsManual(supabase: SupabaseClient) {
   try {
     // Get pending submissions first
     const { data: submissions, error: submissionsError } = await supabase
@@ -465,7 +527,7 @@ async function getPendingSubmissionsManual(supabase: any) {
     }
 
     // Get unique student IDs
-    const studentIds = [...new Set(submissions.map((sub: any) => sub.student_id))]
+    const studentIds = [...new Set(submissions.map((sub: PartialEventSubmission) => sub.student_id))]
     
     // Get student data with company information
     const { data: students, error: studentsError } = await supabase
@@ -497,7 +559,7 @@ async function getPendingSubmissionsManual(supabase: any) {
     }
 
     // Get unique event IDs
-    const eventIds = [...new Set(submissions.map((sub: any) => sub.event_id))]
+    const eventIds = [...new Set(submissions.map((sub: PartialEventSubmission) => sub.event_id))]
     
     // Get event instance data
     const { data: eventInstances, error: eventsError } = await supabase
@@ -510,13 +572,13 @@ async function getPendingSubmissionsManual(supabase: any) {
     }
 
     // Create lookup maps
-    const studentsMap = new Map(students?.map((s: any) => [s.id, s]) || [])
-    const usersMap = new Map(users?.map((u: any) => [u.id, u]) || [])
-    const eventsMap = new Map(eventInstances?.map((e: any) => [e.id, e]) || [])
+    const studentsMap = new Map(students?.map((s: PartialStudent) => [s.id, s]) || [])
+    const usersMap = new Map(users?.map((u: User) => [u.id, u]) || [])
+    const eventsMap = new Map(eventInstances?.map((e: EventInstance) => [e.id, e]) || [])
 
     // Combine all data
-    const enrichedSubmissions = submissions.map((submission: any) => {
-      const student: any = studentsMap.get(submission.student_id)
+    const enrichedSubmissions = submissions.map((submission: PartialEventSubmission) => {
+      const student: PartialStudent | undefined = studentsMap.get(submission.student_id)
       const user = usersMap.get(submission.student_id)
       const eventInstance = eventsMap.get(submission.event_id)
 
@@ -530,7 +592,7 @@ async function getPendingSubmissionsManual(supabase: any) {
         } : null,
         event_instances: eventInstance || null
       }
-    }).filter((submission: any) => submission.students) // Only include submissions with valid student data
+    }).filter((submission: EnrichedSubmission) => submission.students) // Only include submissions with valid student data
     
     return { success: true, submissions: enrichedSubmissions }
   } catch (error) {

@@ -5,10 +5,11 @@ import { Button } from "@acu-apex/ui"
 import { Input } from "@acu-apex/ui"
 import { Label } from "@acu-apex/ui"
 import { Textarea } from "@acu-apex/ui"
-
 import { Upload, X } from "lucide-react"
+import Image from "next/image"
 import { processPhotosForSubmission } from "@acu-apex/utils"
 import { CommunityServiceSubmissionSchema, type CommunityServiceSubmission } from "@acu-apex/types"
+import { z } from "zod"
 
 interface CommunityServiceFormProps {
   onSubmit: (data: CommunityServiceSubmission) => Promise<void>
@@ -32,7 +33,7 @@ export function CommunityServiceForm({ onSubmit, onCancel, isSubmitting = false 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [photoErrors, setPhotoErrors] = useState<string[]>([])
 
-  const handleInputChange = (field: keyof CommunityServiceSubmission, value: any) => {
+  const handleInputChange = (field: keyof CommunityServiceSubmission, value: string | number | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -95,19 +96,18 @@ export function CommunityServiceForm({ onSubmit, onCancel, isSubmitting = false 
       const validatedData = CommunityServiceSubmissionSchema.parse(formData)
       await onSubmit(validatedData)
     } catch (error) {
-      if (error instanceof Error) {
-        // Handle Zod validation errors
-        const zodError = error as any
-        if (zodError.errors) {
-          const newErrors: Record<string, string> = {}
-          zodError.errors.forEach((err: any) => {
-            const field = err.path.join('.')
-            newErrors[field] = err.message
-          })
-          setErrors(newErrors)
-        } else {
-          setErrors({ general: error.message })
-        }
+      if (error instanceof z.ZodError) {
+        // Handle Zod validation errors with proper typing
+        const newErrors: Record<string, string> = {}
+        error.errors.forEach((err: z.ZodIssue) => {
+          const field = err.path.join('.')
+          newErrors[field] = err.message
+        })
+        setErrors(newErrors)
+      } else if (error instanceof Error) {
+        setErrors({ general: error.message })
+      } else {
+        setErrors({ general: 'An unexpected error occurred' })
       }
     }
   }
@@ -231,9 +231,11 @@ export function CommunityServiceForm({ onSubmit, onCancel, isSubmitting = false 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {photos.map((photo, index) => (
               <div key={index} className="relative group">
-                <img
+                <Image
                   src={photo}
                   alt={`Photo ${index + 1}`}
+                  width={80}
+                  height={80}
                   className="w-full h-20 object-cover rounded-lg border"
                 />
                 <button
