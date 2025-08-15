@@ -10,6 +10,14 @@ import { EventCard } from "@/components/event-card"
 import { AddEventDialog } from "@/components/add-event-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
+import type { UserEvent, User, Student, Company } from "@acu-apex/types"
+import type { CompanyStanding } from "@/lib/company"
+
+interface UserProfileWithEvents {
+  user: User
+  student?: Student
+  company?: Company
+}
 
 interface CompanyStandingUI {
   name: string
@@ -22,9 +30,9 @@ export default function HomePage() {
   const { user } = useAuth()
   const router = useRouter()
   const [showAddEventDialog, setShowAddEventDialog] = useState(false)
-  const [profile, setProfile] = useState<any>(null)
-  const [urgentEvents, setUrgentEvents] = useState<any[]>([])
-  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([])
+  const [profile, setProfile] = useState<UserProfileWithEvents | null>(null)
+  const [urgentEvents, setUrgentEvents] = useState<UserEvent[]>([])
+  const [upcomingEvents, setUpcomingEvents] = useState<UserEvent[]>([])
   const [companyStandings, setCompanyStandings] = useState<CompanyStandingUI[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -48,7 +56,7 @@ export default function HomePage() {
       setUrgentEvents(urgentEvents || [])
       setUpcomingEvents(upcomingEvents || [])
       setCompanyStandings(
-        (standings || []).map((s: any) => ({
+        (standings || []).map((s: CompanyStanding) => ({
           name: s.name,
           score: s.score,
           rank: s.rank,
@@ -155,7 +163,7 @@ export default function HomePage() {
                 onClick={() => setShowAddEventDialog(true)}
                 className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
-                <span>+ Add Event</span>
+                <span>+ Add Accomplishment</span>
               </button>
             </div>
           </div>
