@@ -175,9 +175,7 @@ export default function CompanySelectionPage() {
           </div>
         </div>
         <h1 className="text-3xl font-bold">Select Your Company</h1>
-        <p className="text-lg text-muted-foreground">
-          Choose the company you'll be joining in the ACU Apex program
-        </p>
+
       </div>
 
       {error && (

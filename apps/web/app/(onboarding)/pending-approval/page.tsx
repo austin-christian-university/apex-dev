@@ -143,7 +143,7 @@ export default function PendingApprovalPage() {
       {roleInfo.capabilities.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>What you'll gain access to:</CardTitle>
+            <CardTitle>What you&apos;ll gain access to:</CardTitle>
             <CardDescription>
               These features will be available once your role is approved
             </CardDescription>
