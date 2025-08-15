@@ -346,14 +346,14 @@ export default function ProfilePage() {
                   Tap any pillar to see detailed breakdown
                 </CardDescription>
               </CardHeader>
-              <CardContent className="pb-0">
+              <CardContent className="pb-0 px-2">
                 <ChartContainer
                   config={chartConfig}
-                  className="mx-auto aspect-square max-h-[250px]"
+                  className="mx-auto aspect-square max-h-[270px] w-full"
                 >
-                  <RadarChart data={radarChartData}>
+                  <RadarChart data={radarChartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
                     <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
-                    <PolarAngleAxis dataKey="pillar" />
+                    <PolarAngleAxis dataKey="pillar" tick={{ fontSize: 12 }} />
                     <PolarGrid />
                     <Radar
                       dataKey="score"
