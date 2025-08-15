@@ -3,9 +3,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@acu-apex/ui"
-import { Progress } from "@acu-apex/ui"
 import { Input } from "@acu-apex/ui"
-import { Users, Mail, Phone, Target, Search } from "lucide-react"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
+import { Users, Mail, Phone, Search } from "lucide-react"
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import { useState } from "react"
 import type { CompanyDetails } from '@/lib/company'
 
@@ -21,12 +22,12 @@ const categoryDisplayNames: Record<string, string> = {
   team: "Team Execution"
 }
 
-const categoryColors: Record<string, string> = {
-  spiritual: "bg-blue-500",
-  professional: "bg-green-500",
-  academic: "bg-purple-500", 
-  team: "bg-orange-500"
-}
+const chartConfig = {
+  score: {
+    label: "Score",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig
 
 export default function CompanyPageClient({ companyDetails }: CompanyPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
@@ -44,18 +45,19 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
     ? new Date(companyDetails.company.created_at).getFullYear()
     : new Date().getFullYear()
 
-  // Generate category breakdown from real data or fallback to mock data
-  const categoryBreakdown = companyDetails.categoryBreakdown 
+  // Generate radar chart data from company breakdown - matching home and profile page patterns
+  const radarChartData = companyDetails.categoryBreakdown 
     ? Object.entries(companyDetails.categoryBreakdown).map(([category, score]) => ({
-        name: categoryDisplayNames[category] || category,
-        score: score,
-        color: categoryColors[category] || "bg-gray-500"
+        categoryId: category,
+        pillar: (categoryDisplayNames[category] || category).replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
+        score: Number(score) || 0,
+        fullScore: 4.0
       }))
     : [
-        { name: "Spiritual Standing", score: 3.9, color: "bg-blue-500" },
-        { name: "Professional Standing", score: 3.8, color: "bg-green-500" },
-        { name: "Academic Performance", score: 3.85, color: "bg-purple-500" },
-        { name: "Team Execution", score: 3.88, color: "bg-orange-500" }
+        { categoryId: "spiritual", pillar: "Spiritual", score: 3.9, fullScore: 4.0 },
+        { categoryId: "professional", pillar: "Professional", score: 3.8, fullScore: 4.0 },
+        { categoryId: "academic", pillar: "Academic", score: 3.85, fullScore: 4.0 },
+        { categoryId: "team", pillar: "Team", score: 3.88, fullScore: 4.0 }
       ]
 
   return (
@@ -70,7 +72,7 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
             </Badge>
           </div>
           <CardDescription className="text-sm">
-            {companyDetails.company.description}
+            {companyDetails.company.description || "Your company description"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -84,12 +86,10 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
               <p className="text-xs text-muted-foreground">Members</p>
             </div>
           </div>
-          {companyDetails.company.motto && (
-            <div className="text-center">
-              <p className="text-sm font-medium">&quot;{companyDetails.company.motto}&quot;</p>
-              <p className="text-xs text-muted-foreground">Est. {foundedYear}</p>
-            </div>
-          )}
+          <div className="text-center">
+            <p className="text-sm font-medium">&quot;{companyDetails.company.motto || "Your company motto"}&quot;</p>
+            <p className="text-xs text-muted-foreground">Est. {foundedYear}</p>
+          </div>
           {companyDetails.company.vision && (
             <div className="text-center">
               <p className="text-xs text-muted-foreground italic">{companyDetails.company.vision}</p>
@@ -103,26 +103,29 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
         </CardContent>
       </Card>
 
-      {/* Four Pillars Breakdown */}
+      {/* Holistic Company Score */}
       <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Target className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Four Pillars Performance</h2>
-        </div>
+        <h2 className="text-lg font-semibold text-center">Holistic Company Score</h2>
         
-        <div className="space-y-3">
-          {categoryBreakdown.map((pillar) => (
-            <Card key={pillar.name}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">{pillar.name}</p>
-                  <p className="text-lg font-bold">{pillar.score.toFixed(2)}</p>
-                </div>
-                <Progress value={pillar.score * 25} className="h-2" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square max-h-[270px] w-full"
+        >
+          <RadarChart data={radarChartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+            <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+            <PolarAngleAxis dataKey="pillar" tick={{ fontSize: 12 }} />
+            <PolarGrid />
+            <Radar
+              dataKey="score"
+              fill="var(--color-score)"
+              fillOpacity={0.6}
+              dot={{
+                r: 4,
+                fillOpacity: 1,
+              }}
+            />
+          </RadarChart>
+        </ChartContainer>
       </div>
 
       {/* All Members */}

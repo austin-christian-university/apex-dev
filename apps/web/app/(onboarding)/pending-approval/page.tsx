@@ -87,9 +87,6 @@ export default function PendingApprovalPage() {
           </div>
         </div>
         <h1 className="text-3xl font-bold">{roleInfo.title}</h1>
-        <p className="text-lg text-muted-foreground max-w-lg mx-auto">
-          {roleInfo.description}
-        </p>
       </div>
 
       <Alert>
@@ -134,33 +131,12 @@ export default function PendingApprovalPage() {
               </div>
               <div>
                 <p className="font-medium">Privileges Activated</p>
-                <p className="text-sm text-muted-foreground">Your {role === 'student_leader' ? 'leadership' : 'staff'} access will be enabled on approval</p>
+                <p className="text-sm text-muted-foreground">Administrators will approve your role access</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {roleInfo.capabilities.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>What you&apos;ll gain access to:</CardTitle>
-            <CardDescription>
-              These features will be available once your role is approved
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {roleInfo.capabilities.map((capability, index) => (
-                <li key={index} className="flex items-center space-x-2 text-sm">
-                  <ChevronRight className="h-4 w-4 text-secondary" />
-                  <span>{capability}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
 
       <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={handleGoBack}>

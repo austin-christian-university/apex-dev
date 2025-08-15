@@ -215,13 +215,7 @@ export default function PersonalInfoPage() {
       )}
 
       <Card>
-        <CardHeader>
-          <CardTitle>Contact Details</CardTitle>
-          <CardDescription>
-            All fields are required. Your email will be used for important program communications.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* First Name */}
             <div className="space-y-2">
@@ -270,11 +264,6 @@ export default function PersonalInfoPage() {
             {errors.email && (
               <p className="text-sm text-destructive">{errors.email}</p>
             )}
-            {supabaseUser?.email && formData.email === supabaseUser.email && (
-              <p className="text-sm text-muted-foreground">
-                This email is from your account registration
-              </p>
-            )}
           </div>
 
           {/* Phone Number */}
@@ -289,12 +278,8 @@ export default function PersonalInfoPage() {
               className={errors.phone_number ? 'border-destructive' : ''}
               maxLength={14} // Maximum length for formatted phone number
             />
-            {errors.phone_number ? (
+            {errors.phone_number && (
               <p className="text-sm text-destructive">{errors.phone_number}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Enter 10 digits. Format will automatically adjust to (XXX)-XXX-XXXX
-              </p>
             )}
           </div>
 
@@ -311,9 +296,6 @@ export default function PersonalInfoPage() {
             {errors.date_of_birth && (
               <p className="text-sm text-destructive">{errors.date_of_birth}</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              We use this to verify your eligibility for the program
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -325,7 +307,7 @@ export default function PersonalInfoPage() {
         
         <Button 
           onClick={handleContinue} 
-          disabled={isLoading || hasErrors}
+          disabled={isLoading}
           size="lg"
         >
           {isLoading ? (

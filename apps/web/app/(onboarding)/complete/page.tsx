@@ -2,12 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import { useAuth } from '@/components/auth/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { CheckCircle, Loader2, AlertTriangle, Sparkles } from 'lucide-react'
+import { CheckCircle, Loader2, AlertTriangle, Sparkles, User } from 'lucide-react'
 import { getOnboardingData, validateOnboardingData, clearOnboardingData } from '@/lib/onboarding/storage'
 import type { OnboardingData } from '@acu-apex/types'
 
@@ -187,11 +186,11 @@ export default function CompletePage() {
         <div className="flex justify-center mb-4">
           <div className={`p-4 rounded-full ${
             syncStatus === 'success' 
-              ? 'bg-green-100 dark:bg-green-900/20' 
+              ? 'bg-secondary/10' 
               : 'bg-secondary/10'
           }`}>
             {syncStatus === 'success' ? (
-              <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <CheckCircle className="h-8 w-8 text-secondary" />
             ) : syncStatus === 'syncing' ? (
               <Loader2 className="h-8 w-8 text-secondary animate-spin" />
             ) : (
@@ -264,12 +263,10 @@ export default function CompletePage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Profile Photo</p>
                   <div className="flex items-center space-x-2">
-                    <Image 
+                    <img 
                       src={onboardingData.photo} 
-                      alt="Profile preview" 
-                      width={32}
-                      height={32}
-                      className="rounded-full object-cover border"
+                      alt="Profile photo" 
+                      className="w-8 h-8 rounded-full object-cover border border-secondary/20"
                     />
                     <span className="text-sm text-muted-foreground">Uploaded</span>
                   </div>
@@ -310,12 +307,12 @@ export default function CompletePage() {
       {populiSyncResult && (
         <Card className={`${
           populiSyncResult.success 
-            ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-            : 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-800'
+            ? 'bg-secondary/10 border-secondary/20'
+            : 'bg-muted border-muted'
         }`}>
           <CardHeader className="pb-3">
             <CardTitle className={`text-lg flex items-center space-x-2 ${
-              populiSyncResult.success ? 'text-green-800 dark:text-green-200' : 'text-yellow-800 dark:text-yellow-200'
+              populiSyncResult.success ? 'text-secondary' : 'text-muted-foreground'
             }`}>
               {populiSyncResult.success ? (
                 <CheckCircle className="h-5 w-5" />
@@ -328,22 +325,22 @@ export default function CompletePage() {
           <CardContent>
             {populiSyncResult.success ? (
               <div className="space-y-2">
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  ✅ Successfully linked your account to Populi records
+                <p className="text-sm text-secondary">
+                  Successfully linked your account to Populi records
                 </p>
-                <p className="text-xs text-green-600 dark:text-green-400">
+                <p className="text-xs text-muted-foreground">
                   Match confidence: {populiSyncResult.confidence} • Type: {populiSyncResult.matchType}
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                <p className="text-sm text-muted-foreground">
                   ⚠️ Could not automatically link your account to Populi
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                <p className="text-xs text-muted-foreground">
                   {populiSyncResult.error}
                 </p>
-                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
+                <p className="text-xs text-muted-foreground mt-2">
                   Don&apos;t worry! Please contact an administrator to manually link your account for academic and financial data access.
                 </p>
               </div>
@@ -353,14 +350,14 @@ export default function CompletePage() {
       )}
 
       {syncStatus === 'success' && (
-        <Card className="bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
+        <Card className="bg-secondary/10 border-secondary/20">
           <CardContent className="pt-6">
             <div className="text-center space-y-2">
-              <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto" />
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
+              <CheckCircle className="h-12 w-12 text-secondary mx-auto" />
+              <h3 className="text-lg font-semibold text-secondary">
                 Onboarding Complete!
               </h3>
-              <p className="text-sm text-green-700 dark:text-green-300">
+              <p className="text-sm text-muted-foreground">
                 Your profile has been successfully created. Click below to access your dashboard.
               </p>
             </div>
@@ -375,7 +372,7 @@ export default function CompletePage() {
             <Button 
               onClick={redirectToDashboard}
               size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
             >
               Continue to Dashboard
             </Button>
@@ -396,6 +393,7 @@ export default function CompletePage() {
                 onClick={handleSync}
                 disabled={syncStatus === 'syncing'}
                 size="lg"
+                className="bg-secondary hover:bg-secondary/80 text-secondary-foreground"
               >
                 {syncStatus === 'syncing' ? (
                   <>

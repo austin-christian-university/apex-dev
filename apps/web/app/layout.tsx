@@ -41,15 +41,16 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon-16x16.png', type: 'image/png', sizes: '16x16' },
       { url: '/favicon-32x32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/favicon-196.png', type: 'image/png', sizes: '196x196' },
     ],
     shortcut: '/favicon.ico',
     apple: [
-      { url: '/apple-touch-icon.png', type: 'image/png' },
+      { url: '/apple-icon-180.png', type: 'image/png', sizes: '180x180' },
     ],
     other: [
       {
         rel: 'mask-icon',
-        url: '/favicon.ico',
+        url: '/ace_club_blackbg.png',
         color: '#0A0D11',
       },
     ],
@@ -64,7 +65,7 @@ export const metadata: Metadata = {
     description: 'A comprehensive platform for tracking student development and growth through leadership, community service, and academic achievement',
     images: [
       {
-        url: '/ace_club_solid_bg.png',
+        url: '/ace_club_blackbg.png',
         width: 1200,
         height: 630,
         alt: 'ACE Blueprint - Student Leadership Development Platform',
@@ -76,7 +77,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ACE Blueprint - Student Leadership Development Platform',
     description: 'A comprehensive platform for tracking student development and growth through leadership, community service, and academic achievement',
-    images: ['/ace_club_solid_bg.png'],
+    images: ['/ace_club_blackbg.png'],
     creator: '@ace_blueprint',
     site: '@ace_blueprint',
   },
@@ -121,4 +122,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-} 
+}

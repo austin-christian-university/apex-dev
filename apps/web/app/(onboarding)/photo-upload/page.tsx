@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 
-import { Camera, Upload, X, User, Loader2 } from 'lucide-react'
-import { cn } from '@acu-apex/utils'
+import { Camera, Upload, Edit3, Loader2 } from 'lucide-react'
+
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
 
 export default function PhotoUploadPage() {
@@ -19,7 +19,6 @@ export default function PhotoUploadPage() {
   const [photoData, setPhotoData] = useState<string>('')
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [error, setError] = useState<string>('')
-  const [dragActive, setDragActive] = useState(false)
 
   useEffect(() => {
     // Check if user should be on this page
@@ -141,26 +140,7 @@ export default function PhotoUploadPage() {
     }
   }
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true)
-    } else if (e.type === 'dragleave') {
-      setDragActive(false)
-    }
-  }
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setDragActive(false)
-    
-    const file = e.dataTransfer.files?.[0]
-    if (file) {
-      handleFileSelect(file)
-    }
-  }
 
   const handleRemovePhoto = () => {
     setPhotoData('')
@@ -228,21 +208,7 @@ export default function PhotoUploadPage() {
         </p>
       </div>
 
-      {error && (
-        <Alert variant="destructive">
-          <X className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Upload Your Photo</CardTitle>
-          <CardDescription>
-            Choose a clear, professional photo. This will be used for your profile and company identification.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
           {/* Photo Preview */}
           {previewUrl && (
             <div className="flex justify-center">
@@ -256,30 +222,21 @@ export default function PhotoUploadPage() {
                 />
                 <Button
                   size="sm"
-                  variant="destructive"
-                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full p-0"
-                  onClick={handleRemovePhoto}
+                  variant="outline"
+                  className="absolute -top-2 -right-2 w-8 h-8 rounded-full p-0 bg-background/80 backdrop-blur-sm border-2 hover:bg-background/90"
+                  onClick={() => fileInputRef.current?.click()}
+                  title="Change photo"
                 >
-                  <X className="h-4 w-4" />
+                  <Edit3 className="h-4 w-4" />
                 </Button>
               </div>
+
             </div>
           )}
 
           {/* Upload Area */}
           {!previewUrl && (
-            <div
-              className={cn(
-                "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                dragActive 
-                  ? "border-secondary bg-secondary/5" 
-                  : "border-muted-foreground/25 hover:border-secondary/50"
-              )}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-            >
+            <div className="border-2 border-dashed rounded-lg p-8 text-center transition-colors border-muted-foreground/25">
               <div className="space-y-4">
                 <div className="flex justify-center">
                   <div className="p-4 bg-muted rounded-full">
@@ -289,10 +246,7 @@ export default function PhotoUploadPage() {
                 
                 <div className="space-y-2">
                   <p className="text-lg font-medium">
-                    {dragActive ? 'Drop your photo here' : 'Drag and drop your photo here'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    or click to browse files
+                    Choose a photo for your profile
                   </p>
                 </div>
 
@@ -325,29 +279,6 @@ export default function PhotoUploadPage() {
             onChange={handleFileInputChange}
             className="hidden"
           />
-
-          {/* Guidelines */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Photo Guidelines</h3>
-            <ul className="text-sm text-muted-foreground space-y-1">
-              <li>• Use a clear, professional headshot</li>
-              <li>• Good lighting and neutral background</li>
-              <li>• File size: Maximum 5MB</li>
-              <li>• Formats: JPEG, PNG, GIF</li>
-              <li>• Image will be automatically resized to 400x400px</li>
-            </ul>
-          </div>
-
-          {/* Privacy Note */}
-          <Alert>
-            <User className="h-4 w-4" />
-            <AlertDescription>
-              Your photo will only be visible to your company members and program administrators. 
-              It helps with identification and building community within your company.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={handleGoBack}>

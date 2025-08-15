@@ -170,7 +170,7 @@ export default function PersonalityAssessmentsPage() {
                 <CardTitle className="flex items-center space-x-2">
                   <span>DISC Profile</span>
                   {assessments.disc_profile && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-secondary" />
                   )}
                 </CardTitle>
                 <CardDescription>
@@ -221,7 +221,7 @@ export default function PersonalityAssessmentsPage() {
                 <CardTitle className="flex items-center space-x-2">
                   <span>Myers-Briggs Type</span>
                   {assessments.myers_briggs_profile && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-secondary" />
                   )}
                 </CardTitle>
                 <CardDescription>
@@ -258,7 +258,7 @@ export default function PersonalityAssessmentsPage() {
                 rel="noopener noreferrer"
                 className="text-secondary hover:underline"
               >
-                Take the 16personalities test
+                Take the 16 personalities test
               </a>
             </div>
           </CardContent>
@@ -272,7 +272,7 @@ export default function PersonalityAssessmentsPage() {
                 <CardTitle className="flex items-center space-x-2">
                   <span>Enneagram Type</span>
                   {assessments.enneagram_profile && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    <CheckCircle className="h-5 w-5 text-secondary" />
                   )}
                 </CardTitle>
                 <CardDescription>
@@ -315,22 +315,6 @@ export default function PersonalityAssessmentsPage() {
           </CardContent>
         </Card>
       </div>
-
-      <Card className="bg-muted/30">
-        <CardContent className="pt-6">
-          <div className="flex items-start space-x-3">
-            <Brain className="h-5 w-5 text-secondary mt-0.5" />
-            <div className="space-y-1">
-              <p className="text-sm font-medium">Why do we collect this?</p>
-              <p className="text-sm text-muted-foreground">
-                Understanding personality types helps company leaders provide better mentorship, 
-                form effective teams, and create environments where everyone can thrive. This information 
-                is only shared with your company leadership and program administrators.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="flex justify-between pt-6">
         <Button variant="outline" onClick={handleGoBack}>

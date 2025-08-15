@@ -2,8 +2,9 @@
 
 import React from 'react'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 import { Progress } from '@acu-apex/ui'
-import { CheckCircle, Circle } from 'lucide-react'
+
 import { cn } from '@acu-apex/utils'
 import type { OnboardingStep } from '@/lib/onboarding/types'
 import { STUDENT_STEPS, STUDENT_LEADER_STEPS, STAFF_STEPS } from '@/lib/onboarding/types'
@@ -63,10 +64,13 @@ export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center px-4">
           <div className="flex-1">
-            <h1 className="text-lg font-semibold">Getting Started</h1>
-            <p className="text-sm text-muted-foreground">
-              Complete your profile setup
-            </p>
+            <Image
+              src="/images/acu_stacked_white.png"
+              alt="ACU"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+            />
           </div>
           
           {/* Progress indicator */}
@@ -81,58 +85,7 @@ export default function OnboardingLayout({ children }: OnboardingLayoutProps) {
         </div>
       </header>
 
-      {/* Step indicators */}
-      {role && (
-        <div className="border-b bg-muted/30">
-          <div className="container px-4 py-4">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {steps.map((step, index) => {
-                const stepInfo = STEP_INFO[step]
-                const isCompleted = index < currentStepIndex
-                const isCurrent = index === currentStepIndex
-                const isAccessible = index <= currentStepIndex
-                
-                return (
-                  <div
-                    key={step}
-                    className={cn(
-                      "flex flex-col items-center space-y-1 text-center flex-1",
-                      isAccessible ? "opacity-100" : "opacity-50"
-                    )}
-                  >
-                    <div className="flex items-center justify-center">
-                      {isCompleted ? (
-                        <CheckCircle className="h-6 w-6 text-secondary" />
-                      ) : (
-                        <Circle 
-                          className={cn(
-                            "h-6 w-6",
-                            isCurrent 
-                              ? "text-secondary fill-secondary" 
-                              : "text-muted-foreground"
-                          )} 
-                        />
-                      )}
-                    </div>
-                    <span 
-                      className={cn(
-                        "text-xs font-medium",
-                        isCurrent 
-                          ? "text-foreground" 
-                          : isCompleted 
-                            ? "text-secondary" 
-                            : "text-muted-foreground"
-                      )}
-                    >
-                      {stepInfo.title}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Main content */}
       <main className="container px-4 py-8">
