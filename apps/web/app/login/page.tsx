@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { LoginDialog } from "@/components/auth/login-dialog"
 import { Button } from "@acu-apex/ui"
 import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/components/auth/auth-provider"
 import { cn } from "@acu-apex/utils"
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams()
   const message = searchParams.get('message')
   const { user, loading } = useAuth()
@@ -141,5 +141,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   )
 } 

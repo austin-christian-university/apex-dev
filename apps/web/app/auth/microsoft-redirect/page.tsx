@@ -1,11 +1,11 @@
 "use client"
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MicrosoftLoginTransition } from '@/components/auth/microsoft-login-transition'
 
-export default function MicrosoftRedirectPage() {
+function MicrosoftRedirectContent() {
   const searchParams = useSearchParams()
-
   const redirectTo = searchParams.get('redirectTo') || '/home'
 
   const handleProceed = () => {
@@ -15,5 +15,13 @@ export default function MicrosoftRedirectPage() {
 
   return (
     <MicrosoftLoginTransition onProceed={handleProceed} />
+  )
+}
+
+export default function MicrosoftRedirectPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+      <MicrosoftRedirectContent />
+    </Suspense>
   )
 }

@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AceWelcome } from '@/components/auth/ace-welcome'
 
-export default function MicrosoftSyncPage() {
+function MicrosoftSyncContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
@@ -104,5 +104,13 @@ export default function MicrosoftSyncPage() {
       syncCompleted={syncCompleted}
       syncResult={syncResult || undefined}
     />
+  )
+}
+
+export default function MicrosoftSyncPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+      <MicrosoftSyncContent />
+    </Suspense>
   )
 }

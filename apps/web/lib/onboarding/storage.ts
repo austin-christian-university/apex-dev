@@ -3,9 +3,21 @@ import type { OnboardingData } from '@acu-apex/types'
 const ONBOARDING_STORAGE_KEY = 'onboarding_data'
 
 /**
+ * Check if we're in a browser environment (not SSR)
+ */
+function isBrowser(): boolean {
+  return typeof window !== 'undefined' && typeof localStorage !== 'undefined'
+}
+
+/**
  * Save onboarding data to localStorage
  */
 export function saveOnboardingData(data: Partial<OnboardingData>): void {
+  if (!isBrowser()) {
+    console.warn('Cannot save onboarding data: localStorage not available (SSR)')
+    return
+  }
+  
   try {
     const existingData = getOnboardingData()
     const updatedData = { ...existingData, ...data }
@@ -19,6 +31,11 @@ export function saveOnboardingData(data: Partial<OnboardingData>): void {
  * Get onboarding data from localStorage
  */
 export function getOnboardingData(): Partial<OnboardingData> {
+  if (!isBrowser()) {
+    console.warn('Cannot read onboarding data: localStorage not available (SSR)')
+    return {}
+  }
+  
   try {
     const data = localStorage.getItem(ONBOARDING_STORAGE_KEY)
     return data ? JSON.parse(data) : {}
@@ -32,6 +49,11 @@ export function getOnboardingData(): Partial<OnboardingData> {
  * Clear onboarding data from localStorage
  */
 export function clearOnboardingData(): void {
+  if (!isBrowser()) {
+    console.warn('Cannot clear onboarding data: localStorage not available (SSR)')
+    return
+  }
+  
   try {
     localStorage.removeItem(ONBOARDING_STORAGE_KEY)
   } catch (error) {
@@ -43,6 +65,11 @@ export function clearOnboardingData(): void {
  * Check if onboarding data exists in localStorage
  */
 export function hasOnboardingData(): boolean {
+  if (!isBrowser()) {
+    console.warn('Cannot check onboarding data: localStorage not available (SSR)')
+    return false
+  }
+  
   try {
     const data = localStorage.getItem(ONBOARDING_STORAGE_KEY)
     return data !== null && data !== ''
