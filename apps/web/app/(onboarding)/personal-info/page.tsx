@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/components/auth/auth-provider'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
+import { Card, CardContent } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Input } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'

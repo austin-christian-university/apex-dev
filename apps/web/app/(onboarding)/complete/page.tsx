@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useAuth } from '@/components/auth/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { CheckCircle, Loader2, AlertTriangle, Sparkles, User } from 'lucide-react'
+import { CheckCircle, Loader2, AlertTriangle, Sparkles } from 'lucide-react'
 import { getOnboardingData, validateOnboardingData, clearOnboardingData } from '@/lib/onboarding/storage'
 import type { OnboardingData } from '@acu-apex/types'
 
@@ -263,9 +264,11 @@ export default function CompletePage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Profile Photo</p>
                   <div className="flex items-center space-x-2">
-                    <img 
+                    <Image 
                       src={onboardingData.photo} 
                       alt="Profile photo" 
+                      width={32}
+                      height={32}
                       className="w-8 h-8 rounded-full object-cover border border-secondary/20"
                     />
                     <span className="text-sm text-muted-foreground">Uploaded</span>

@@ -5,10 +5,7 @@ import { useState, useEffect } from "react"
 import { 
   Dialog, 
   DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger, 
-  DialogDescription,
+  DialogTrigger,
   Button,
   Input,
   Label,

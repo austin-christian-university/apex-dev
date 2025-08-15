@@ -4,8 +4,6 @@ import React from 'react'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { Progress } from '@acu-apex/ui'
-
-import { cn } from '@acu-apex/utils'
 import type { OnboardingStep } from '@/lib/onboarding/types'
 import { STUDENT_STEPS, STUDENT_LEADER_STEPS, STAFF_STEPS } from '@/lib/onboarding/types'
 import { getOnboardingData } from '@/lib/onboarding/storage'

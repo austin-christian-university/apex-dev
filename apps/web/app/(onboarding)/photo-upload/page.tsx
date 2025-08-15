@@ -3,10 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-
 import { Camera, Upload, Edit3, Loader2 } from 'lucide-react'
 
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
@@ -142,14 +140,7 @@ export default function PhotoUploadPage() {
 
 
 
-  const handleRemovePhoto = () => {
-    setPhotoData('')
-    setPreviewUrl('')
-    setError('')
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
+  // handleRemovePhoto function removed as it's not used
 
   const handleContinue = async () => {
     setIsLoading(true)
@@ -208,6 +199,11 @@ export default function PhotoUploadPage() {
         </p>
       </div>
 
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
           {/* Photo Preview */}
           {previewUrl && (

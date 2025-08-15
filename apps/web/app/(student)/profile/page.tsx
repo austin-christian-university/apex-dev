@@ -12,7 +12,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/u
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@acu-apex/ui"
 import { Alert, AlertDescription } from "@acu-apex/ui"
-import { GraduationCap, DollarSign, TrendingUp, Pencil, ChevronDown, ChevronUp, AlertTriangle, Loader2 } from "lucide-react"
+import { GraduationCap, DollarSign, TrendingUp, Pencil, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import { useState, useEffect } from "react"
 import { useAuth } from '@/components/auth/auth-provider'

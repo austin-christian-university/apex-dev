@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { Clock, Shield, UserCog, ChevronRight, Loader2 } from 'lucide-react'
+import { Clock, Shield, UserCog, Loader2 } from 'lucide-react'
 import { getOnboardingData } from '@/lib/onboarding/storage'
 import { PageLoadingSkeleton } from '@/components/loading-skeletons'
 
