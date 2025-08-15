@@ -55,9 +55,6 @@ export function MicrosoftLoginTransition({ onProceed }: MicrosoftLoginTransition
             )}
           </button>
 
-          <p className="text-xs text-muted-foreground mt-4">
-            Secure authentication powered by Microsoft
-          </p>
         </CardContent>
       </Card>
     </div>

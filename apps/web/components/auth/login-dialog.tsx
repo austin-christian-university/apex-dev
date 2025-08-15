@@ -154,10 +154,6 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
                 )}
               </Button>
 
-              <p className="text-xs text-muted-foreground text-center mt-4">
-                Secure authentication powered by Microsoft
-              </p>
-
               {/* Admin login link - only in dev */}
               {isDev && (
                 <div className="mt-6 text-center">
