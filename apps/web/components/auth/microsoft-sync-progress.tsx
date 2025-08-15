@@ -31,7 +31,7 @@ const MinimalSpinner = () => {
   )
 }
 
-export function MicrosoftSyncProgress({ onComplete, syncCompleted, syncResult }: MicrosoftSyncProgressProps) {
+export function MicrosoftSyncProgress({ onComplete, syncCompleted }: MicrosoftSyncProgressProps) {
   
   // Simple completion handler
   useEffect(() => {

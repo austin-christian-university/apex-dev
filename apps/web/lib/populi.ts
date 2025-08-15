@@ -66,7 +66,7 @@ export async function findBestPopuliPersonMatch(
   firstName: string,
   lastName: string,
   email: string,
-  phoneNumber?: string
+
 ): Promise<{
   person: any | null
   confidence: 'high' | 'medium' | 'low' | null

@@ -86,7 +86,7 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
           </div>
           {companyDetails.company.motto && (
             <div className="text-center">
-              <p className="text-sm font-medium">"{companyDetails.company.motto}"</p>
+              <p className="text-sm font-medium">&quot;{companyDetails.company.motto}&quot;</p>
               <p className="text-xs text-muted-foreground">Est. {foundedYear}</p>
             </div>
           )}
@@ -97,7 +97,7 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
           )}
           {companyDetails.company.quote && (
             <div className="text-center border-t pt-3 mt-3">
-              <p className="text-xs text-muted-foreground italic">"{companyDetails.company.quote}"</p>
+              <p className="text-xs text-muted-foreground italic">&quot;{companyDetails.company.quote}&quot;</p>
             </div>
           )}
         </CardContent>

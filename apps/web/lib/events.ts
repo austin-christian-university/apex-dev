@@ -1,10 +1,10 @@
-import type { EventInstance, UserEvent, EventFilters } from '@acu-apex/types'
+import type { UserEvent } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { 
   isEventApplicableToUser, 
   categorizeEventByDueDate, 
-  filterAndSortEvents,
+
   isEventEligibleForAttendance,
   isEventEligibleForMonthlyCheckin,
   isEventEligibleForParticipation

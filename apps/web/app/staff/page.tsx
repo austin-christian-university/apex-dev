@@ -71,7 +71,7 @@ export default function StaffPage() {
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
               {user?.first_name ? `Hey ${user.first_name}! ` : 'Hey there! '}
-              You're not just staff... you're the <span className="text-primary font-semibold">architect of excellence</span>, 
+              You&apos;re not just staff... you&apos;re the <span className="text-primary font-semibold">architect of excellence</span>, 
               the <span className="text-secondary font-semibold">guardian of student success</span>, and quite possibly 
               the <span className="text-primary font-semibold">most caffeinated person</span> in the building! ☕
             </p>

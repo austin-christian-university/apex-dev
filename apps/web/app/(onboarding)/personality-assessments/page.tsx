@@ -82,7 +82,7 @@ export default function PersonalityAssessmentsPage() {
 
     try {
       // Save assessment data to local storage
-      const dataToSave: any = {}
+      const dataToSave: Partial<AssessmentData> = {}
       if (assessments.disc_profile) dataToSave.disc_profile = assessments.disc_profile
       if (assessments.myers_briggs_profile) dataToSave.myers_briggs_profile = assessments.myers_briggs_profile
       if (assessments.enneagram_profile) dataToSave.enneagram_profile = assessments.enneagram_profile
@@ -154,7 +154,7 @@ export default function PersonalityAssessmentsPage() {
                 Skip for now
               </Button>
               <Button size="sm" onClick={() => setShowWarning(false)}>
-                I'll complete one
+                I&apos;ll complete one
               </Button>
             </div>
           </AlertDescription>
@@ -200,7 +200,7 @@ export default function PersonalityAssessmentsPage() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <ExternalLink className="h-4 w-4" />
-              <span>Don't know your DISC profile? </span>
+              <span>Don&apos;t know your DISC profile? </span>
               <a 
                 href="https://www.123test.com/disc-personality-test/" 
                 target="_blank" 
@@ -251,7 +251,7 @@ export default function PersonalityAssessmentsPage() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <ExternalLink className="h-4 w-4" />
-              <span>Don't know your type? </span>
+              <span>Don&apos;t know your type? </span>
               <a 
                 href="https://www.16personalities.com/" 
                 target="_blank" 
@@ -302,7 +302,7 @@ export default function PersonalityAssessmentsPage() {
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <ExternalLink className="h-4 w-4" />
-              <span>Don't know your type? </span>
+              <span>Don&apos;t know your type? </span>
               <a 
                 href="https://www.eclecticenergies.com/enneagram/test" 
                 target="_blank" 

@@ -5,7 +5,6 @@ import { Button } from "@acu-apex/ui"
 import { AlertCircle, RefreshCw } from "lucide-react"
 
 export default function HomePageError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string }
@@ -18,7 +17,7 @@ export default function HomePageError({
           <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-4" />
           <h2 className="text-lg font-semibold mb-2">Something went wrong</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            We couldn't load your events and company data. Please try again.
+            We couldn&apos;t load your events and company data. Please try again.
           </p>
           <Button onClick={reset} variant="outline" className="w-full">
             <RefreshCw className="h-4 w-4 mr-2" />

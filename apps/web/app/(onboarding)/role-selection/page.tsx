@@ -60,7 +60,6 @@ export default function RoleSelectionPage() {
       saveOnboardingData({ role: selectedRole })
 
       // Determine next step based on role
-      let nextStep: string
       switch (selectedRole) {
         case 'student':
           router.push('/personal-info')
@@ -86,7 +85,7 @@ export default function RoleSelectionPage() {
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">Welcome to ACU Blueprint</h1>
         <p className="text-lg text-muted-foreground">
-          Let's get you set up. First, tell us your role in the program.
+          Let&apos;s get you set up. First, tell us your role in the program.
         </p>
       </div>
 

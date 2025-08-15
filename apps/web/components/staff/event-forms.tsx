@@ -6,7 +6,7 @@ import { Input } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'
 import { Textarea } from '@acu-apex/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@acu-apex/ui'
-import { Checkbox } from '@acu-apex/ui'
+
 import { Badge } from '@acu-apex/ui'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Calendar, CalendarDays, AlertCircle, CheckCircle2, X } from 'lucide-react'
@@ -99,10 +99,7 @@ const ALL_SUBCATEGORIES = [
 
 
 
-const RECURRENCE_PATTERNS = [
-  { value: 'weekly', label: 'Weekly' }
-  // Note: daily and monthly patterns are not yet implemented in database triggers
-]
+
 
 const DAYS_OF_WEEK = [
   { value: 0, label: 'Sunday', short: 'Sun' },

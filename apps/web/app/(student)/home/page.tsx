@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
+
 import { CalendarDays, Trophy, TrendingUp } from "lucide-react"
 import { getUserProfileWithEventsAction, getCompanyStandingsAction } from "@/lib/user-actions"
 import { EventCard } from "@/components/event-card"

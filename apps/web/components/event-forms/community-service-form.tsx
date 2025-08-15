@@ -5,8 +5,8 @@ import { Button } from "@acu-apex/ui"
 import { Input } from "@acu-apex/ui"
 import { Label } from "@acu-apex/ui"
 import { Textarea } from "@acu-apex/ui"
-import { Card, CardContent, CardHeader, CardTitle } from "@acu-apex/ui"
-import { Calendar, Upload, X, Image as ImageIcon } from "lucide-react"
+
+import { Upload, X } from "lucide-react"
 import { processPhotosForSubmission } from "@acu-apex/utils"
 import { CommunityServiceSubmissionSchema, type CommunityServiceSubmission } from "@acu-apex/types"
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@acu-apex/ui"
-import { Card, CardContent, CardHeader, CardTitle } from "@acu-apex/ui"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@acu-apex/ui"
 import { DialogHeader, DialogTitle } from "@acu-apex/ui"
 import { Minus, Plus, Users } from "lucide-react"
@@ -184,19 +184,7 @@ export function ParticipationForm({ event, studentId, onSuccess, onCancel }: Par
     }
   }
 
-  const formatEventDate = (dateString: string | null) => {
-    if (!dateString) return 'No date specified'
-    const date = new Date(dateString)
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long', 
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      timeZone: 'America/Chicago'
-    }).format(date)
-  }
+
 
   const getInitials = (firstName: string | null, lastName: string | null) => {
     const first = firstName?.charAt(0)?.toUpperCase() || ''
@@ -260,7 +248,7 @@ export function ParticipationForm({ event, studentId, onSuccess, onCancel }: Par
           <p className="font-medium">{event.name}</p>
           {event.description && <p className="text-xs">{event.description}</p>}
           <p className="text-xs bg-blue-50 dark:bg-blue-950/20 p-2 rounded text-blue-800 dark:text-blue-200">
-            💡 Rate each member's participation (0-5 points, default is 3)
+            💡 Rate each member&apos;s participation (0-5 points, default is 3)
           </p>
         </div>
       </DialogHeader>

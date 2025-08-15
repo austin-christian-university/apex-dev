@@ -20,7 +20,7 @@ interface PopuliStudent {
 }
 
 export default function PopuliActionsPage() {
-  const { user } = useAuth()
+
   const [isLoading, setIsLoading] = useState(false)
   const [students, setStudents] = useState<PopuliStudent[]>([])
   const [error, setError] = useState<string>('')

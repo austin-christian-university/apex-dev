@@ -156,7 +156,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Select "Involved" if you participated in {isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} activities this month.
+              Select &quot;Involved&quot; if you participated in {isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} activities this month.
             </p>
           </div>
 

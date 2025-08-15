@@ -1,11 +1,11 @@
 "use client"
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { MicrosoftLoginTransition } from '@/components/auth/microsoft-login-transition'
 
 export default function MicrosoftRedirectPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
+
   const redirectTo = searchParams.get('redirectTo') || '/home'
 
   const handleProceed = () => {

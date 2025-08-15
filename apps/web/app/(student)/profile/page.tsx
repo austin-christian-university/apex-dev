@@ -12,107 +12,20 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/u
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@acu-apex/ui"
 import { Alert, AlertDescription } from "@acu-apex/ui"
-import { User, GraduationCap, DollarSign, Calendar, TrendingUp, BookOpen, Pencil, ChevronDown, ChevronUp, AlertTriangle, Loader2 } from "lucide-react"
+import { GraduationCap, DollarSign, TrendingUp, Pencil, ChevronDown, ChevronUp, AlertTriangle, Loader2 } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import { useState, useEffect } from "react"
 import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
-import type { HolisticGPABreakdown, RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, User as UserType, Student, Company } from '@acu-apex/types'
+import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company } from '@acu-apex/types'
 
-// Mock data - will be replaced with real data later
-const mockUserProfile = {
-  id: "1",
-  first_name: "Alex",
-  last_name: "Morgan",
-  email: "alex.morgan@acu.edu",
-  phone_number: "+1 (555) 123-4567",
-  date_of_birth: "2002-03-15",
-  photo: null,
-  disc_profile: "D - Dominance",
-  myers_briggs: "INTJ",
-  enneagram: "Type 5 - The Investigator",
-  studentId: "ACU2024001",
-  major: "Computer Science",
-  year: "Junior",
-  expectedGraduation: "May 2025",
-  company: "Alpha Company",
-  avatar: null,
-  holisticGPA: 3.92,
-  cumulativeGPA: 3.88,
-  get name() { return `${this.first_name} ${this.last_name}` }
-}
+// Mock data removed - using real data from API
 
-const mockFourPillarsDetailed = [
-  {
-    name: "Spiritual Standing",
-    score: 3.95,
-    components: [
-      { name: "Chapel Attendance", score: 4.0, weight: 40 },
-      { name: "Small Group Participation", score: 3.8, weight: 30 },
-      { name: "Community Service", score: 4.0, weight: 30 }
-    ]
-  },
-  {
-    name: "Professional Standing", 
-    score: 3.85,
-    components: [
-      { name: "Leadership Roles", score: 3.9, weight: 35 },
-      { name: "Certifications", score: 3.7, weight: 25 },
-      { name: "Practicum Performance", score: 3.95, weight: 40 }
-    ]
-  },
-  {
-    name: "Academic Performance",
-    score: 3.88,
-    components: [
-      { name: "Class Attendance", score: 3.95, weight: 20 },
-      { name: "Course Grades", score: 3.85, weight: 70 },
-      { name: "Academic Achievements", score: 3.9, weight: 10 }
-    ]
-  },
-  {
-    name: "Team Execution",
-    score: 4.0,
-    components: [
-      { name: "Company Team Building", score: 4.0, weight: 40 },
-      { name: "GBE Participation", score: 4.0, weight: 30 },
-      { name: "Community Events", score: 4.0, weight: 30 }
-    ]
-  }
-]
 
-const mockFinancialInfo = {
-  tuitionBalance: 15420.50,
-  financialAid: 8500.00,
-  scholarships: 3000.00,
-  workStudy: 2400.00,
-  lastPayment: "January 15, 2024",
-  nextDueDate: "February 15, 2024",
-  status: "Good Standing"
-}
 
-const mockAcademicRecord = [
-  {
-    semester: "Fall 2023",
-    courses: [
-      { code: "CS 351", name: "Data Structures", grade: "A", credits: 3 },
-      { code: "BIBL 343", name: "New Testament", grade: "A-", credits: 3 },
-      { code: "MATH 325", name: "Statistics", grade: "B+", credits: 3 },
-      { code: "ENG 211", name: "World Literature", grade: "A", credits: 3 }
-    ],
-    gpa: 3.83
-  },
-  {
-    semester: "Spring 2023", 
-    courses: [
-      { code: "CS 211", name: "Programming Fundamentals", grade: "A", credits: 4 },
-      { code: "BIBL 101", name: "Biblical Foundations", grade: "A-", credits: 3 },
-      { code: "MATH 151", name: "Calculus I", grade: "B+", credits: 4 },
-      { code: "COMM 111", name: "Communication Principles", grade: "A", credits: 3 }
-    ],
-    gpa: 3.79
-  }
-]
+
+
+
 
 const chartConfig = {
   score: {
@@ -121,32 +34,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const mockRecentActivity = [
-  {
-    date: "2 days ago",
-    type: "Academic",
-    description: "Submitted CS 351 final project",
-    points: "+15 points"
-  },
-  {
-    date: "5 days ago", 
-    type: "Service",
-    description: "Completed 4 hours at local food bank",
-    points: "+8 points"
-  },
-  {
-    date: "1 week ago",
-    type: "Team",
-    description: "Attended Alpha Company team building",
-    points: "+12 points"
-  },
-  {
-    date: "2 weeks ago",
-    type: "Professional",
-    description: "Earned AWS Cloud Practitioner certification",
-    points: "+25 points"
-  }
-]
+
 
 export default function ProfilePage() {
   const { user: authUser } = useAuth()
@@ -239,16 +127,7 @@ export default function ProfilePage() {
     setEditableProfile(prev => ({ ...prev, [field]: value }))
   }
 
-  const handlePillarClick = (pillarName: string) => {
-    if (!profileData.holisticGPA) return
-    
-    const category = profileData.holisticGPA.categories.find(cat => 
-      cat.category.display_name.toLowerCase().includes(pillarName.toLowerCase())
-    )
-    if (category) {
-      setSelectedPillar(category.category.display_name)
-    }
-  }
+
 
   // Show loading state
   if (loading) {
@@ -278,7 +157,7 @@ export default function ProfilePage() {
     )
   }
 
-  const { user, student, company, holisticGPA, recentActivity, populiData } = profileData
+  const { user, company, holisticGPA, recentActivity, populiData } = profileData
 
   if (!user) {
     return (
@@ -499,7 +378,7 @@ export default function ProfilePage() {
                 <Alert>
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>
-                    Your holistic GPA hasn't been calculated yet. This usually happens after you submit your first few activities and events. Check back soon!
+                    Your holistic GPA hasn&apos;t been calculated yet. This usually happens after you submit your first few activities and events. Check back soon!
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -519,7 +398,7 @@ export default function ProfilePage() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Your academic records from Populi aren't linked yet. Please contact staff to link your account for academic data.
+                  Your academic records from Populi aren&apos;t linked yet. Please contact staff to link your account for academic data.
                 </AlertDescription>
               </Alert>
             ) : populiData?.error ? (
@@ -578,7 +457,7 @@ export default function ProfilePage() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Your financial records from Populi aren't linked yet. Please contact staff to link your account for financial data.
+                  Your financial records from Populi aren&apos;t linked yet. Please contact staff to link your account for financial data.
                 </AlertDescription>
               </Alert>
             ) : populiData?.error ? (

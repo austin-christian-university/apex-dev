@@ -7,7 +7,7 @@ import { Input } from "@acu-apex/ui"
 import { Textarea } from "@acu-apex/ui"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@acu-apex/ui"
 import { Label } from "@acu-apex/ui"
-import { Calendar, Clock, Users, Camera } from "lucide-react"
+import { Calendar, Clock, Users } from "lucide-react"
 import type { TeamParticipationSubmission } from "@acu-apex/types"
 
 interface TeamParticipationFormProps {

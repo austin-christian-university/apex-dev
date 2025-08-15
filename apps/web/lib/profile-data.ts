@@ -5,7 +5,7 @@ import type {
   User, 
   Student, 
   StudentHolisticGPA, 
-  HolisticGPABreakdown, 
+ 
   PopuliAcademicRecord, 
   PopuliFinancialInfo, 
   RecentActivity,
@@ -456,7 +456,7 @@ export async function searchPopuliPerson(firstName: string, lastName: string, em
         const matches = result.data.filter(person => {
           const firstNameMatch = !firstName || person.first_name?.toLowerCase().includes(firstName.toLowerCase())
           const lastNameMatch = !lastName || person.last_name?.toLowerCase().includes(lastName.toLowerCase())
-          const emailMatch = !email || person.email?.toLowerCase() === email.toLowerCase()
+
           
           return firstNameMatch && lastNameMatch
         })

@@ -1,4 +1,4 @@
-import type { Company, Student, User, CompanyHolisticGPA } from '@acu-apex/types'
+import type { Company, Student, User } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { calculateCompanyRank } from '@acu-apex/utils'

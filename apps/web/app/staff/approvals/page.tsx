@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@acu-apex/ui'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@acu-apex/ui'
 import { Input } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'
 import { Textarea } from '@acu-apex/ui'
@@ -20,12 +20,11 @@ import {
   Award,
   Briefcase,
   Heart,
-  MapPin,
-  Phone,
+
   Mail,
   FileText,
   Star,
-  Hash,
+
   ImageIcon,
   RefreshCcw,
   AlertCircle,
@@ -34,7 +33,7 @@ import {
   Minus
 } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
-import { formatDate, formatDateTime, formatShortDate } from '@acu-apex/utils'
+import { formatDate, formatShortDate } from '@acu-apex/utils'
 import { getPendingSubmissionsAction, approveSubmissionAction, rejectSubmissionAction } from '@/lib/staff-actions'
 
 interface SubmissionData {
@@ -727,7 +726,7 @@ export default function StaffApprovalsPage() {
                           </Button>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          Rate the student's participation level from 0 (no participation) to 5 (exceptional participation)
+                          Rate the student&apos;s participation level from 0 (no participation) to 5 (exceptional participation)
                         </p>
                       </div>
                     ) : selectedSubmission.submission_data.submission_type !== 'community_service' && (
@@ -749,7 +748,7 @@ export default function StaffApprovalsPage() {
                           className="text-lg"
                         />
                         <p className="text-xs text-muted-foreground">
-                          Enter the point value this submission should contribute to the student's Holistic GPA
+                          Enter the point value this submission should contribute to the student&apos;s Holistic GPA
                         </p>
                       </div>
                     )}

@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
   const {
-    data: { user },
+    data: { },
   } = await supabase.auth.getUser()
 
   // Remove auto-redirect for now - simplified troubleshooting
