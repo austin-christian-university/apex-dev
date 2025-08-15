@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type')
   
   // if "next" or "redirectTo" is in param, use it as the redirect URL
-  let next = searchParams.get('next') ?? searchParams.get('redirectTo') ?? '/dashboard'
+  let next = searchParams.get('next') ?? searchParams.get('redirectTo') ?? '/home'
   if (!next.startsWith('/')) {
-    next = '/dashboard'
+    next = '/home'
   }
 
   const supabase = await createClient()
