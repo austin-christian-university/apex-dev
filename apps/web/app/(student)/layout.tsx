@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@acu-apex/ui"
 import { Sheet, SheetContent, SheetTrigger } from "@acu-apex/ui"
-import { Menu, Home, Users, User } from "lucide-react"
+import { Menu, Home, Users, User, Trophy } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@acu-apex/utils"
@@ -15,13 +15,19 @@ const navigation = [
     name: "Home",
     href: "/home" as const,
     icon: Home,
-    description: "Company standings & events"
+    description: "Your personal dashboard"
   },
   {
-    name: "Company",
+    name: "Your Company",
     href: "/company" as const, 
     icon: Users,
     description: "Team overview & achievements"
+  },
+  {
+    name: "Company Standings",
+    href: "/company-standing" as const,
+    icon: Trophy,
+    description: "Rankings & events"
   },
   {
     name: "Profile",
@@ -47,7 +53,7 @@ export default function StudentLayout({
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
             <Image
-              src="/images/ace_logo.png"
+              src="/images/acu_stacked_white.png"
               alt="ACE Logo"
               width={32}
               height={32}
@@ -69,7 +75,7 @@ export default function StudentLayout({
                 <div className="flex items-center space-x-2 pb-4 border-b">
                   <div className="flex items-center space-x-2">
                     <Image
-                      src="/images/ace_logo.png"
+                      src="/images/acu_stacked_white.png"
                       alt="ACE Logo"
                       width={24}
                       height={24}
