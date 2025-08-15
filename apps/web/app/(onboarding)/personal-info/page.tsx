@@ -8,7 +8,7 @@ import { Button } from '@acu-apex/ui'
 import { Input } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { User, AlertCircle } from 'lucide-react'
+import { User, AlertCircle, Loader2 } from 'lucide-react'
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
 
 interface FormData {
@@ -328,7 +328,12 @@ export default function PersonalInfoPage() {
           disabled={isLoading || hasErrors}
           size="lg"
         >
-          {isLoading ? 'Saving...' : 'Continue'}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : 'Continue'}
         </Button>
       </div>
     </div>

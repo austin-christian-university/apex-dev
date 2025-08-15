@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Brain, AlertTriangle, ExternalLink, CheckCircle } from 'lucide-react'
+import { Brain, AlertTriangle, ExternalLink, CheckCircle, Loader2 } from 'lucide-react'
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
 import { DISC_PROFILES, MYERS_BRIGGS_TYPES, ENNEAGRAM_TYPES } from '@/lib/onboarding/types'
 
@@ -342,7 +342,12 @@ export default function PersonalityAssessmentsPage() {
           disabled={isLoading}
           size="lg"
         >
-          {isLoading ? 'Saving...' : 'Continue'}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : 'Continue'}
         </Button>
       </div>
     </div>

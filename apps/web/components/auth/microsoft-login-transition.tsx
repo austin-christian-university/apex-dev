@@ -48,7 +48,7 @@ export function MicrosoftLoginTransition({ onProceed }: MicrosoftLoginTransition
             {isTransitioning ? (
               <div className="flex items-center justify-center space-x-2">
                 <div className="w-4 h-4 border-2 border-secondary-foreground border-t-transparent rounded-full animate-spin" />
-                <span>Redirecting...</span>
+                <span>Connecting...</span>
               </div>
             ) : (
               'Sign in with Microsoft'

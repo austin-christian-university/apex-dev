@@ -17,6 +17,7 @@ import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import { useState, useEffect } from "react"
 import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
+import { ProfileLoadingSkeleton } from '@/components/loading-skeletons'
 import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company, User, StudentHolisticGPA } from '@acu-apex/types'
 
 interface CategoryBreakdown {
@@ -143,14 +144,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
-        <Card>
-          <CardContent className="p-6 flex items-center justify-center">
-            <div className="flex items-center space-x-2">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <span>Loading profile...</span>
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileLoadingSkeleton />
       </div>
     )
   }

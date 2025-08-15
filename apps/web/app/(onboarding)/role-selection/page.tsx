@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Badge } from '@acu-apex/ui'
-import { Users, Shield, UserCog } from 'lucide-react'
+import { Users, Shield, UserCog, Loader2 } from 'lucide-react'
 import { cn } from '@acu-apex/utils'
 import { saveOnboardingData } from '@/lib/onboarding/storage'
 
@@ -158,7 +158,12 @@ export default function RoleSelectionPage() {
           disabled={!selectedRole || isLoading}
           size="lg"
         >
-          {isLoading ? 'Saving...' : 'Continue'}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : 'Continue'}
         </Button>
       </div>
     </div>

@@ -13,6 +13,7 @@ import { getStudentProfileData } from "@/lib/profile-data"
 import { EventCard } from "@/components/event-card"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
+import HomePageLoading from "./loading"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import type { UserEvent, User, Student, Company, StudentHolisticGPA } from "@acu-apex/types"
 
@@ -91,7 +92,7 @@ export default function HomePage() {
   }, [user, router, loadUserData])
 
   if (loading || !user) {
-    return <div className="px-4 py-6 max-w-md mx-auto">Loading...</div>
+    return <HomePageLoading />
   }
 
   if (!profile?.student) {

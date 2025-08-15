@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { MicrosoftLoginTransition } from '@/components/auth/microsoft-login-transition'
+import { SuspenseLoadingSkeleton } from '@/components/loading-skeletons'
 
 function MicrosoftRedirectContent() {
   const searchParams = useSearchParams()
@@ -20,7 +21,7 @@ function MicrosoftRedirectContent() {
 
 export default function MicrosoftRedirectPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<SuspenseLoadingSkeleton />}>
       <MicrosoftRedirectContent />
     </Suspense>
   )

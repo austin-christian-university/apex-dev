@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { AceWelcome } from '@/components/auth/ace-welcome'
+import { SuspenseLoadingSkeleton } from '@/components/loading-skeletons'
 
 function MicrosoftSyncContent() {
   const router = useRouter()
@@ -109,7 +110,7 @@ function MicrosoftSyncContent() {
 
 export default function MicrosoftSyncPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<SuspenseLoadingSkeleton />}>
       <MicrosoftSyncContent />
     </Suspense>
   )

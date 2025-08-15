@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { Clock, Shield, UserCog, ChevronRight } from 'lucide-react'
+import { Clock, Shield, UserCog, ChevronRight, Loader2 } from 'lucide-react'
 import { getOnboardingData } from '@/lib/onboarding/storage'
+import { PageLoadingSkeleton } from '@/components/loading-skeletons'
 
 export default function PendingApprovalPage() {
   const [role, setRole] = useState<string>('')
@@ -71,7 +72,7 @@ export default function PendingApprovalPage() {
   }
 
   if (!role) {
-    return <div>Loading...</div>
+    return <PageLoadingSkeleton />
   }
 
   const roleInfo = getRoleInfo()
@@ -167,7 +168,12 @@ export default function PendingApprovalPage() {
         </Button>
         
         <Button onClick={handleContinue} disabled={isLoading} size="lg">
-          {isLoading ? 'Loading...' : 'Continue Setup'}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : 'Continue Setup'}
         </Button>
       </div>
     </div>

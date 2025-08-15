@@ -11,6 +11,7 @@ import { EventCard } from "@/components/event-card"
 import { AddEventDialog } from "@/components/add-event-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
+import { CompanyStandingsLoadingSkeleton } from "@/components/loading-skeletons"
 import type { UserEvent, User, Student, Company } from "@acu-apex/types"
 import type { CompanyStanding } from "@/lib/company"
 
@@ -85,7 +86,7 @@ export default function CompanyStandingPage() {
   }, [user, router, loadUserData])
 
   if (loading || !user) {
-    return <div className="px-4 py-6 max-w-md mx-auto">Loading...</div>
+    return <CompanyStandingsLoadingSkeleton />
   }
 
   if (!profile?.student) {
