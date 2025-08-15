@@ -70,7 +70,8 @@ export default function MicrosoftSyncPage() {
     if (syncResult.isNewUser) {
       router.push('/role-selection') // New user goes to onboarding
     } else {
-      router.push(redirectTo) // Existing user goes to intended destination
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push(redirectTo as any) // Existing user goes to intended destination
     }
   }
 
@@ -101,7 +102,7 @@ export default function MicrosoftSyncPage() {
     <AceWelcome 
       onComplete={handleWelcomeComplete}
       syncCompleted={syncCompleted}
-      syncResult={syncResult}
+      syncResult={syncResult || undefined}
     />
   )
 }

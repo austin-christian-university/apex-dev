@@ -132,8 +132,8 @@ export default function StaffEventsPage() {
           <div className="flex items-center space-x-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span>
-              {event.recurrence_pattern && event.recurrence_interval 
-                ? `Every ${event.recurrence_interval} ${event.recurrence_pattern}(s)`
+              {event.recurrence_pattern 
+                ? `Every ${event.recurrence_pattern.type}`
                 : 'Custom recurrence'
               }
             </span>
