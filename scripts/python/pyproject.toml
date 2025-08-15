@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "apex_scoring"
 version = "0.1.0"
-description = "ACU Apex Holistic GPA scoring system"
-authors = [{name = "ACU Apex Team"}]
+description = "ACU Blueprint Holistic GPA scoring system"
+authors = [{name = "ACU Blueprint Team"}]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

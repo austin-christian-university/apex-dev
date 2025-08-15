@@ -1,6 +1,6 @@
 # Scripts
 
-This directory contains utility scripts for the ACU Apex application.
+This directory contains utility scripts for the ACU Blueprint application.
 
 ## Generate Dummy Data
 

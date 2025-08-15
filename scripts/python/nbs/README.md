@@ -1,4 +1,4 @@
-# ACU Apex nbdev Notebooks
+# ACU Blueprint nbdev Notebooks
 
 This directory contains the development notebooks for the Holistic GPA scoring system. We use nbdev so that you can prototype and visualize in notebooks, while exporting tested, importable Python modules for CLI and AWS Lambda.
 

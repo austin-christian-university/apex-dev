@@ -1,8 +1,8 @@
-# Database Schema Planning - ACU Apex Student Development Platform
+# Database Schema Planning - ACU Blueprint Student Development Platform
 
 ## Project Overview
 
-ACU Apex is a comprehensive student development platform that tracks holistic student growth through a competitive company-based system. Students are organized into competing companies, with company scores calculated as the average of each student's Holistic GPA.
+ACU Blueprint is a comprehensive student development platform that tracks holistic student growth through a competitive company-based system. Students are organized into competing companies, with company scores calculated as the average of each student's Holistic GPA.
 
 ## Core Concepts
 

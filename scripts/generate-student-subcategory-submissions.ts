@@ -314,7 +314,7 @@ async function genJobPromotion(student: StudentRow, subcat: Subcategory, count: 
     const submission = {
       submission_type: 'job_promotion',
       promotion_title: faker.helpers.arrayElement(['Assistant → Senior Assistant', 'Team Member → Team Lead']),
-      organization: 'ACU Apex',
+      organization: 'ACU Blueprint',
       supervisor_name: faker.person.fullName(),
       supervisor_contact: faker.internet.email(),
       description: faker.lorem.sentence(12),

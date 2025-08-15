@@ -200,7 +200,7 @@ export default function CompletePage() {
           </div>
         </div>
         <h1 className="text-3xl font-bold">
-          {syncStatus === 'success' ? 'Welcome to ACU Apex!' : 
+          {syncStatus === 'success' ? 'Welcome to ACU Blueprint!' : 
            syncStatus === 'syncing' ? 'Setting up your account...' : 
            'Ready to Complete!'}
         </h1>

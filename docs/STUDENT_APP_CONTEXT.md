@@ -1,8 +1,8 @@
-# ACU Apex - Student Development Platform Vision
+# ACU Blueprint - Student Development Platform Vision
 
 ## Project Overview
 
-ACU Apex is a comprehensive student development platform designed to track and encourage holistic student growth through a competitive, company-based system. The platform moves beyond traditional academic tracking to evaluate students across four key development areas: Spiritual Standing, Professional Standing, Academic Performance, and Team Execution.
+ACU Blueprint is a comprehensive student development platform designed to track and encourage holistic student growth through a competitive, company-based system. The platform moves beyond traditional academic tracking to evaluate students across four key development areas: Spiritual Standing, Professional Standing, Academic Performance, and Team Execution.
 
 ## Core Philosophy
 
@@ -153,4 +153,4 @@ The platform is designed to evolve with the institution's needs, supporting:
 
 ---
 
-*This document serves as the foundational context for all ACU Apex development work. It should be referenced when making architectural decisions, feature prioritization, and user experience design choices.* 
+*This document serves as the foundational context for all ACU Blueprint development work. It should be referenced when making architectural decisions, feature prioritization, and user experience design choices.* 

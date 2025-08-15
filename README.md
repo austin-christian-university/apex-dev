@@ -1,6 +1,6 @@
-# ACU Apex App Monorepo
+# ACU Blueprint App Monorepo
 
-A monorepo containing the ACU Apex application ecosystem with web, mobile, backend services, and Python scoring system.
+A monorepo containing the ACU Blueprint application ecosystem with web, mobile, backend services, and Python scoring system.
 
 ## 🏗️ Project Structure
 
@@ -120,7 +120,7 @@ pnpm --filter @acu-apex/web dev
 
 ## 🐍 Python Scoring System
 
-The ACU Apex Holistic GPA Scoring System is implemented in Python and processes event submissions to calculate student holistic GPAs using a bell curve distribution.
+The ACU Blueprint Holistic GPA Scoring System is implemented in Python and processes event submissions to calculate student holistic GPAs using a bell curve distribution.
 
 ### Quick Start (Python)
 
@@ -220,4 +220,4 @@ Event Submissions → Python Aggregators → Bell Curve → Holistic GPA → Dat
 
 ## 📄 License
 
-This project is part of the ACU Apex Student Development Platform. 
+This project is part of the ACU Blueprint Student Development Platform. 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACU Apex Holistic GPA Scoring System - Daily Score Calculation Script
+ACU Blueprint Holistic GPA Scoring System - Daily Score Calculation Script
 
 This script orchestrates the daily calculation of holistic GPAs for all students.
 It processes event submissions, applies business rules, and updates the database
@@ -9,7 +9,7 @@ with normalized scores using a bell curve distribution.
 Usage:
     python scripts/daily_score_calculation.py [--academic-year YEAR] [--batch-size SIZE] [--dry-run]
 
-Author: ACU Apex Development Team
+Author: ACU Blueprint Development Team
 Date: 2024
 """
 
@@ -536,7 +536,7 @@ class DailyScoreCalculator:
 
 async def main():
     """Main entry point for the daily score calculation script."""
-    parser = argparse.ArgumentParser(description='ACU Apex Daily Score Calculation')
+    parser = argparse.ArgumentParser(description='ACU Blueprint Daily Score Calculation')
     parser.add_argument('--academic-year', type=int, help='Academic year to process (default: current year)')
     parser.add_argument('--batch-size', type=int, default=50, help='Batch size for processing students (default: 50)')
     parser.add_argument('--dry-run', action='store_true', help='Run without updating database')

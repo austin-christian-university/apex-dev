@@ -33,7 +33,7 @@ This implementation uses **direct Microsoft OAuth** with your Next.js applicatio
    - In the left sidebar, click "App registrations"
    - Click "New registration" at the top
    - Fill in the registration form:
-     - **Name**: "Apex Student Portal" (or your preferred app name)
+     - **Name**: "Blueprint Student Portal" (or your preferred app name)
      - **Supported account types**: 
        - For school-only access: "Accounts in this organizational directory only"
        - For multi-tenant: "Accounts in any organizational directory"

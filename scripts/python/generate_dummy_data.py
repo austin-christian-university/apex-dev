@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ACU Apex Holistic GPA Scoring System - Dummy Data Generator
+ACU Blueprint Holistic GPA Scoring System - Dummy Data Generator
 
 This script generates comprehensive test data for the holistic GPA scoring system.
 It creates realistic event submissions for a test student across all 17 subcategories
@@ -8,7 +8,7 @@ to validate the scoring pipeline and bell curve calculations.
 
 Test Student ID: 02be2f65-cef3-4b22-823a-4d8e6b8b910b
 
-Author: ACU Apex Development Team
+Author: ACU Blueprint Development Team
 Date: 2024
 """
 

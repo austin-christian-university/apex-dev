@@ -1,5 +1,5 @@
 #!/bin/bash
-# ACU Apex Holistic GPA Scoring System - AWS Lambda Deployment Script
+# ACU Blueprint Holistic GPA Scoring System - AWS Lambda Deployment Script
 # This script packages and deploys the Python scoring system to AWS Lambda
 
 set -e
@@ -18,7 +18,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}🚀 Deploying ACU Apex Scoring System to AWS Lambda${NC}"
+echo -e "${GREEN}🚀 Deploying ACU Blueprint Scoring System to AWS Lambda${NC}"
 
 # Check if AWS CLI is installed
 if ! command -v aws &> /dev/null; then

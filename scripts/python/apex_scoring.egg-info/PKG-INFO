@@ -1,8 +1,8 @@
 Metadata-Version: 2.4
 Name: apex_scoring
 Version: 0.1.0
-Summary: ACU Apex Holistic GPA scoring system
-Author: ACU Apex Team
+Summary: ACU Blueprint Holistic GPA scoring system
+Author: ACU Blueprint Team
 Requires-Python: >=3.11
 Description-Content-Type: text/markdown
 Requires-Dist: numpy>=1.26.0
@@ -22,9 +22,9 @@ Requires-Dist: ipykernel>=6.29.0; extra == "dev"
 Requires-Dist: nbdev>=2.0.0; extra == "dev"
 Dynamic: requires-python
 
-# ACU Apex Holistic GPA Scoring System - Python
+# ACU Blueprint Holistic GPA Scoring System - Python
 
-This directory contains the Python implementation of the ACU Apex Holistic GPA Scoring System. The system processes event submissions, applies business logic, and calculates holistic GPAs using a bell curve distribution.
+This directory contains the Python implementation of the ACU Blueprint Holistic GPA Scoring System. The system processes event submissions, applies business logic, and calculates holistic GPAs using a bell curve distribution.
 
 ## 🏗️ Architecture
 
@@ -404,4 +404,4 @@ python daily_score_calculation.py
 
 ## 📄 License
 
-This project is part of the ACU Apex Student Development Platform.
+This project is part of the ACU Blueprint Student Development Platform.

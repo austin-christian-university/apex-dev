@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="apex_scoring",
     version="0.1.0",
-    description="ACU Apex Holistic GPA scoring system",
-    author="ACU Apex Team",
+    description="ACU Blueprint Holistic GPA scoring system",
+    author="ACU Blueprint Team",
     packages=find_packages(),
     install_requires=[
         "numpy>=1.26.0",

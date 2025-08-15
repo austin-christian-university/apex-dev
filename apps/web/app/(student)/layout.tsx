@@ -45,7 +45,7 @@ export default function StudentLayout({
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
-            <h1 className="text-lg font-semibold">ACU Apex</h1>
+            <h1 className="text-lg font-semibold">ACU Blueprint</h1>
           </div>
           
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -60,7 +60,7 @@ export default function StudentLayout({
                 {/* Header */}
                 <div className="flex items-center space-x-2 pb-4 border-b">
                   <div className="flex-1">
-                    <h2 className="text-lg font-semibold">ACU Apex</h2>
+                    <h2 className="text-lg font-semibold">ACU Blueprint</h2>
                     <p className="text-sm text-muted-foreground">{user?.email}</p>
                   </div>
                 </div>

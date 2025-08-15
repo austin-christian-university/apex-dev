@@ -154,4 +154,4 @@ docker push your-registry/apex-scoring-system
 
 ---
 
-**🎯 The ACU Apex Python Scoring System is now production-ready and fully integrated into the monorepo!**
+**🎯 The ACU Blueprint Python Scoring System is now production-ready and fully integrated into the monorepo!**

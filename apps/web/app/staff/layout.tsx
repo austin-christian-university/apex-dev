@@ -88,7 +88,7 @@ export default function StaffLayout({ children }: StaffLayoutProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="flex h-16 items-center justify-between px-4">
           <div className="flex items-center space-x-4">
-            <h1 className="text-lg font-semibold">ACU Apex - Staff Portal</h1>
+            <h1 className="text-lg font-semibold">ACU Blueprint - Staff Portal</h1>
             <Badge variant="secondary">Staff</Badge>
           </div>
           

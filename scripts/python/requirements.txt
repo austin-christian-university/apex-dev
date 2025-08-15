@@ -1,4 +1,4 @@
-# ACU Apex Holistic GPA Scoring System - Python Dependencies
+# ACU Blueprint Holistic GPA Scoring System - Python Dependencies
 # Core dependencies for scoring calculations and data processing
 
 # Supabase client for database operations

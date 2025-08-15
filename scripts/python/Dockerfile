@@ -1,4 +1,4 @@
-# ACU Apex Holistic GPA Scoring System - Python Docker Container
+# ACU Blueprint Holistic GPA Scoring System - Python Docker Container
 # Multi-stage build for optimized production deployment
 
 # Use Python 3.11 slim image for smaller size

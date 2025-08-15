@@ -1,4 +1,4 @@
-# ACU Apex Web App
+# ACU Blueprint Web App
 
 A comprehensive student development platform built with Next.js 15, Supabase, and Shadcn/ui.
 

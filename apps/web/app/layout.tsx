@@ -16,7 +16,7 @@ const robotoMono = Roboto_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "ACU Apex - Student Development Platform",
+  title: "ACU Blueprint - Student Development Platform",
   description: "A comprehensive platform for tracking student development and growth",
   generator: 'v0.dev',
   icons: {

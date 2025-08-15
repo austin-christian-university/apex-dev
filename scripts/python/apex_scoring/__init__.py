@@ -1,7 +1,7 @@
 """
 apex_scoring
 
-Notebook-authored library (via nbdev) for ACU Apex Holistic GPA scoring.
+Notebook-authored library (via nbdev) for ACU Blueprint Holistic GPA scoring.
 
 Exports modules generated from notebooks in `scripts/python/nbs/`.
 """

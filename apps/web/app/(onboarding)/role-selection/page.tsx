@@ -23,7 +23,7 @@ const ROLE_OPTIONS: RoleOption[] = [
   {
     value: 'student',
     title: 'Student',
-    description: 'I am a student participating in the ACU Apex program',
+    description: 'I am a student participating in the ACU Blueprint program',
     icon: Users,
     badge: 'Most Common'
   },
@@ -84,7 +84,7 @@ export default function RoleSelectionPage() {
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Welcome to ACU Apex</h1>
+        <h1 className="text-3xl font-bold">Welcome to ACU Blueprint</h1>
         <p className="text-lg text-muted-foreground">
           Let's get you set up. First, tell us your role in the program.
         </p>

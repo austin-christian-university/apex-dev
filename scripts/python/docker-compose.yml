@@ -1,4 +1,4 @@
-# ACU Apex Holistic GPA Scoring System - Local Development
+# ACU Blueprint Holistic GPA Scoring System - Local Development
 # Docker Compose configuration for running Python scoring scripts locally
 
 version: '3.8'

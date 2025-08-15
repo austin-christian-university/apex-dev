@@ -1,5 +1,5 @@
 #!/bin/bash
-# ACU Apex Python Scoring System - Setup Script
+# ACU Blueprint Python Scoring System - Setup Script
 # This script sets up the Python environment for local development
 
 set -e
@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🐍 Setting up ACU Apex Python Scoring System${NC}"
+echo -e "${BLUE}🐍 Setting up ACU Blueprint Python Scoring System${NC}"
 
 # Check if Python 3.11+ is installed
 if ! command -v python3 &> /dev/null; then

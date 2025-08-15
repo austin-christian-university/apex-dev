@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# ACU Apex Environment Setup Script
+# ACU Blueprint Environment Setup Script
 # This script helps set up environment variables for the monorepo
 
-echo "🚀 Setting up environment variables for ACU Apex..."
+echo "🚀 Setting up environment variables for ACU Blueprint..."
 
 # Check if .env.local already exists in web app
 if [ -f "apps/web/.env.local" ]; then
