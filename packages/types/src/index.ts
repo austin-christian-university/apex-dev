@@ -304,7 +304,7 @@ export interface RecurringEvent {
   id: string;
   name: string;
   description: string | null;
-  event_type: 'self_report' | 'attendance' | 'monthly_checkin';
+  event_type: 'self_report' | 'attendance' | 'monthly_checkin' | 'optional_team_participation' | 'participation';
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;
@@ -330,7 +330,7 @@ export interface EventInstance {
   id: string;
   name: string;
   description: string | null;
-  event_type: 'self_report' | 'attendance' | 'dev_event' | 'monthly_checkin';
+  event_type: 'self_report' | 'attendance' | 'dev_event' | 'monthly_checkin' | 'optional_team_participation' | 'participation';
   required_roles: string[] | null;
   required_years: number[] | null;
   class_code: string | null;

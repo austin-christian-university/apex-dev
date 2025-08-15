@@ -259,7 +259,7 @@ export default function StaffEventsPage() {
                   Create Event
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col mx-4 sm:max-w-2xl sm:w-full">
+              <DialogContent className="max-w-lg w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col mx-4 sm:max-w-2xl sm:w-full overflow-hidden">
                 <DialogHeader className="flex-shrink-0">
                   <DialogTitle>Create New Event</DialogTitle>
                 </DialogHeader>
@@ -291,8 +291,8 @@ export default function StaffEventsPage() {
                 </p>
                 
                 {/* Scrollable Form Content */}
-                <div className="flex-1 overflow-y-auto pr-2 -mr-2 min-h-0">
-                  <div className="space-y-4">
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  <div className="space-y-4 pr-1">
                     {user?.id && (
                       <EventForm
                         mode="create"

@@ -30,7 +30,8 @@ import {
   RefreshCcw,
   AlertCircle,
   CheckCircle2,
-  Plus
+  Plus,
+  Minus
 } from 'lucide-react'
 import { useAuth } from "@/components/auth/auth-provider"
 import { formatDate, formatDateTime, formatShortDate } from '@acu-apex/utils'
@@ -107,6 +108,7 @@ export default function StaffApprovalsPage() {
       case 'community_service': return Heart
       case 'job_promotion': return Briefcase
       case 'credentials': return Award
+      case 'team_participation': return User
       default: return Clock
     }
   }
@@ -116,6 +118,7 @@ export default function StaffApprovalsPage() {
       case 'community_service': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
       case 'job_promotion': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'
       case 'credentials': return 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800'
+      case 'team_participation': return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
       default: return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-950 dark:text-gray-300 dark:border-gray-800'
     }
   }
@@ -125,6 +128,7 @@ export default function StaffApprovalsPage() {
       case 'community_service': return 'Community Service'
       case 'job_promotion': return 'Job Promotion'
       case 'credentials': return 'Credentials'
+      case 'team_participation': return 'Team Participation'
       default: return submissionType
     }
   }
@@ -134,6 +138,7 @@ export default function StaffApprovalsPage() {
       case 'community_service': return 'Review and approve (points auto-assigned)'
       case 'job_promotion': return 'Assign point value'
       case 'credentials': return 'Assign point value'
+      case 'team_participation': return 'Assign participation rating (0-5 points)'
       default: return 'Review required'
     }
   }
@@ -141,9 +146,14 @@ export default function StaffApprovalsPage() {
   const handleViewSubmission = (submission: SubmissionData, action: 'approve' | 'reject' = 'approve') => {
     setSelectedSubmission(submission)
     setActionType(action)
-    // For community service, don't set points (they're handled automatically)
-    // For other types, default to 0 and let staff assign points
-    setPointsToGrant(submission.submission_data.submission_type === 'community_service' ? 1 : 0)
+    // Set default points based on submission type
+    if (submission.submission_data.submission_type === 'community_service') {
+      setPointsToGrant(1) // Auto-assigned based on hours
+    } else if (submission.submission_data.submission_type === 'team_participation') {
+      setPointsToGrant(3) // Default to middle rating
+    } else {
+      setPointsToGrant(0) // Other types start at 0
+    }
     setApprovalNotes('')
     setRejectionReason('')
     setShowApprovalDialog(true)
@@ -342,6 +352,44 @@ export default function StaffApprovalsPage() {
               </div>
             )}
           </div>
+        </div>
+      )
+    }
+
+    if (type === 'team_participation') {
+      return (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <User className="h-4 w-4" />
+                Team
+              </div>
+              <p className="text-lg font-semibold">
+                {submissionData.team_type === 'fellow_friday_team' ? 'Fellow Friday Team' : 'Chapel Team'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Participation Date
+              </div>
+              <p className="text-lg">{formatDate(submissionData.date_of_participation)}</p>
+            </div>
+          </div>
+          
+          {submissionData.notes && (
+            <>
+              <Separator />
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+                  <FileText className="h-4 w-4" />
+                  Additional Notes
+                </div>
+                <p className="text-sm leading-relaxed">{submissionData.notes}</p>
+              </div>
+            </>
+          )}
         </div>
       )
     }
@@ -647,8 +695,42 @@ export default function StaffApprovalsPage() {
                 {/* Action Form */}
                 {actionType === 'approve' ? (
                   <div className="space-y-4 border-t pt-4">
-                    {/* Only show points input for non-community service submissions */}
-                    {selectedSubmission.submission_data.submission_type !== 'community_service' && (
+                    {/* Show different points input based on submission type */}
+                    {selectedSubmission.submission_data.submission_type === 'team_participation' ? (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Star className="h-4 w-4" />
+                          Participation Rating *
+                        </Label>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPointsToGrant(Math.max(0, pointsToGrant - 1))}
+                            disabled={pointsToGrant <= 0}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <div className="flex items-center gap-2 px-4 py-2 border rounded-md bg-background min-w-[80px] justify-center">
+                            <Star className="h-4 w-4 text-amber-500" />
+                            <span className="text-lg font-semibold">{pointsToGrant}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPointsToGrant(Math.min(5, pointsToGrant + 1))}
+                            disabled={pointsToGrant >= 5}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Rate the student's participation level from 0 (no participation) to 5 (exceptional participation)
+                        </p>
+                      </div>
+                    ) : selectedSubmission.submission_data.submission_type !== 'community_service' && (
                       <div className="space-y-2">
                         <Label htmlFor="points" className="flex items-center gap-2">
                           <Star className="h-4 w-4" />
@@ -738,7 +820,10 @@ export default function StaffApprovalsPage() {
             <Button 
               onClick={handleApproval}
               disabled={isProcessing || 
-                (actionType === 'approve' && selectedSubmission?.submission_data.submission_type !== 'community_service' && pointsToGrant <= 0) || 
+                (actionType === 'approve' && 
+                  selectedSubmission?.submission_data.submission_type !== 'community_service' && 
+                  selectedSubmission?.submission_data.submission_type !== 'team_participation' && 
+                  pointsToGrant <= 0) || 
                 (actionType === 'reject' && !rejectionReason.trim())}
               className="w-full sm:w-auto"
               variant={actionType === 'approve' ? 'default' : 'destructive'}

@@ -5,9 +5,11 @@ import {
   CommunityServiceSubmissionSchema, 
   JobPromotionSubmissionSchema, 
   CredentialsSubmissionSchema,
+  TeamParticipationSubmissionSchema,
   type CommunityServiceSubmission, 
   type JobPromotionSubmission, 
-  type CredentialsSubmission 
+  type CredentialsSubmission,
+  type TeamParticipationSubmission
 } from '@acu-apex/types'
 import { revalidatePath } from 'next/cache'
 
@@ -278,6 +280,106 @@ export async function submitCredentialsEvent(
     return { success: true, submission: data }
   } catch (error) {
     console.error('Credentials submission error:', error)
+    
+    if (error instanceof Error) {
+      return { success: false, error: error.message }
+    }
+    
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}
+
+/**
+ * Submit a team participation event
+ */
+export async function submitTeamParticipationEvent(
+  studentId: string,
+  submissionData: TeamParticipationSubmission
+) {
+  const supabase = await createClient()
+  
+  try {
+    // Validate the submission data
+    const validatedData = TeamParticipationSubmissionSchema.parse(submissionData)
+    
+    // Get current user to use as submitted_by
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      throw new Error('Authentication required')
+    }
+    
+    // Determine the correct subcategory based on team type
+    const subcategoryName = validatedData.team_type === 'fellow_friday_team' 
+      ? 'fellow_friday_participation'
+      : 'chapel_participation'
+    
+    // Look up the subcategory ID first
+    const { data: subcategoryData, error: subcategoryError } = await supabase
+      .from('subcategories')
+      .select('id, name')
+      .eq('name', subcategoryName)
+      .single()
+    
+    if (subcategoryError || !subcategoryData) {
+      throw new Error(`Subcategory '${subcategoryName}' not found`)
+    }
+    
+    // Create a private event instance
+    const { data: createdEvent, error: createEventError } = await supabase
+      .from('event_instances')
+      .insert([
+        {
+          name: `${validatedData.team_type === 'fellow_friday_team' ? 'Fellow Friday Team' : 'Chapel Team'} Participation Submission`,
+          description: 'Student self-reported team participation event',
+          event_type: 'optional_team_participation',
+          required_roles: null,
+          required_years: null,
+          class_code: null,
+          due_date: null,
+          is_active: true,
+          show_on_homepage: false,
+          created_by: user.id,
+          recurring_event_id: null,
+          required_company: null,
+          subcategory_id: subcategoryData.id,
+        },
+      ])
+      .select()
+      .single()
+
+    if (createEventError) {
+      throw new Error('Failed to create event instance')
+    }
+
+    // Submit the team participation event referencing the new event instance
+    const { data, error } = await supabase
+      .from('event_submissions')
+      .insert({
+        event_id: createdEvent.id,
+        student_id: studentId,
+        submitted_by: user.id,
+        submission_data: validatedData,
+        needs_approval: true,
+        approval_status: 'pending',
+        approved_by: null,
+        points_granted: null,
+        subcategory_id: createdEvent.subcategory_id,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('Database error:', error)
+      throw new Error('Failed to submit team participation event')
+    }
+
+    // Revalidate relevant pages
+    revalidatePath('/home')
+    revalidatePath('/staff/approvals')
+    
+    return { success: true, submission: data }
+  } catch (error) {
+    console.error('Team participation submission error:', error)
     
     if (error instanceof Error) {
       return { success: false, error: error.message }

@@ -73,42 +73,41 @@ export const JobPromotionSubmissionSchema = BaseSubmissionDataSchema.extend({
 });
 export type JobPromotionSubmission = z.infer<typeof JobPromotionSubmissionSchema>;
 
-// 5) Performance ratings (1–5) for participation/engagement
-export const ChapelParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('chapel_participation'),
-  points: z.number().min(1).max(5),
-});
-export type ChapelParticipationSubmission = z.infer<
-  typeof ChapelParticipationSubmissionSchema
->;
+// 5) Performance ratings (0–5) for participation/engagement
+
 
 export const CompanyTeamBuildingSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('company_team_building'),
-  points: z.number().min(1).max(5),
+  points: z.number().min(0).max(5),
 });
 export type CompanyTeamBuildingSubmission = z.infer<
   typeof CompanyTeamBuildingSubmissionSchema
 >;
 
 
-export const FellowFridayPointsSubmissionSchema = BaseSubmissionDataSchema.extend({
-  submission_type: z.literal('fellow_friday'),
-  points: z.number().min(1).max(5),
-});
-export type FellowFridayPointsSubmission = z.infer<
-  typeof FellowFridayPointsSubmissionSchema
->;
+
 
 
 export const GBEParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('gbe_participation'),
-  points: z.number().min(1).max(5),
+  points: z.number().min(0).max(5),
 });
 export type GBEParticipationSubmission = z.infer<
   typeof GBEParticipationSubmissionSchema
 >;
 
-// 6) Lions Games involvement (staff-assigned points)
+// 6) Team Participation (cross-company teams: Fellow Friday Team, Chapel Team)
+export const TeamParticipationSubmissionSchema = BaseSubmissionDataSchema.extend({
+  submission_type: z.literal('team_participation'),
+  team_type: z.enum(['fellow_friday_team', 'chapel_team']),
+  date_of_participation: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  photos: z.array(z.string()).optional(),
+});
+export type TeamParticipationSubmission = z.infer<
+  typeof TeamParticipationSubmissionSchema
+>;
+
+// 7) Lions Games involvement (staff-assigned points)
 export const LionsGamesPointsSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('lions_games'),
   assigned_points: z.number().min(0),
@@ -125,10 +124,9 @@ export const EventSubmissionDataSchema = z.discriminatedUnion('submission_type',
   CommunityServiceSubmissionSchema,
   CredentialsSubmissionSchema,
   JobPromotionSubmissionSchema,
-  ChapelParticipationSubmissionSchema,
   CompanyTeamBuildingSubmissionSchema,
-  FellowFridayPointsSubmissionSchema,
   GBEParticipationSubmissionSchema,
+  TeamParticipationSubmissionSchema,
   LionsGamesPointsSubmissionSchema,
 ]);
 
@@ -161,10 +159,9 @@ export function getSubmissionSchema(submissionType: string) {
     community_service: CommunityServiceSubmissionSchema,
     credentials: CredentialsSubmissionSchema,
     job_promotion: JobPromotionSubmissionSchema,
-    chapel_participation: ChapelParticipationSubmissionSchema,
     company_team_building: CompanyTeamBuildingSubmissionSchema,
-    fellow_friday: FellowFridayPointsSubmissionSchema,
     gbe_participation: GBEParticipationSubmissionSchema,
+    team_participation: TeamParticipationSubmissionSchema,
     lions_games: LionsGamesPointsSubmissionSchema,
   } as const;
 

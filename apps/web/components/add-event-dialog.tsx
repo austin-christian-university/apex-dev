@@ -5,15 +5,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@acu-apex/ui"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@acu-apex/ui"
 import { Button } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
-import { Award, Briefcase, Heart } from "lucide-react"
-import { CommunityServiceForm, JobPromotionForm, CredentialsForm } from "@/components/event-forms"
+import { Award, Briefcase, Heart, Users } from "lucide-react"
+import { CommunityServiceForm, JobPromotionForm, CredentialsForm, TeamParticipationForm } from "@/components/event-forms"
 import { 
   submitCommunityServiceEventAction, 
   submitJobPromotionEventAction, 
-  submitCredentialsEventAction 
+  submitCredentialsEventAction,
+  submitTeamParticipationEventAction
 } from "@/lib/staff-actions"
 import { useAuth } from "@/components/auth/auth-provider"
-import type { CommunityServiceSubmission, JobPromotionSubmission, CredentialsSubmission } from "@acu-apex/types"
+import type { CommunityServiceSubmission, JobPromotionSubmission, CredentialsSubmission, TeamParticipationSubmission } from "@acu-apex/types"
 
 interface AddEventDialogProps {
   open: boolean
@@ -21,7 +22,7 @@ interface AddEventDialogProps {
   onSubmitSuccess?: () => void
 }
 
-type EventType = 'community_service' | 'job_promotion' | 'credentials' | null
+type EventType = 'community_service' | 'job_promotion' | 'credentials' | 'team_participation' | null
 
 const eventTypes = [
   {
@@ -44,6 +45,13 @@ const eventTypes = [
     description: 'Certifications, licenses, and educational achievements',
     icon: Award,
     color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300'
+  },
+  {
+    value: 'team_participation' as const,
+    label: 'Team Participation',
+    description: 'Participation in Fellow Friday Team or Chapel Team',
+    icon: Users,
+    color: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300'
   }
 ]
 
@@ -118,6 +126,25 @@ export function AddEventDialog({ open, onOpenChange, onSubmitSuccess }: AddEvent
     try {
       const result = await submitCredentialsEventAction(user.id, data)
       if (!result.success) {
+        throw new Error(result.error)
+      }
+      handleFormSuccess()
+    } catch (error) {
+      console.error('Submission error:', error)
+      setIsSubmitting(false)
+      throw error
+    }
+  }
+
+  const handleSubmitTeamParticipation = async (data: TeamParticipationSubmission) => {
+    if (!user?.id) {
+      throw new Error('User not authenticated')
+    }
+    
+    setIsSubmitting(true)
+    try {
+      const result = await submitTeamParticipationEventAction(user.id, data)
+      if (!result.success) { 
         throw new Error(result.error)
       }
       handleFormSuccess()
@@ -232,6 +259,14 @@ export function AddEventDialog({ open, onOpenChange, onSubmitSuccess }: AddEvent
               {selectedEventType === 'credentials' && (
                 <CredentialsForm
                   onSubmit={handleSubmitCredentials}
+                  onCancel={handleBackToSelection}
+                  isSubmitting={isSubmitting}
+                />
+              )}
+              
+              {selectedEventType === 'team_participation' && (
+                <TeamParticipationForm
+                  onSubmit={handleSubmitTeamParticipation}
                   onCancel={handleBackToSelection}
                   isSubmitting={isSubmitting}
                 />

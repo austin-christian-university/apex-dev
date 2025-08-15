@@ -67,9 +67,7 @@ const ATTENDANCE_SUBCATEGORIES = [
 ]
 
 const PARTICIPATION_SUBCATEGORIES = [
-  { id: 'df11fbad-26c8-452c-97ca-9d5009b1b591', name: 'Fellow Friday Team Participation' },
   { id: '78606cf2-7866-4ed5-8384-1e464a0b5d66', name: 'Company Team-Building' },
-  { id: '865e0e15-c14d-4b23-abd2-5f1b6ccf5dbc', name: 'Chapel Team Participation' },
   { id: '0ceea111-1485-4a80-98a9-d82f3c12321c', name: 'GBE Participation' }
 ]
 
@@ -88,7 +86,7 @@ const ALL_SUBCATEGORIES = [
   { id: 'efdbc642-a52d-4872-ada5-2687fc03be73', name: 'Credentials or Certifications' },
   { id: 'e0bd5604-0692-42fe-8b4b-7ea2d339abc7', name: 'Dream Team Involvement' },
   { id: '221c3ba8-42e5-4f4f-a553-ba3134b6d433', name: 'Fellow Friday Attendance' },
-  { id: 'df11fbad-26c8-452c-97ca-9d5009b1b591', name: 'Fellow Friday Team Participation' },
+  { id: '865e0e15-c14d-4b23-abd2-5f1b6ccf5dbc', name: 'Chapel Team Participation' },
   { id: '296e0201-be1f-4a9b-bebb-e4288046431d', name: 'GBE Attendance' },
   { id: '0ceea111-1485-4a80-98a9-d82f3c12321c', name: 'GBE Participation' },
   { id: 'a3bab151-0ce1-402f-b507-7d6c3489bc8c', name: 'Job or Campus Role Promotion/Resume-Building Opportunities' },

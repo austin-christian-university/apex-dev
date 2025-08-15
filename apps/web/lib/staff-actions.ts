@@ -6,9 +6,10 @@ import {
   rejectSubmission,
   submitCommunityServiceEvent,
   submitJobPromotionEvent,
-  submitCredentialsEvent
+  submitCredentialsEvent,
+  submitTeamParticipationEvent
 } from '@/lib/non-routine-events'
-import type { CommunityServiceSubmission, JobPromotionSubmission, CredentialsSubmission } from '@acu-apex/types'
+import type { CommunityServiceSubmission, JobPromotionSubmission, CredentialsSubmission, TeamParticipationSubmission } from '@acu-apex/types'
 
 /**
  * Server action to get pending submissions for staff approval
@@ -63,4 +64,14 @@ export async function submitCredentialsEventAction(
   submissionData: CredentialsSubmission
 ) {
   return await submitCredentialsEvent(studentId, submissionData)
+}
+
+/**
+ * Server action to submit a team participation event
+ */
+export async function submitTeamParticipationEventAction(
+  studentId: string,
+  submissionData: TeamParticipationSubmission
+) {
+  return await submitTeamParticipationEvent(studentId, submissionData)
 }
