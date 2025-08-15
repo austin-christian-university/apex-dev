@@ -55,11 +55,70 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
   const {
-    data: { },
+    data: { user },
   } = await supabase.auth.getUser()
 
-  // Remove auto-redirect for now - simplified troubleshooting
-  // TODO: Add back later if needed
+  // Handle role-based redirects for authenticated users
+  if (user) {
+    const url = request.nextUrl.clone()
+    const pathname = url.pathname
+
+    // Skip redirect logic for API routes, auth callbacks, and static assets
+    if (
+      pathname.startsWith('/api/') ||
+      pathname.startsWith('/auth/') ||
+      pathname.startsWith('/_next/') ||
+      pathname.includes('.') // static files
+    ) {
+      return supabaseResponse
+    }
+
+    // Fetch user role from our users table
+    try {
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('role, has_completed_onboarding')
+        .eq('id', user.id)
+        .single()
+
+      if (!error && userData) {
+        const { role, has_completed_onboarding } = userData
+
+        // Redirect to onboarding if not completed
+        if (!has_completed_onboarding) {
+          if (!pathname.startsWith('/role-selection') && 
+              !pathname.startsWith('/pending-approval') &&
+              !pathname.startsWith('/personal-info') &&
+              !pathname.startsWith('/photo-upload') &&
+              !pathname.startsWith('/company-selection') &&
+              !pathname.startsWith('/personality-assessments') &&
+              !pathname.startsWith('/complete')) {
+            url.pathname = '/role-selection'
+            return NextResponse.redirect(url)
+          }
+          return supabaseResponse
+        }
+
+        // Role-based redirects for completed users
+        if (role === 'staff' || role === 'admin') {
+          // Staff/admin users should go to staff area
+          if (pathname === '/' || pathname === '/home' || pathname.startsWith('/(student)')) {
+            url.pathname = '/staff'
+            return NextResponse.redirect(url)
+          }
+        } else if (role === 'student' || role === 'officer') {
+          // Student/officer users should go to student area
+          if (pathname === '/' || pathname.startsWith('/staff')) {
+            url.pathname = '/home'
+            return NextResponse.redirect(url)
+          }
+        }
+      }
+    } catch (error) {
+      // If we can't fetch user data, let the request continue
+      console.error('Middleware: Failed to fetch user role:', error)
+    }
+  }
 
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
