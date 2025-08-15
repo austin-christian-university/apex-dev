@@ -47,12 +47,26 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
 
   // Generate radar chart data from company breakdown - matching home and profile page patterns
   const radarChartData = companyDetails.categoryBreakdown 
-    ? Object.entries(companyDetails.categoryBreakdown).map(([category, score]) => ({
-        categoryId: category,
-        pillar: (categoryDisplayNames[category] || category).replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
-        score: Number(score) || 0,
-        fullScore: 4.0
-      }))
+    ? Object.entries(companyDetails.categoryBreakdown).map(([categoryId, score], index) => {
+        // Handle UUID category IDs by providing fallback names
+        let pillarName = categoryDisplayNames[categoryId]
+        
+        if (!pillarName) {
+          // If it's a UUID, provide generic fallback names in order
+          const fallbackNames = ["Spiritual", "Professional", "Academic", "Team"]
+          pillarName = fallbackNames[index] || `Category ${index + 1}`
+        } else {
+          // Apply same transformations as home/profile pages
+          pillarName = pillarName.replace(' Standing', '').replace(' Performance', '').replace(' Execution', '')
+        }
+        
+        return {
+          categoryId,
+          pillar: pillarName,
+          score: Number(score) || 0,
+          fullScore: 4.0
+        }
+      })
     : [
         { categoryId: "spiritual", pillar: "Spiritual", score: 3.9, fullScore: 4.0 },
         { categoryId: "professional", pillar: "Professional", score: 3.8, fullScore: 4.0 },
