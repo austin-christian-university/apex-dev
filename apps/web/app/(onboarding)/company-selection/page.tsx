@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-
 import { Button } from '@acu-apex/ui'
 import { Input } from '@acu-apex/ui'
 import { Alert, AlertDescription } from '@acu-apex/ui'
-import { Badge } from '@acu-apex/ui'
 import { Users, Search, AlertCircle, Loader2 } from 'lucide-react'
 import { cn } from '@acu-apex/utils'
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
@@ -16,7 +15,6 @@ import type { Company } from '@acu-apex/types'
 export default function CompanySelectionPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [role, setRole] = useState<string>('')
   const [companies, setCompanies] = useState<Company[]>([])
   const [filteredCompanies, setFilteredCompanies] = useState<Company[]>([])
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('')
@@ -45,12 +43,11 @@ export default function CompanySelectionPage() {
       return
     }
 
-    setRole(onboardingData.role)
     setSelectedCompanyId(onboardingData.company_id || '')
 
     // Load companies
     loadCompanies()
-  }, [router])
+  }, [router]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Filter companies based on search term
