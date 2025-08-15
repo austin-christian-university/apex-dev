@@ -1,17 +1,20 @@
 'use client'
 
 import { useState, useEffect, useCallback } from "react"
-import { Card, CardContent } from "@acu-apex/ui"
+import { Card, CardContent, CardHeader, CardTitle } from "@acu-apex/ui"
 import { Badge } from "@acu-apex/ui"
+import { Avatar, AvatarFallback, AvatarImage } from "@acu-apex/ui"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/ui"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
 
-import { CalendarDays, Trophy, TrendingUp } from "lucide-react"
-import { getUserProfileWithEventsAction, getCompanyStandingsAction } from "@/lib/user-actions"
+import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react"
+import { getUserProfileWithEventsAction } from "@/lib/user-actions"
+import { getStudentProfileData } from "@/lib/profile-data"
 import { EventCard } from "@/components/event-card"
-import { AddEventDialog } from "@/components/add-event-dialog"
 import { useAuth } from "@/components/auth/auth-provider"
 import { useRouter } from "next/navigation"
-import type { UserEvent, User, Student, Company } from "@acu-apex/types"
-import type { CompanyStanding } from "@/lib/company"
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
+import type { UserEvent, User, Student, Company, StudentHolisticGPA } from "@acu-apex/types"
 
 interface UserProfileWithEvents {
   user: User
@@ -19,50 +22,56 @@ interface UserProfileWithEvents {
   company?: Company
 }
 
-interface CompanyStandingUI {
-  name: string
-  score: number
-  rank: number
-  trend?: number
+interface CategoryBreakdown {
+  category_id: string
+  category_name: string
+  category_display_name: string
+  category_score: number
+  subcategories: Array<{
+    subcategory_id: string
+    subcategory_name: string
+    subcategory_display_name: string
+    subcategory_score: number
+    data_points_count?: number
+  }>
 }
+
+const chartConfig = {
+  score: {
+    label: "Score",
+    color: "hsl(var(--primary))",
+  },
+} satisfies ChartConfig
 
 export default function HomePage() {
   const { user } = useAuth()
   const router = useRouter()
-  const [showAddEventDialog, setShowAddEventDialog] = useState(false)
   const [profile, setProfile] = useState<UserProfileWithEvents | null>(null)
   const [urgentEvents, setUrgentEvents] = useState<UserEvent[]>([])
   const [upcomingEvents, setUpcomingEvents] = useState<UserEvent[]>([])
-  const [companyStandings, setCompanyStandings] = useState<CompanyStandingUI[]>([])
+  const [holisticGPA, setHolisticGPA] = useState<StudentHolisticGPA | null>(null)
   const [loading, setLoading] = useState(true)
+  const [overdueExpanded, setOverdueExpanded] = useState(false)
+  const [upcomingExpanded, setUpcomingExpanded] = useState(false)
 
   const loadUserData = useCallback(async () => {
     if (!user) return
     
     try {
       setLoading(true)
-      const [eventsResult, standingsResult] = await Promise.all([
+      const [eventsResult, profileResult] = await Promise.all([
         getUserProfileWithEventsAction(user.id),
-        getCompanyStandingsAction(),
+        getStudentProfileData(user.id),
       ])
 
       const { profile, urgentEvents, upcomingEvents, error: eventsError } = eventsResult || {}
-      const { standings, error: standingsError } = standingsResult || { standings: [] }
 
       if (eventsError) console.error('Failed to fetch events:', eventsError)
-      if (standingsError) console.error('Failed to fetch company standings:', standingsError)
 
       setProfile(profile || null)
       setUrgentEvents(urgentEvents || [])
       setUpcomingEvents(upcomingEvents || [])
-      setCompanyStandings(
-        (standings || []).map((s: CompanyStanding) => ({
-          name: s.name,
-          score: s.score,
-          rank: s.rank,
-          trend: s.trend,
-        }))
-      )
+      setHolisticGPA(profileResult.holisticGPA || null)
     } catch (error) {
       console.error('Error loading user data:', error)
     } finally {
@@ -89,166 +98,150 @@ export default function HomePage() {
     return <div className="px-4 py-6 max-w-md mx-auto">Student profile not found</div>
   }
 
+  // Generate radar chart data from holistic GPA data
+  const breakdownList = holisticGPA && holisticGPA.category_breakdown ? 
+    Object.values(holisticGPA.category_breakdown as unknown as Record<string, CategoryBreakdown>) : []
+  const radarChartData = breakdownList.map((cat: CategoryBreakdown) => ({
+    categoryId: cat.category_id,
+    pillar: (cat.category_display_name || cat.category_name || '').replace(' Standing', '').replace(' Performance', '').replace(' Execution', ''),
+    score: Number(cat.category_score) || 0,
+    fullScore: 4.0
+  }))
+
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
-      {/* Action Required */}
-      {urgentEvents && urgentEvents.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center space-x-2">
-            <CalendarDays className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Action Required</h2>
-          </div>
-          
-          {urgentEvents.map((userEvent) => (
-            <EventCard
-              key={userEvent.event.id}
-              event={userEvent.event}
-              studentId={profile.student!.id}
-              formattedDueDate={userEvent.formattedDueDate}
-              isUrgent={userEvent.isUrgent}
-              isPastDue={userEvent.isPastDue}
-              variant="urgent"
-              hasSubmitted={userEvent.hasSubmitted}
-              isEligibleForAttendance={userEvent.isEligibleForAttendance}
-              isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
-              isEligibleForParticipation={userEvent.isEligibleForParticipation}
-            />
-          ))}
+      {/* Top: Photo and Holistic GPA */}
+      <div className="grid grid-cols-2 gap-4 items-center">
+        <div className="flex justify-center">
+          <Avatar className="h-20 w-20">
+            <AvatarImage src={profile.user.photo || ""} />
+            <AvatarFallback className="text-xl">
+              {(profile.user.first_name?.[0] || '').toUpperCase()}{(profile.user.last_name?.[0] || '').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </div>
-      )}
-
-      {/* Company Standings */}
-      <div className="space-y-3">
-        <div className="flex items-center space-x-2">
-          <Trophy className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Company Standings</h2>
-        </div>
-        
-        <div className="space-y-2">
-          {companyStandings.map((company) => (
-            <Card key={company.name} className={company.rank === 1 ? "border-secondary/30" : ""}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="text-center">
-                      <Badge variant={company.rank === 1 ? "secondary" : "outline"} className="w-8">
-                        {company.rank}
-                      </Badge>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{company.name}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold">{company.score.toFixed(2)}</p>
-                    {typeof company.trend === 'number' && (
-                      <div className="flex items-center space-x-1 text-xs">
-                        <TrendingUp className={`h-3 w-3 ${company.trend >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-                        <span className={company.trend >= 0 ? 'text-green-500' : 'text-red-500'}>
-                          {company.trend >= 0 ? `+${company.trend.toFixed(2)}` : company.trend.toFixed(2)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="text-center">
+          <p className="text-3xl font-bold">{typeof holisticGPA?.holistic_gpa === 'number' ? holisticGPA.holistic_gpa.toFixed(2) : 'N/A'}</p>
+          <p className="text-sm text-muted-foreground">Holistic GPA</p>
         </div>
       </div>
 
-      {/* Upcoming Events */}
+      {/* Radial Chart */}
+      {holisticGPA && radarChartData.length > 0 ? (
+        <Card>
+          <CardHeader className="items-center pb-2">
+            <CardTitle className="text-base">GPA Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4 px-2">
+            <ChartContainer
+              config={chartConfig}
+              className="mx-auto aspect-square max-h-[220px] w-full"
+            >
+              <RadarChart data={radarChartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                <PolarAngleAxis dataKey="pillar" tick={{ fontSize: 12 }} />
+                <PolarGrid />
+                <Radar
+                  dataKey="score"
+                  fill="var(--color-score)"
+                  fillOpacity={0.6}
+                  dot={{
+                    r: 4,
+                    fillOpacity: 1,
+                  }}
+                />
+              </RadarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Your holistic GPA is being calculated</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Collapsible Overdue Events */}
+      {urgentEvents && urgentEvents.length > 0 && (
+        <Collapsible open={overdueExpanded} onOpenChange={setOverdueExpanded}>
+          <Card>
+            <CollapsibleTrigger asChild>
+              <CardContent className="p-4 cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Overdue Events</span>
+                    <Badge variant="destructive" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                      {urgentEvents.length}
+                    </Badge>
+                  </div>
+                  {overdueExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </CardContent>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="px-4 pb-4 pt-0 space-y-2">
+                {urgentEvents.map((userEvent) => (
+                  <EventCard
+                    key={userEvent.event.id}
+                    event={userEvent.event}
+                    studentId={profile.student!.id}
+                    formattedDueDate={userEvent.formattedDueDate}
+                    isUrgent={userEvent.isUrgent}
+                    isPastDue={userEvent.isPastDue}
+                    variant="urgent"
+                    hasSubmitted={userEvent.hasSubmitted}
+                    isEligibleForAttendance={userEvent.isEligibleForAttendance}
+                    isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
+                    isEligibleForParticipation={userEvent.isEligibleForParticipation}
+                  />
+                ))}
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
+      )}
+
+      {/* Collapsible Upcoming Events */}
       {upcomingEvents && upcomingEvents.length > 0 && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 items-center">
-            <h2 className="text-lg font-semibold">Upcoming Events</h2>
-            <div className="flex justify-end">
-              <button 
-                onClick={() => setShowAddEventDialog(true)}
-                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                <span>+ Add Accomplishment</span>
-              </button>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            {upcomingEvents.map((userEvent) => (
-              <EventCard
-                key={userEvent.event.id}
-                event={userEvent.event}
-                studentId={profile.student!.id}
-                formattedDueDate={userEvent.formattedDueDate}
-                isUrgent={userEvent.isUrgent}
-                isPastDue={userEvent.isPastDue}
-                variant="upcoming"
-                hasSubmitted={userEvent.hasSubmitted}
-                isEligibleForAttendance={userEvent.isEligibleForAttendance}
-                isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
-                isEligibleForParticipation={userEvent.isEligibleForParticipation}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Add Event Section - show when no upcoming events but there might be urgent events */}
-      {(!upcomingEvents || upcomingEvents.length === 0) && urgentEvents && urgentEvents.length > 0 && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 items-center">
-            <h2 className="text-lg font-semibold">Other Events</h2>
-            <div className="flex justify-end">
-              <button 
-                onClick={() => setShowAddEventDialog(true)}
-                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                <span>+ Add Event</span>
-              </button>
-            </div>
-          </div>
-          
+        <Collapsible open={upcomingExpanded} onOpenChange={setUpcomingExpanded}>
           <Card>
-            <CardContent className="p-6 text-center">
-              <CalendarDays className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No upcoming events. Add your own achievements!</p>
-            </CardContent>
+            <CollapsibleTrigger asChild>
+              <CardContent className="p-4 cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Upcoming Events</span>
+                    <Badge variant="secondary" className="h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                      {upcomingEvents.length}
+                    </Badge>
+                  </div>
+                  {upcomingExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </div>
+              </CardContent>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <CardContent className="px-4 pb-4 pt-0 space-y-2">
+                {upcomingEvents.map((userEvent) => (
+                  <EventCard
+                    key={userEvent.event.id}
+                    event={userEvent.event}
+                    studentId={profile.student!.id}
+                    formattedDueDate={userEvent.formattedDueDate}
+                    isUrgent={userEvent.isUrgent}
+                    isPastDue={userEvent.isPastDue}
+                    variant="upcoming"
+                    hasSubmitted={userEvent.hasSubmitted}
+                    isEligibleForAttendance={userEvent.isEligibleForAttendance}
+                    isEligibleForMonthlyCheckin={userEvent.isEligibleForMonthlyCheckin}
+                    isEligibleForParticipation={userEvent.isEligibleForParticipation}
+                  />
+                ))}
+              </CardContent>
+            </CollapsibleContent>
           </Card>
-        </div>
+        </Collapsible>
       )}
-
-      {/* No Events State */}
-      {(!urgentEvents || urgentEvents.length === 0) && (!upcomingEvents || upcomingEvents.length === 0) && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4 items-center">
-            <div className="flex items-center space-x-2">
-              <CalendarDays className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Events</h2>
-            </div>
-            <div className="flex justify-end">
-              <button 
-                onClick={() => setShowAddEventDialog(true)}
-                className="flex items-center space-x-1 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-              >
-                <span>+ Add Event</span>
-              </button>
-            </div>
-          </div>
-          
-          <Card>
-            <CardContent className="p-6 text-center">
-              <CalendarDays className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">No upcoming events at this time</p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Add Event Dialog */}
-      <AddEventDialog 
-        open={showAddEventDialog} 
-        onOpenChange={setShowAddEventDialog}
-        onSubmitSuccess={loadUserData}
-      />
     </div>
   )
 } 
