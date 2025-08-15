@@ -78,7 +78,7 @@ export function AceWelcome({ onComplete, syncCompleted, syncResult }: AceWelcome
               
               {/* Main logo */}
               <Image
-                src="/images/ace_logo.png"
+                src="/images/BLUEPRINT.png"
                 alt="Ace Logo"
                 width={120}
                 height={120}
