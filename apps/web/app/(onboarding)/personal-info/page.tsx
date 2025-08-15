@@ -42,6 +42,36 @@ export default function PersonalInfoPage() {
 
   const [errors, setErrors] = useState<FormErrors>({})
 
+  // Phone number formatting utility functions
+  const formatPhoneNumber = (value: string): string => {
+    // Remove all non-digit characters
+    const cleaned = value.replace(/\D/g, '')
+    
+    // Limit to 10 digits for US phone numbers
+    const match = cleaned.match(/^(\d{0,3})(\d{0,3})(\d{0,4})$/)
+    
+    if (!match) return value
+    
+    const [, areaCode, exchange, number] = match
+    
+    if (number) {
+      return `(${areaCode})-${exchange}-${number}`
+    } else if (exchange) {
+      return `(${areaCode})-${exchange}`
+    } else if (areaCode) {
+      return `(${areaCode}`
+    } else {
+      return ''
+    }
+  }
+
+  const isValidPhoneNumber = (phone: string): boolean => {
+    // Remove all non-digit characters
+    const cleaned = phone.replace(/\D/g, '')
+    // US phone numbers should have exactly 10 digits
+    return cleaned.length === 10
+  }
+
   useEffect(() => {
     // Load existing data from local storage and auth
     const onboardingData = getOnboardingData()
@@ -57,7 +87,7 @@ export default function PersonalInfoPage() {
       first_name: onboardingData.first_name || '',
       last_name: onboardingData.last_name || '',
       email: onboardingData.email || supabaseUser?.email || '',
-      phone_number: onboardingData.phone_number || '',
+      phone_number: onboardingData.phone_number ? formatPhoneNumber(onboardingData.phone_number) : '',
       date_of_birth: onboardingData.date_of_birth || ''
     })
   }, [supabaseUser, router])
@@ -82,8 +112,8 @@ export default function PersonalInfoPage() {
 
     if (!formData.phone_number.trim()) {
       newErrors.phone_number = 'Phone number is required'
-    } else if (!/^\+?[\d\s\-\(\)]+$/.test(formData.phone_number.trim())) {
-      newErrors.phone_number = 'Please enter a valid phone number'
+    } else if (!isValidPhoneNumber(formData.phone_number)) {
+      newErrors.phone_number = 'Please enter a valid 10-digit phone number in format (XXX)-XXX-XXXX'
     }
 
     if (!formData.date_of_birth.trim()) {
@@ -108,7 +138,14 @@ export default function PersonalInfoPage() {
   }
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    let processedValue = value
+    
+    // Special handling for phone number field
+    if (field === 'phone_number') {
+      processedValue = formatPhoneNumber(value)
+    }
+    
+    setFormData(prev => ({ ...prev, [field]: processedValue }))
     
     // Clear error for this field when user starts typing
     if (errors[field]) {
@@ -123,11 +160,14 @@ export default function PersonalInfoPage() {
 
     try {
       // Save personal info to local storage
+      // Store phone number as digits only for consistent storage format
+      const cleanPhoneNumber = formData.phone_number.replace(/\D/g, '')
+      
       saveOnboardingData({
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         email: formData.email.trim(),
-        phone_number: formData.phone_number.trim(),
+        phone_number: cleanPhoneNumber,
         date_of_birth: formData.date_of_birth.trim()
       })
 
@@ -245,11 +285,16 @@ export default function PersonalInfoPage() {
               type="tel"
               value={formData.phone_number}
               onChange={(e) => handleInputChange('phone_number', e.target.value)}
-              placeholder="Enter your phone number"
+              placeholder="(555)-123-4567"
               className={errors.phone_number ? 'border-destructive' : ''}
+              maxLength={14} // Maximum length for formatted phone number
             />
-            {errors.phone_number && (
+            {errors.phone_number ? (
               <p className="text-sm text-destructive">{errors.phone_number}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Enter 10 digits. Format will automatically adjust to (XXX)-XXX-XXXX
+              </p>
             )}
           </div>
 
