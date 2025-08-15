@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [showCursor, setShowCursor] = useState(true)
   const [showButton, setShowButton] = useState(false)
   
-  const welcomeMessage = "Welcome to Apex."
+  const welcomeMessage = "Welcome to Blueprint."
   const typingSpeed = 100
   const pauseAfterTyping = 1200
 
@@ -85,19 +85,7 @@ export default function LoginPage() {
   }
   
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background gradient */}
-      <div className="absolute inset-0 bg-gradient-radial from-secondary/8 via-background to-background animate-pulse" 
-           style={{ animationDuration: "4s" }} />
-      
-      {/* Subtle moving light effect */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-secondary/3 rounded-full blur-3xl animate-pulse" 
-             style={{ animationDuration: "6s", animationDelay: "1s" }} />
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-secondary/2 rounded-full blur-3xl animate-pulse" 
-             style={{ animationDuration: "8s", animationDelay: "2s" }} />
-      </div>
-
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 relative">
       <div className="relative z-10 w-full max-w-md text-center">
         {/* Fixed container for the welcome text */}
         <div className="relative h-32 flex items-center justify-center mb-16">
@@ -152,10 +140,6 @@ export default function LoginPage() {
           )}
         </div>
       </div>
-
-      {/* Subtle vignette effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-background/20 via-transparent to-background/20 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-background/30 via-transparent to-background/30 pointer-events-none" />
     </div>
   )
 } 
