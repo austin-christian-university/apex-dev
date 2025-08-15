@@ -27,7 +27,7 @@ export async function submitMonthlyCheckin(
     } else if (submissionData.submission_type === 'dream_team') {
       validatedData = DreamTeamMonthlyCheckSubmissionSchema.parse(submissionData)
     } else {
-      throw new Error('Invalid submission type for monthly check-in')
+      throw new Error('Invalid submission type for weekly check-in')
     }
     
     // Get current user to use as submitted_by
@@ -49,7 +49,7 @@ export async function submitMonthlyCheckin(
     }
     
     if (existingSubmission) {
-      throw new Error('Monthly check-in already submitted for this event')
+      throw new Error('Weekly check-in already submitted for this event')
     }
     
     // Get the event to find the subcategory_id
@@ -72,16 +72,16 @@ export async function submitMonthlyCheckin(
         submitted_by: user.id,
         submission_data: validatedData,
         subcategory_id: eventData.subcategory_id,
-        needs_approval: false, // Monthly check-ins don't need approval
+        needs_approval: false, // Weekly check-ins don't need approval
         approval_status: 'approved',
-        approval_notes: 'auto-approval for monthly check-in'
+        approval_notes: 'auto-approval for weekly check-in'
       })
       .select()
       .single()
     
     if (error) {
       console.error('Database error:', error)
-      throw new Error('Failed to submit monthly check-in')
+      throw new Error('Failed to submit weekly check-in')
     }
     
     // Revalidate the home page to show updated data
@@ -89,7 +89,7 @@ export async function submitMonthlyCheckin(
     
     return { success: true, submission: data }
   } catch (error) {
-    console.error('Monthly check-in submission error:', error)
+    console.error('Weekly check-in submission error:', error)
     
     if (error instanceof Error) {
       return { success: false, error: error.message }
@@ -116,7 +116,7 @@ export async function hasSubmittedMonthlyCheckin(
     .single()
   
   if (error && error.code !== 'PGRST116') {
-    console.error('Error checking monthly check-in submission:', error)
+    console.error('Error checking weekly check-in submission:', error)
     return false
   }
   
@@ -140,7 +140,7 @@ export async function getMonthlyCheckinSubmission(
     .single()
   
   if (error && error.code !== 'PGRST116') {
-    console.error('Error getting monthly check-in submission:', error)
+    console.error('Error getting weekly check-in submission:', error)
     return null
   }
   

@@ -49,7 +49,7 @@ type FormData = {
 
 const EVENT_TYPES = [
   { value: 'attendance', label: 'Attendance', description: 'Attendance tracking for classes or events' },
-  { value: 'monthly_checkin', label: 'Monthly Check-In', description: 'Monthly involvement check-ins for Dream Team and Small Group' },
+  { value: 'monthly_checkin', label: 'Weekly Check-In', description: 'Weekly involvement check-ins for Dream Team and Small Group' },
   { value: 'participation', label: 'Team Participation', description: 'Officer-led participation scoring for company events' },
   { value: 'self_report', label: 'Self-Report Participation', description: 'Student self-reported participation activities' }
 ]

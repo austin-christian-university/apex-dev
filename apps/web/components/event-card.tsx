@@ -73,8 +73,8 @@ export const EventCard = memo(function EventCard({
     setShowMonthlyCheckinForm(false)
     setHasSubmitted(true)
     toast({
-      title: "Monthly Check-In Submitted",
-      description: "Your monthly involvement check-in has been successfully submitted.",
+      title: "Weekly Check-In Submitted",
+      description: "Your weekly involvement check-in has been successfully submitted.",
     })
     
     // The server action already calls revalidatePath('/home') which will refresh the data

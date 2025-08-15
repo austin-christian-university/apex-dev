@@ -33,7 +33,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
   const isDreamTeam = event.subcategory_id === 'e0bd5604-0692-42fe-8b4b-7ea2d339abc7'
   
   if (!event.subcategory_id || (!isSmallGroup && !isDreamTeam)) {
-    console.error('Invalid subcategory for monthly check-in:', event.subcategory_id)
+    console.error('Invalid subcategory for weekly check-in:', event.subcategory_id)
   }
   
   const submissionType = isSmallGroup ? 'small_group' : isDreamTeam ? 'dream_team' : 'small_group'
@@ -73,7 +73,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
       } else if (isDreamTeam) {
         validatedData = DreamTeamMonthlyCheckSubmissionSchema.parse(formData)
       } else {
-        throw new Error('Invalid subcategory for monthly check-in')
+        throw new Error('Invalid subcategory for weekly check-in')
       }
       
       // Submit monthly check-in
@@ -82,7 +82,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
       if (result.success) {
         onSuccess()
       } else {
-        setErrors({ general: result.error || 'Failed to submit monthly check-in' })
+        setErrors({ general: result.error || 'Failed to submit weekly check-in' })
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -103,13 +103,13 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
   const getTitle = () => {
     if (isSmallGroup) return 'Small Group Involvement Check-In'
     if (isDreamTeam) return 'Dream Team Involvement Check-In'
-    return 'Monthly Check-In'
+    return 'Weekly Check-In'
   }
 
   const getDescription = () => {
-    if (isSmallGroup) return 'Please report your involvement status for Small Group activities this month.'
-    if (isDreamTeam) return 'Please report your involvement status for Dream Team activities this month.'
-    return 'Please report your involvement status for this month.'
+    if (isSmallGroup) return 'Please report your involvement status for Small Group activities this week.'
+    if (isDreamTeam) return 'Please report your involvement status for Dream Team activities this week.'
+    return 'Please report your involvement status for this week.'
   }
 
   return (
@@ -156,7 +156,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Select &quot;Involved&quot; if you participated in {isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} activities this month.
+              Select &quot;Involved&quot; if you participated in {isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} activities this week.
             </p>
           </div>
 
@@ -165,7 +165,7 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
             <Label htmlFor="notes">Notes (Optional)</Label>
             <Textarea
               id="notes"
-              placeholder={`Any additional notes about your ${isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} involvement this month`}
+              placeholder={`Any additional notes about your ${isSmallGroup ? 'Small Group' : isDreamTeam ? 'Dream Team' : 'group'} involvement this week`}
               value={formData.notes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
               rows={3}
