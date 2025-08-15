@@ -267,17 +267,12 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
-    }
+    Pick<RechartsPrimitive.LegendProps, "verticalAlign">
 >(
   (
-    { className, hideIcon = false, verticalAlign = "bottom", nameKey },
+    { className, verticalAlign = "bottom" },
     ref
   ) => {
-    const { config } = useChart()
-
     // Simplified legend that doesn't rely on payload
     return (
       <div
