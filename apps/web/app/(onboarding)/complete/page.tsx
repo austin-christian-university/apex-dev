@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { useAuth } from '@/components/auth/auth-provider'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Button } from '@acu-apex/ui'
@@ -22,7 +23,7 @@ interface PopuliSyncResult {
 type SyncStatus = 'pending' | 'syncing' | 'populi_syncing' | 'success' | 'error'
 
 export default function CompletePage() {
-  const { user, supabaseUser } = useAuth()
+  const { supabaseUser } = useAuth()
   const router = useRouter()
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('pending')
   const [error, setError] = useState<string>('')
@@ -32,6 +33,17 @@ export default function CompletePage() {
     isValid: boolean
     missingFields: string[]
   }>({ isValid: false, missingFields: [] })
+
+  const redirectToMissingStep = useCallback((missingFields: string[], data: Partial<OnboardingData>) => {
+    if (missingFields.includes('role')) {
+      router.push('/role-selection')
+    } else if (missingFields.includes('first_name') || missingFields.includes('last_name') || 
+               missingFields.includes('email') || missingFields.includes('phone_number')) {
+      router.push('/personal-info')
+    } else if (missingFields.includes('company_id') && data.role !== 'staff') {
+      router.push('/company-selection')
+    }
+  }, [router])
 
   useEffect(() => {
     // Load and validate onboarding data
@@ -45,18 +57,7 @@ export default function CompletePage() {
       // Redirect to fix missing data
       redirectToMissingStep(validation.missingFields, data)
     }
-  }, [])
-
-  const redirectToMissingStep = (missingFields: string[], data: Partial<OnboardingData>) => {
-    if (missingFields.includes('role')) {
-      router.push('/role-selection')
-    } else if (missingFields.includes('first_name') || missingFields.includes('last_name') || 
-               missingFields.includes('email') || missingFields.includes('phone_number')) {
-      router.push('/personal-info')
-    } else if (missingFields.includes('company_id') && data.role !== 'staff') {
-      router.push('/company-selection')
-    }
-  }
+  }, [redirectToMissingStep])
 
   const handleSync = async () => {
     if (!supabaseUser?.id || !validationResult.isValid) return
@@ -263,10 +264,12 @@ export default function CompletePage() {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Profile Photo</p>
                   <div className="flex items-center space-x-2">
-                    <img 
+                    <Image 
                       src={onboardingData.photo} 
                       alt="Profile preview" 
-                      className="w-8 h-8 rounded-full object-cover border"
+                      width={32}
+                      height={32}
+                      className="rounded-full object-cover border"
                     />
                     <span className="text-sm text-muted-foreground">Uploaded</span>
                   </div>
@@ -341,7 +344,7 @@ export default function CompletePage() {
                   {populiSyncResult.error}
                 </p>
                 <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">
-                  Don't worry! Please contact an administrator to manually link your account for academic and financial data access.
+                  Don&apos;t worry! Please contact an administrator to manually link your account for academic and financial data access.
                 </p>
               </div>
             )}
