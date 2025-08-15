@@ -30,7 +30,7 @@ export function MicrosoftLoginTransition({ onProceed }: MicrosoftLoginTransition
           </div>
 
           <h1 className="text-2xl font-bold text-foreground mb-3">
-            Continue with Microsoft
+            Connecting to your school account
           </h1>
           
           <p className="text-muted-foreground mb-8">
@@ -41,13 +41,13 @@ export function MicrosoftLoginTransition({ onProceed }: MicrosoftLoginTransition
           <button
             onClick={handleProceed}
             disabled={isTransitioning}
-            className={`w-full bg-[#0078d4] hover:bg-[#106ebe] text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 ${
+            className={`w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium py-3 px-6 rounded-lg transition-all duration-200 ${
               isTransitioning ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             {isTransitioning ? (
               <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-secondary-foreground border-t-transparent rounded-full animate-spin" />
                 <span>Redirecting...</span>
               </div>
             ) : (

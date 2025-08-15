@@ -15,7 +15,7 @@ import {
   Alert,
   AlertDescription
 } from "@acu-apex/ui"
-import { Github, Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { useRouter, usePathname } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
@@ -25,144 +25,27 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
+  const router = useRouter()
+  const supabase = createClient()
   const [isOpen, setIsOpen] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [view, setView] = useState<'login' | 'signup' | 'magic-link'>('login')
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [adminEmail, setAdminEmail] = useState("")
+  const [adminPassword, setAdminPassword] = useState("")
   const pathname = usePathname()
-
-  // Create Supabase client using the new SSR client
-  const supabase = createClient()
+  
+  // Check if we're in development environment
+  const isDev = process.env.NODE_ENV === 'development'
 
   // Save current path to localStorage when dialog opens
   useEffect(() => {
     if (isOpen) {
-              // Don't save login paths as redirect destination  
-        const redirectPath = pathname === '/login' ? '/home' : pathname
+      // Don't save login paths as redirect destination  
+      const redirectPath = pathname === '/login' ? '/home' : pathname
       localStorage.setItem('authRedirectPath', redirectPath)
     }
   }, [isOpen, pathname])
-
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
-
-    // Get the current path for redirection
-    const redirectPath = localStorage.getItem('authRedirectPath') || '/'
-
-    if (!email) {
-      setError("Email is required")
-      setIsLoading(false)
-      return
-    }
-
-    if (view === 'magic-link') {
-      // Magic link login
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectPath)}`,
-        },
-      })
-
-      if (error) {
-        setError(error.message)
-      } else {
-        // Show success message for magic link
-        setError(null)
-        alert("Magic Link Sent! Check your email for the login link. It may take a few minutes to arrive.")
-        setIsOpen(false)
-      }
-    } else {
-      // Regular email/password login or signup
-      if (!password) {
-        setError("Password is required")
-        setIsLoading(false)
-        return
-      }
-
-      if (view === 'signup') {
-        // Validate confirm password
-        if (!confirmPassword) {
-          setError("Please confirm your password")
-          setIsLoading(false)
-          return
-        }
-
-        if (password !== confirmPassword) {
-          setError("Passwords do not match")
-          setIsLoading(false)
-          return
-        }
-
-        // Sign up with email and password
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectPath)}`,
-          }
-        })
-
-        if (error) {
-          setError(error.message)
-        } else {
-          // Show success message for sign up
-          setError(null)
-          alert("Account Created! Check your email to confirm your account. We've sent you a verification link.")
-          setIsOpen(false)
-        }
-      } else {
-        // Sign in with email and password
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (error) {
-          setError(error.message)
-        } else {
-          // Success - close dialog and let auth provider handle state change
-          setIsOpen(false)
-          if (onLoginSuccess) onLoginSuccess()
-          // Auth provider will automatically handle redirect based on auth state change
-        }
-      }
-    }
-    
-    setIsLoading(false)
-  }
-
-  const handleOAuthLogin = async (provider: "github" | "google" | "apple") => {
-    setError(null);
-    setIsLoading(true);
-    
-    // Get the current path for redirection
-    const redirectPath = localStorage.getItem('authRedirectPath') || '/'
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectPath)}`,
-        },
-      });
-  
-      if (error) {
-        setError(error.message);
-        setIsLoading(false);
-      }
-      // No need to close dialog or set isLoading to false as we're redirecting
-    } catch (err) {
-      console.error("OAuth login error:", err);
-      setError("An unexpected error occurred");
-      setIsLoading(false);
-    }
-  };
 
   const handleMicrosoftLogin = async () => {
     setError(null);
@@ -172,8 +55,8 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
     const redirectPath = localStorage.getItem('authRedirectPath') || '/home'
     
     try {
-      // Redirect to our custom Microsoft OAuth endpoint
-      window.location.href = `/api/auth/microsoft?redirectTo=${encodeURIComponent(redirectPath)}`;
+      // Redirect to our transition page first
+      router.push(`/auth/microsoft-redirect?redirectTo=${encodeURIComponent(redirectPath)}`);
     } catch (err) {
       console.error("Microsoft OAuth login error:", err);
       setError("An unexpected error occurred");
@@ -181,12 +64,43 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
     }
   };
 
-  const resetState = () => {
-    setEmail("")
-    setPassword("")
-    setConfirmPassword("")
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
     setError(null)
-    setView('login')
+    setIsLoading(true)
+
+    if (!adminEmail || !adminPassword) {
+      setError("Email and password are required")
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: adminEmail,
+        password: adminPassword,
+      })
+
+      if (error) {
+        setError(error.message)
+      } else {
+        // Success - close dialog and let auth provider handle state change
+        setIsOpen(false)
+        if (onLoginSuccess) onLoginSuccess()
+      }
+    } catch (err) {
+      console.error("Admin login error:", err)
+      setError("An unexpected error occurred")
+    }
+    
+    setIsLoading(false)
+  };
+
+  const resetState = () => {
+    setError(null)
+    setShowAdminLogin(false)
+    setAdminEmail("")
+    setAdminPassword("")
   }
 
   return (
@@ -197,189 +111,131 @@ export function LoginDialog({ trigger, onLoginSuccess }: LoginDialogProps) {
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Login</Button>}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>
-            {view === 'login' ? 'Sign in to your account' : 
-             view === 'signup' ? 'Create an account' : 'Magic link sign in'}
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader className="text-center">
+          <DialogTitle className="text-2xl font-bold">
+            Welcome to Blueprint
           </DialogTitle>
-          <DialogDescription>
-            {view === 'login' ? 'Enter your email below to sign in to your account.' : 
-             view === 'signup' ? 'Enter your details below to create your account.' : 
-             'Enter your email and we\'ll send you a magic link.'}
+          <DialogDescription className="text-base">
+            Sign in with your school account to continue
           </DialogDescription>
         </DialogHeader>
 
-        {/* Error display */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Email/Password Form */}
-        <form onSubmit={handleEmailLogin} className="space-y-4 pt-2">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              required
-            />
-          </div>
-
-          {view !== 'magic-link' && (
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                required
-              />
-            </div>
+        <div className="py-6">
+          {/* Error display */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          {view === 'signup' && (
-            <div className="grid gap-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-                required
-              />
-            </div>
-          )}
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-              </>
-            ) : view === 'login' ? (
-              'Sign In with Email'
-            ) : view === 'signup' ? (
-              'Sign Up with Email'
-            ) : (
-              'Send Magic Link'
-            )}
-          </Button>
-
-          {view === 'login' && (
-            <div className="mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setView('signup')}
-                disabled={isLoading}
-              >
-                Create New Account
-              </Button>
-            </div>
-          )}
-        </form>
-
-        {/* OAuth buttons */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-2 text-sm text-gray-500 dark:text-gray-400 bg-background">
-              Or continue with
-            </span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {/* Microsoft login - primary option for school */}
-          <Button
-            variant="default"
-            onClick={handleMicrosoftLogin}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-2 bg-[#0078d4] hover:bg-[#106ebe] text-white"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
-            </svg>
-            Sign in with Microsoft
-          </Button>
-          
-          {/* Alternative login methods */}
-          <div className="grid grid-cols-2 gap-3 mt-2">
-            <Button
-              variant="outline"
-              onClick={() => handleOAuthLogin("github")}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2"
-            >
-              <Github className="h-4 w-4" />
-              GitHub
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleOAuthLogin("google")}
-              disabled={isLoading}
-              className="flex items-center justify-center gap-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24">
-                <path
-                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  fill="#4285F4"
-                />
-                <path
-                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  fill="#34A853"
-                />
-                <path
-                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  fill="#FBBC05"
-                />
-                <path
-                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  fill="#EA4335"
-                />
-              </svg>
-              Google
-            </Button>
-          </div>
-        </div>
-
-        {/* Toggle Views */}
-        <div className="mt-4 text-center text-sm">
-          {view === 'login' ? (
+          {!showAdminLogin ? (
             <>
-              <p className="text-muted-foreground mb-2">Don&apos;t have an account yet?</p>
-              <Button variant="link" className="px-2 text-sm font-medium" onClick={() => setView('signup')}>
-                Create a new account
+              {/* Microsoft login button */}
+              <Button
+                variant="default"
+                onClick={handleMicrosoftLogin}
+                disabled={isLoading}
+                className="w-full h-12 text-base font-medium bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
+                    </svg>
+                    Login with your school account
+                  </>
+                )}
               </Button>
-              <Button variant="link" className="px-2 text-sm" onClick={() => setView('magic-link')}>
-                Login with magic link
-              </Button>
+
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Secure authentication powered by Microsoft
+              </p>
+
+              {/* Admin login link - only in dev */}
+              {isDev && (
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdminLogin(true)}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors underline"
+                    disabled={isLoading}
+                  >
+                    Admin login
+                  </button>
+                </div>
+              )}
             </>
-          ) : view === 'signup' ? (
-            <Button variant="link" className="px-2 text-sm" onClick={() => setView('login')}>
-              Already have an account? Sign in
-            </Button>
           ) : (
-            <Button variant="link" className="px-2 text-sm" onClick={() => setView('login')}>
-              Back to login
-            </Button>
+            <>
+              {/* Admin login form */}
+              <form onSubmit={handleAdminLogin} className="space-y-4">
+                <div className="text-center mb-4">
+                  <h3 className="text-sm font-medium text-foreground">Admin Login</h3>
+                  <p className="text-xs text-muted-foreground">Development environment only</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="adminEmail" className="text-sm">Email</Label>
+                  <Input
+                    id="adminEmail"
+                    type="email"
+                    placeholder="admin@example.com"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="adminPassword" className="text-sm">Password</Label>
+                  <Input
+                    id="adminPassword"
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    disabled={isLoading}
+                    required
+                  />
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAdminLogin(false)}
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="flex-1"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </>
           )}
         </div>
       </DialogContent>
     </Dialog>
   )
-} 
+}
