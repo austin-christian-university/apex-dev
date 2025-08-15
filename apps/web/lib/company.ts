@@ -1,4 +1,4 @@
-import type { Company, Student, User } from '@acu-apex/types'
+import type { Company, Student, User, StudentHolisticGPA } from '@acu-apex/types'
 import { createClient } from '@/lib/supabase/server'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { calculateCompanyRank } from '@acu-apex/utils'
@@ -25,6 +25,59 @@ export interface CompanyStanding {
   members: number
   rank: number
   trend?: number
+}
+
+/**
+ * Fetch holistic GPA scores for multiple students efficiently
+ */
+async function getStudentsHolisticGPA(
+  studentIds: string[],
+  supabaseClient?: SupabaseClient
+): Promise<Map<string, number>> {
+  const supabase = supabaseClient || await createClient()
+  const gpaMap = new Map<string, number>()
+
+  if (studentIds.length === 0) {
+    return gpaMap
+  }
+
+  try {
+    // Get latest holistic GPA for each student using a subquery approach
+    // This ensures we get the most recent calculation_date per student
+    const { data: holisticGPAs, error } = await supabase
+      .from('student_holistic_gpa')
+      .select(`
+        student_id,
+        holistic_gpa,
+        calculation_date
+      `)
+      .in('student_id', studentIds)
+      .order('student_id', { ascending: true })
+      .order('calculation_date', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching students holistic GPA:', error)
+      return gpaMap
+    }
+
+    // Keep only the latest GPA for each student (first occurrence due to ordering)
+    const latestGPAMap = new Map<string, number>()
+    holisticGPAs?.forEach(gpaRecord => {
+      const studentId = gpaRecord.student_id as string
+      const gpa = Number(gpaRecord.holistic_gpa) || 0
+      
+      // Since we ordered by student_id then calculation_date desc, 
+      // the first occurrence is the latest for each student
+      if (!latestGPAMap.has(studentId)) {
+        latestGPAMap.set(studentId, gpa)
+      }
+    })
+
+    return latestGPAMap
+  } catch (error) {
+    console.error('Error in getStudentsHolisticGPA:', error)
+    return gpaMap
+  }
 }
 
 /**
@@ -196,6 +249,10 @@ export async function getCompanyDetails(
       throw new Error(`Failed to fetch company members: ${membersError.message}`)
     }
 
+    // Fetch real holistic GPA data for all members
+    const memberIds = (members || []).map(member => member.id).filter(Boolean)
+    const memberGPAMap = await getStudentsHolisticGPA(memberIds, supabase)
+
     // Transform and calculate member data
     const companyMembers: CompanyMember[] = (members || []).map(member => {
       // Handle the case where users might be an array or single object
@@ -205,6 +262,9 @@ export async function getCompanyDetails(
         console.warn('No user data for member:', member.id)
         return null
       }
+      
+      // Get real holistic GPA or default to 0.0
+      const realGPA = memberGPAMap.get(member.id) || 0.0
       
       return {
         user: userData as User,
@@ -219,8 +279,8 @@ export async function getCompanyDetails(
           updated_at: member.updated_at,
           student_id: member.student_id
         },
-        // Placeholder GPA calculation - will be implemented with scoring system
-        holisticGPA: 3.50 + Math.random() * 0.5 // Random between 3.50-4.00 for now
+        // Use real holistic GPA data
+        holisticGPA: Math.round(realGPA * 100) / 100 // Round to 2 decimal places
       }
     }).filter(Boolean) as CompanyMember[]
 

@@ -9,6 +9,7 @@ import { Users, Mail, Phone, Search } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
 import { useState } from "react"
 import type { CompanyDetails } from '@/lib/company'
+import { useAuth } from '@/components/auth/auth-provider'
 
 interface CompanyPageClientProps {
   companyDetails: CompanyDetails
@@ -31,14 +32,23 @@ const chartConfig = {
 
 export default function CompanyPageClient({ companyDetails }: CompanyPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const { user } = useAuth()
 
-  // Filter members based on search query
-  const filteredMembers = companyDetails.members.filter(member =>
+  // Determine if current user is an officer
+  const isOfficer = user?.role === 'officer'
+
+  // Filter and sort members based on search query and role
+  let filteredMembers = companyDetails.members.filter(member =>
     member.user.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.user.last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.student.company_role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     member.user.email.toLowerCase().includes(searchQuery.toLowerCase())
   )
+
+  // Sort by holistic GPA (descending) only if current user is an officer
+  if (isOfficer) {
+    filteredMembers = filteredMembers.sort((a, b) => b.holisticGPA - a.holisticGPA)
+  }
 
   // Format company establishment year from created_at
   const foundedYear = companyDetails.company.created_at 
@@ -161,7 +171,6 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
           {filteredMembers.map((member) => {
             const fullName = `${member.user.first_name || ''} ${member.user.last_name || ''}`.trim()
             const initials = `${member.user.first_name?.[0] || ''}${member.user.last_name?.[0] || ''}`.toUpperCase()
-            const isOfficer = member.student.company_role && member.student.company_role !== 'Member'
             
             return (
               <Card key={member.user.id}>
@@ -176,10 +185,12 @@ export default function CompanyPageClient({ companyDetails }: CompanyPageClientP
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <p className="font-medium text-sm">{fullName}</p>
-                        <p className="text-sm font-bold">{member.holisticGPA.toFixed(2)}</p>
+                        {isOfficer && (
+                          <p className="text-sm font-bold">{member.holisticGPA.toFixed(2)}</p>
+                        )}
                       </div>
                       <div className="flex items-center justify-between mb-2">
-                        {isOfficer && member.student.company_role && (
+                        {member.student.company_role && member.student.company_role !== 'Member' && (
                           <Badge variant="secondary" className="text-xs">{member.student.company_role}</Badge>
                         )}
                       </div>
