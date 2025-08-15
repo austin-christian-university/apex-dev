@@ -1,6 +1,6 @@
 "use client"
 
-import { MicrosoftSyncProgress } from "@/components/auth/microsoft-sync-progress"
+import { AceWelcome } from "@/components/auth/ace-welcome"
 
 export default function TestUIPage() {
   return (
@@ -12,10 +12,10 @@ export default function TestUIPage() {
         
         <div className="mb-8 p-4 bg-gray-800 rounded-lg">
           <h2 className="text-lg font-semibold text-gray-200 mb-4">
-            Microsoft Sync Progress Component
+            Ace Welcome Component
           </h2>
           <p className="text-gray-400 text-sm mb-4">
-            This is the MicrosoftSyncProgress component for testing UI edits.
+            This is the AceWelcome component for testing UI edits and animations.
           </p>
         </div>
         
@@ -23,27 +23,40 @@ export default function TestUIPage() {
         <div className="space-y-8">
           {/* Default state */}
           <div className="border border-gray-700 rounded-lg p-4">
-            <h3 className="text-md font-medium text-gray-200 mb-4">Default State</h3>
-            <MicrosoftSyncProgress />
+            <h3 className="text-md font-medium text-gray-200 mb-4">Default State (Not Completed)</h3>
+            <AceWelcome />
           </div>
           
           {/* With onComplete callback */}
           <div className="border border-gray-700 rounded-lg p-4">
             <h3 className="text-md font-medium text-gray-200 mb-4">With onComplete Callback</h3>
-            <MicrosoftSyncProgress 
-              onComplete={() => alert('Sync completed!')}
+            <AceWelcome 
+              onComplete={() => alert('Welcome completed!')}
             />
           </div>
           
-          {/* Completed state */}
+          {/* Completed state - Existing User */}
           <div className="border border-gray-700 rounded-lg p-4">
-            <h3 className="text-md font-medium text-gray-200 mb-4">Completed State</h3>
-            <MicrosoftSyncProgress 
+            <h3 className="text-md font-medium text-gray-200 mb-4">Completed State - Existing User</h3>
+            <AceWelcome 
               syncCompleted={true}
               syncResult={{
                 success: true,
                 isNewUser: false,
-                userEmail: "test@example.com"
+                userEmail: "existing@example.com"
+              }}
+            />
+          </div>
+          
+          {/* Completed state - New User */}
+          <div className="border border-gray-700 rounded-lg p-4">
+            <h3 className="text-md font-medium text-gray-200 mb-4">Completed State - New User</h3>
+            <AceWelcome 
+              syncCompleted={true}
+              syncResult={{
+                success: true,
+                isNewUser: true,
+                userEmail: "new@example.com"
               }}
             />
           </div>
