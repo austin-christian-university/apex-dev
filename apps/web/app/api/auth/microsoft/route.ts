@@ -50,8 +50,13 @@ export async function GET(request: NextRequest) {
   authUrl.searchParams.set('scope', 'openid profile email')
   authUrl.searchParams.set('state', state)
   authUrl.searchParams.set('nonce', nonce)
-  authUrl.searchParams.set('prompt', 'select_account') // Force account selection screen
-  authUrl.searchParams.set('domain_hint', 'organizations') // Hint to use organizational accounts
+      authUrl.searchParams.set('prompt', 'select_account') // Force account selection screen
+    authUrl.searchParams.set('domain_hint', 'organizations') // Hint to use organizational accounts
+    authUrl.searchParams.set('login_hint', '') // Clear any login hints
+    
+    // Try to influence the UI theme (experimental)
+    authUrl.searchParams.set('ui_locales', 'en-US')
+    authUrl.searchParams.set('mkt', 'en-US')
   
   return NextResponse.redirect(authUrl.toString())
 }
