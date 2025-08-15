@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { percentageToGPA, letterGradeToGPA } from '@acu-apex/utils'
 import type { 
   User, 
   Student, 
@@ -592,15 +593,12 @@ function calculateTermGPA(enrollments: Array<{ final_grade: number | null; credi
  * Convert letter grade to grade points
  */
 function convertGradeToPoints(grade: string | number): number {
-  if (typeof grade === 'number') return grade
-
-  const gradeMap: Record<string, number> = {
-    'A': 4.0, 'A-': 3.7, 'B+': 3.3, 'B': 3.0, 'B-': 2.7,
-    'C+': 2.3, 'C': 2.0, 'C-': 1.7, 'D+': 1.3, 'D': 1.0,
-    'F': 0.0
+  if (typeof grade === 'number') {
+    // If it's a numeric grade (percentage), convert to GPA points
+    return percentageToGPA(grade)
   }
 
-  return gradeMap[grade.toUpperCase()] || 0
+  return letterGradeToGPA(grade)
 }
 
 /**

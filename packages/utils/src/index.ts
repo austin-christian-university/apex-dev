@@ -380,4 +380,111 @@ export async function processPhotosForSubmission(files: File[]): Promise<{
   }
   
   return { photos, errors }
+}
+
+// Grade conversion utilities
+/**
+ * Convert percentage grade to letter grade
+ */
+export function percentageToLetterGrade(percentage: number): string {
+  if (percentage >= 97) return 'A+'
+  if (percentage >= 93) return 'A'
+  if (percentage >= 90) return 'A-'
+  if (percentage >= 87) return 'B+'
+  if (percentage >= 83) return 'B'
+  if (percentage >= 80) return 'B-'
+  if (percentage >= 77) return 'C+'
+  if (percentage >= 73) return 'C'
+  if (percentage >= 70) return 'C-'
+  if (percentage >= 67) return 'D+'
+  if (percentage >= 63) return 'D'
+  if (percentage >= 60) return 'D-'
+  return 'F'
+}
+
+/**
+ * Convert percentage grade to GPA points (4.0 scale)
+ */
+export function percentageToGPA(percentage: number): number {
+  if (percentage >= 97) return 4.0
+  if (percentage >= 93) return 4.0
+  if (percentage >= 90) return 3.7
+  if (percentage >= 87) return 3.3
+  if (percentage >= 83) return 3.0
+  if (percentage >= 80) return 2.7
+  if (percentage >= 77) return 2.3
+  if (percentage >= 73) return 2.0
+  if (percentage >= 70) return 1.7
+  if (percentage >= 67) return 1.3
+  if (percentage >= 63) return 1.0
+  if (percentage >= 60) return 0.7
+  return 0.0
+}
+
+/**
+ * Convert letter grade to GPA points (4.0 scale)
+ */
+export function letterGradeToGPA(grade: string): number {
+  const gradeMap: Record<string, number> = {
+    'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+    'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+    'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+    'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+    'F': 0.0
+  }
+  return gradeMap[grade.toUpperCase()] || 0.0
+}
+
+/**
+ * Format grade string - converts percentage strings to letter grades, preserves letter grades
+ */
+export function formatGradeDisplay(gradeString: string): string {
+  // If it's already a letter grade, return as is
+  if (/^[A-F][+-]?$/i.test(gradeString.trim())) {
+    return gradeString.toUpperCase()
+  }
+  
+  // If it contains a percentage symbol, extract the number and convert
+  if (gradeString.includes('%')) {
+    const percentage = parseFloat(gradeString.replace('%', ''))
+    if (!isNaN(percentage)) {
+      return percentageToLetterGrade(percentage)
+    }
+  }
+  
+  // Try to parse as a raw number (percentage)
+  const numericGrade = parseFloat(gradeString)
+  if (!isNaN(numericGrade) && numericGrade >= 0 && numericGrade <= 100) {
+    return percentageToLetterGrade(numericGrade)
+  }
+  
+  // If none of the above work, return the original string
+  return gradeString
+}
+
+/**
+ * Convert any grade format to GPA points
+ */
+export function gradeToGPA(gradeString: string): number {
+  // If it's already a letter grade, convert directly
+  if (/^[A-F][+-]?$/i.test(gradeString.trim())) {
+    return letterGradeToGPA(gradeString)
+  }
+  
+  // If it contains a percentage symbol, extract the number and convert
+  if (gradeString.includes('%')) {
+    const percentage = parseFloat(gradeString.replace('%', ''))
+    if (!isNaN(percentage)) {
+      return percentageToGPA(percentage)
+    }
+  }
+  
+  // Try to parse as a raw number (percentage)
+  const numericGrade = parseFloat(gradeString)
+  if (!isNaN(numericGrade) && numericGrade >= 0 && numericGrade <= 100) {
+    return percentageToGPA(numericGrade)
+  }
+  
+  // Default to 0 if we can't parse
+  return 0.0
 } 

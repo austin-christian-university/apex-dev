@@ -18,6 +18,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
 import { ProfileLoadingSkeleton } from '@/components/loading-skeletons'
+import { formatGradeDisplay } from '@acu-apex/utils'
 import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company, User, StudentHolisticGPA } from '@acu-apex/types'
 
 interface CategoryBreakdown {
@@ -426,7 +427,7 @@ export default function ProfilePage() {
                           <p className="text-muted-foreground text-xs">{course.name}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{course.grade}</p>
+                          <p className="font-medium">{formatGradeDisplay(course.grade)}</p>
                           <p className="text-muted-foreground text-xs">{course.credits} credits</p>
                         </div>
                       </div>
