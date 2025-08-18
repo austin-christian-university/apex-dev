@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { buildUrl, getSiteUrl, environment } from '@/lib/config/environment'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   // Only allow in development/preview environments
   if (environment.isProduction) {
     return NextResponse.json({ error: 'Not available in production' }, { status: 404 })
