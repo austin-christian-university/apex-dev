@@ -37,8 +37,15 @@ export async function POST(request: NextRequest) {
     
     const cookieStore = await cookies()
     const storedState = cookieStore.get('oauth_state')?.value
+    const allCookies = cookieStore.getAll()
     
-    console.log('State validation:', { provided: state, stored: storedState })
+    console.log('State validation:', { 
+      provided: state, 
+      stored: storedState,
+      allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
+      environment: environment.env,
+      siteUrl: getSiteUrl()
+    })
     
     // Validate state parameter
     if (state !== storedState) {

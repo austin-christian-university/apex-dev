@@ -22,21 +22,23 @@ export async function GET(request: NextRequest) {
   
   // Store state and redirect path in cookies for validation
   const cookieStore = await cookies()
+  const isSecure = getSiteUrl().startsWith('https://')
+  
   cookieStore.set('oauth_state', state, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
   cookieStore.set('oauth_redirect', redirectPath, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
   cookieStore.set('oauth_nonce', nonce, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
