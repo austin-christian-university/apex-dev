@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { buildUrl, getSiteUrl, environment } from '@/lib/config/environment'
 
 interface MicrosoftTokenResponse {
   access_token: string
@@ -36,8 +37,15 @@ export async function POST(request: NextRequest) {
     
     const cookieStore = await cookies()
     const storedState = cookieStore.get('oauth_state')?.value
+    const allCookies = cookieStore.getAll()
     
-    console.log('State validation:', { provided: state, stored: storedState })
+    console.log('State validation:', { 
+      provided: state, 
+      stored: storedState,
+      allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
+      environment: environment.env,
+      siteUrl: getSiteUrl()
+    })
     
     // Validate state parameter
     if (state !== storedState) {
@@ -50,16 +58,16 @@ export async function POST(request: NextRequest) {
     
     // Exchange authorization code for tokens
     console.log('Exchanging code for tokens...')
-    const tokenResponse = await fetch(`https://login.microsoftonline.com/${process.env.AZURE_AD_TENANT_ID || 'common'}/oauth2/v2.0/token`, {
+    const tokenResponse = await fetch(`https://login.microsoftonline.com/${environment.microsoft.tenantId || 'common'}/oauth2/v2.0/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: new URLSearchParams({
-        client_id: process.env.AZURE_AD_CLIENT_ID!,
-        client_secret: process.env.AZURE_AD_CLIENT_SECRET!,
+        client_id: environment.microsoft.clientId,
+        client_secret: environment.microsoft.clientSecret,
         code,
-        redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/microsoft/callback`,
+        redirect_uri: buildUrl(getSiteUrl(), '/api/auth/microsoft/callback'),
         grant_type: 'authorization_code',
       }),
     })

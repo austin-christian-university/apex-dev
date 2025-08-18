@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:dev": "NODE_ENV=development next build",
+    "build:prod": "NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "env:check": "node -e \"require('./lib/config/env-helper.ts').validateAndLogEnvironment()\"",
+    "env:debug": "node -e \"require('./lib/config/env-helper.ts').debugEnvironment()\""
   },
   "dependencies": {
     "@acu-apex/types": "workspace:*",

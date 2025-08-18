@@ -3,6 +3,16 @@ import { Roboto, Roboto_Mono } from "next/font/google"
 import "./globals.css"
 import { cn } from "@acu-apex/utils"
 import { AuthProvider } from "@/components/auth/auth-provider"
+import { environment, validateEnvironment } from "@/lib/config/environment"
+
+// Validate environment variables on app startup
+if (environment.isProduction) {
+  try {
+    validateEnvironment()
+  } catch (error) {
+    console.error('❌ Environment validation failed:', error)
+  }
+}
 
 const roboto = Roboto({
   subsets: ["latin"],
@@ -25,7 +35,7 @@ export const metadata: Metadata = {
   generator: 'Next.js',
   applicationName: "ACE Blueprint",
   referrer: "origin-when-cross-origin",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(environment.urls.app),
   robots: {
     index: true,
     follow: true,

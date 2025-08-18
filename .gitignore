@@ -230,3 +230,7 @@ pids
 
 #Python-related
 scripts/python/venv
+
+#Supabase local files
+supabase/.temp
+supabase/migrations

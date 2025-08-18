@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
+import { buildUrl, getSiteUrl, environment } from '@/lib/config/environment'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const redirectPath = searchParams.get('redirectTo') || '/home'
   
-  const clientId = process.env.AZURE_AD_CLIENT_ID
-  const tenantId = process.env.AZURE_AD_TENANT_ID || 'common'
+  const clientId = environment.microsoft.clientId
+  const tenantId = environment.microsoft.tenantId || 'common'
   
   if (!clientId) {
     return NextResponse.json(
@@ -21,26 +22,28 @@ export async function GET(request: NextRequest) {
   
   // Store state and redirect path in cookies for validation
   const cookieStore = await cookies()
+  const isSecure = getSiteUrl().startsWith('https://')
+  
   cookieStore.set('oauth_state', state, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
   cookieStore.set('oauth_redirect', redirectPath, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
   cookieStore.set('oauth_nonce', nonce, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isSecure,
     sameSite: 'lax',
     maxAge: 600, // 10 minutes
   })
   
-  const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/microsoft/callback`
+  const redirectUri = buildUrl(getSiteUrl(), '/api/auth/microsoft/callback')
   
   const authUrl = new URL(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`)
   authUrl.searchParams.set('client_id', clientId)
