@@ -6,11 +6,11 @@
 export const environment = {
   // Environment detection
   isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
+  isProduction: process.env.VERCEL_ENV === 'production',
   isPreview: process.env.VERCEL_ENV === 'preview',
   
-  // Current environment name
-  env: process.env.NODE_ENV || 'development',
+  // Current environment name (use VERCEL_ENV if available, fallback to NODE_ENV)
+  env: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
   
   // Supabase configuration
   supabase: {
@@ -98,6 +98,22 @@ export function getEnvironmentConfig() {
 }
 
 /**
+ * Safely constructs URLs by ensuring no double slashes
+ */
+export function buildUrl(baseUrl: string, path: string): string {
+  const cleanBase = baseUrl.replace(/\/+$/, '') // Remove trailing slashes
+  const cleanPath = path.replace(/^\/+/, '') // Remove leading slashes
+  return `${cleanBase}/${cleanPath}`
+}
+
+/**
+ * Gets the current site URL for the environment
+ */
+export function getSiteUrl(): string {
+  return environment.urls.site.replace(/\/+$/, '') // Remove trailing slashes
+}
+
+/**
  * Logs environment information (safe for production)
  */
 export function logEnvironmentInfo() {
@@ -110,18 +126,19 @@ export function logEnvironmentInfo() {
   }
 }
 
-// Validate environment on import in production
-if (environment.isProduction) {
+// Validate environment on import (but not during build)
+const isBuild = process.env.NEXT_PHASE === 'phase-production-build'
+
+if (!isBuild && (environment.isProduction || environment.isPreview)) {
   try {
     validateEnvironment()
   } catch (error) {
     console.error('❌ Environment validation failed:', error)
-    // Don't throw in production to avoid breaking the app
-    // Instead, log the error and continue with defaults
+    // Don't throw to avoid breaking the app, just log the error
   }
 }
 
-// Log environment info in development
-if (environment.isDevelopment) {
+// Log environment info in development and preview
+if ((environment.isDevelopment || environment.isPreview) && !isBuild) {
   logEnvironmentInfo()
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
+import { buildUrl, getSiteUrl } from '@/lib/config/environment'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
     maxAge: 600, // 10 minutes
   })
   
-  const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/auth/microsoft/callback`
+  const redirectUri = buildUrl(getSiteUrl(), '/api/auth/microsoft/callback')
   
   const authUrl = new URL(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`)
   authUrl.searchParams.set('client_id', clientId)
