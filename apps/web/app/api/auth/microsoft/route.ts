@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { v4 as uuidv4 } from 'uuid'
-import { buildUrl, getSiteUrl } from '@/lib/config/environment'
+import { buildUrl, getSiteUrl, environment } from '@/lib/config/environment'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const redirectPath = searchParams.get('redirectTo') || '/home'
   
-  const clientId = process.env.AZURE_AD_CLIENT_ID
-  const tenantId = process.env.AZURE_AD_TENANT_ID || 'common'
+  const clientId = environment.microsoft.clientId
+  const tenantId = environment.microsoft.tenantId || 'common'
   
   if (!clientId) {
     return NextResponse.json(
