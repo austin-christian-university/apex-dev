@@ -140,6 +140,23 @@ export default function PersonalityAssessmentsPage() {
         </div>
       </div>
 
+      {/* Disclaimer */}
+      <Alert className="border-secondary/20 bg-secondary/5">
+        <div className="flex items-start space-x-3">
+          <div className="p-1 rounded-full bg-secondary/20">
+            <Brain className="h-4 w-4 text-secondary" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-medium text-secondary">All assessments are optional</p>
+            <p className="text-sm text-muted-foreground">
+              While completing these personality assessments is completely optional, we highly recommend 
+              completing at least one. They help your company leaders understand how to work with you 
+              most effectively and can improve team collaboration.
+            </p>
+          </div>
+        </div>
+      </Alert>
+
       {showWarning && (
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
