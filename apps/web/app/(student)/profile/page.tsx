@@ -12,13 +12,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@acu-apex/u
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@acu-apex/ui"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@acu-apex/ui"
 import { Alert, AlertDescription } from "@acu-apex/ui"
-import { GraduationCap, DollarSign, TrendingUp, Pencil, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react"
+import { GraduationCap, DollarSign, TrendingUp, Pencil, ChevronDown, ChevronUp, AlertTriangle, Camera, Loader2 } from "lucide-react"
 import { PolarAngleAxis, PolarGrid, Radar, RadarChart } from "recharts"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
 import { ProfileLoadingSkeleton } from '@/components/loading-skeletons'
 import { formatGradeDisplay } from '@acu-apex/utils'
+import { handlePhotoSelection } from '@/lib/photo-utils'
+import { updateUserPhoto, updateUserProfile } from '@/lib/profile-actions'
 import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company, User, StudentHolisticGPA } from '@acu-apex/types'
 
 interface CategoryBreakdown {
@@ -58,6 +60,9 @@ export default function ProfilePage() {
   const [selectedPillar, setSelectedPillar] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Real profile data
   const [profileData, setProfileData] = useState<{
@@ -137,6 +142,68 @@ export default function ProfilePage() {
 
   const handleProfileUpdate = (field: string, value: string) => {
     setEditableProfile(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !user) return
+
+    setIsUploadingPhoto(true)
+    setError(null)
+
+    try {
+      const result = await handlePhotoSelection(file)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
+      const updateResult = await updateUserPhoto(user.id, result.base64Data)
+      if (updateResult.success) {
+        // Update the local profile data to show the new photo immediately
+        setProfileData(prev => ({
+          ...prev,
+          user: prev.user ? { ...prev.user, photo: result.base64Data } : null
+        }))
+      } else {
+        setError(updateResult.error || 'Failed to update photo')
+      }
+    } catch (err) {
+      console.error('Photo upload error:', err)
+      setError('Failed to upload photo')
+    } finally {
+      setIsUploadingPhoto(false)
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleSaveProfile = async () => {
+    if (!user) return
+
+    setIsSavingProfile(true)
+    setError(null)
+
+    try {
+      const result = await updateUserProfile(user.id, editableProfile)
+      if (result.success) {
+        // Update the local profile data
+        setProfileData(prev => ({
+          ...prev,
+          user: prev.user ? { ...prev.user, ...editableProfile } : null
+        }))
+        setIsHeaderExpanded(false)
+      } else {
+        setError(result.error || 'Failed to update profile')
+      }
+    } catch (err) {
+      console.error('Profile save error:', err)
+      setError('Failed to save profile')
+    } finally {
+      setIsSavingProfile(false)
+    }
   }
 
 
@@ -229,7 +296,27 @@ export default function ProfilePage() {
           <CollapsibleContent>
             <CardContent className="px-6 pb-6 pt-0">
               <div className="space-y-4 border-t pt-4">
-                <h3 className="text-lg font-semibold">Edit Profile</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold">Edit Profile</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingPhoto}
+                  >
+                    {isUploadingPhoto ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="mr-2 h-4 w-4" />
+                        Change Photo
+                      </>
+                    )}
+                  </Button>
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="first_name">First Name</Label>
@@ -308,14 +395,29 @@ export default function ProfilePage() {
                   <Button variant="outline" onClick={() => setIsHeaderExpanded(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={() => {
-                    // Here you would save the changes
-                    console.log('Saving profile changes:', editableProfile)
-                    setIsHeaderExpanded(false)
-                  }}>
-                    Save Changes
+                  <Button 
+                    onClick={handleSaveProfile}
+                    disabled={isSavingProfile}
+                  >
+                    {isSavingProfile ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Changes'
+                    )}
                   </Button>
                 </div>
+                
+                {/* Hidden file input for photo upload */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
               </div>
             </CardContent>
           </CollapsibleContent>
