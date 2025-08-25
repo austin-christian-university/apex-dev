@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@acu-apex/ui'
 import { Loader2 } from 'lucide-react'
 import type { CropArea } from '@/lib/photo-crop-utils'
@@ -47,7 +48,6 @@ export function PhotoCropSelector({
   const getRelativePosition = (clientX: number, clientY: number) => {
     if (!containerRef.current || !imageRef.current) return { x: 0.5, y: 0.5 }
 
-    const containerRect = containerRef.current.getBoundingClientRect()
     const imageRect = imageRef.current.getBoundingClientRect()
     
     // Calculate position relative to the actual image (not container)
@@ -170,15 +170,18 @@ export function PhotoCropSelector({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <img
+        <Image
           ref={imageRef}
           src={imageBase64}
           alt="Photo to crop"
+          width={800}
+          height={400}
           className="w-full h-auto max-h-[400px] object-contain cursor-move"
           onLoad={handleImageLoad}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
           draggable={false}
+          unoptimized
         />
         
         {imageLoaded && (

@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { percentageToGPA, letterGradeToGPA, getActivityNameFromSubmission, getPointsFromSubmission, getStatusFromSubmission, shouldShowPoints } from '@acu-apex/utils'
+import { percentageToGPA, letterGradeToGPA, getActivityNameFromSubmission, getPointsFromSubmission, getStatusFromSubmission } from '@acu-apex/utils'
 import type { 
   User, 
   Student, 

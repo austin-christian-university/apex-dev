@@ -23,7 +23,8 @@ interface MicrosoftUser {
 export async function POST(request: NextRequest) {
   try {
     // console.log('Microsoft sync API called')
-    const { code, state, redirectTo } = await request.json()
+    // const { code, state, redirectTo } = await request.json()
+    const { code, state } = await request.json()
     
     // console.log('Received params:', { code: !!code, state: !!state, redirectTo })
     
