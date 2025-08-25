@@ -532,7 +532,9 @@ async function getPopuliData(populiId: string): Promise<{
             name: catalogCourse?.name ?? offering?.name ?? 'Unknown Course',
             grade: typeof enrollment.letter_grade === 'string'
               ? enrollment.letter_grade
-              : (typeof enrollment.final_grade === 'number' ? `${Math.round(enrollment.final_grade)}%` : 'In Progress'),
+              : (typeof enrollment.final_grade === 'number' && enrollment.final_grade > 0 
+                  ? `${Math.round(enrollment.final_grade)}%` 
+                  : 'In Progress'),
             credits: enrollment.credits ?? offering?.credits ?? 0
           }
         }),

@@ -444,6 +444,13 @@ export function formatGradeDisplay(gradeString: string): string {
     return gradeString.toUpperCase()
   }
   
+  // Handle special cases for non-graded courses
+  if (gradeString.toLowerCase().includes('in progress') || 
+      gradeString.toLowerCase().includes('n/a') ||
+      gradeString.toLowerCase() === 'pending') {
+    return gradeString
+  }
+  
   // If it contains a percentage symbol, extract the number and convert
   if (gradeString.includes('%')) {
     const percentage = parseFloat(gradeString.replace('%', ''))
