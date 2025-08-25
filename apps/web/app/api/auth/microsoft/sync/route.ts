@@ -22,10 +22,10 @@ interface MicrosoftUser {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Microsoft sync API called')
+    // console.log('Microsoft sync API called')
     const { code, state, redirectTo } = await request.json()
     
-    console.log('Received params:', { code: !!code, state: !!state, redirectTo })
+    // console.log('Received params:', { code: !!code, state: !!state, redirectTo })
     
     if (!code || !state) {
       console.error('Missing required parameters:', { code: !!code, state: !!state })
@@ -37,15 +37,15 @@ export async function POST(request: NextRequest) {
     
     const cookieStore = await cookies()
     const storedState = cookieStore.get('oauth_state')?.value
-    const allCookies = cookieStore.getAll()
+    // const allCookies = cookieStore.getAll()
     
-    console.log('State validation:', { 
-      provided: state, 
-      stored: storedState,
-      allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
-      environment: environment.env,
-      siteUrl: getSiteUrl()
-    })
+    // console.log('State validation:', { 
+    //   provided: state, 
+    //   stored: storedState,
+    //   allCookies: allCookies.map(c => ({ name: c.name, hasValue: !!c.value })),
+    //   environment: environment.env,
+    //   siteUrl: getSiteUrl()
+    // })
     
     // Validate state parameter
     if (state !== storedState) {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Exchange authorization code for tokens
-    console.log('Exchanging code for tokens...')
+    // console.log('Exchanging code for tokens...')
     const tokenResponse = await fetch(`https://login.microsoftonline.com/${environment.microsoft.tenantId || 'common'}/oauth2/v2.0/token`, {
       method: 'POST',
       headers: {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
       }),
     })
     
-    console.log('Token response status:', tokenResponse.status)
+    // console.log('Token response status:', tokenResponse.status)
     
     if (!tokenResponse.ok) {
       const errorData = await tokenResponse.text()
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     }
     
     const tokenData: MicrosoftTokenResponse = await tokenResponse.json()
-    console.log('Token exchange successful')
+    // console.log('Token exchange successful')
     
     // Get user information from Microsoft Graph
     console.log('Fetching user info from Microsoft Graph...')
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       },
     })
     
-    console.log('User response status:', userResponse.status)
+    // console.log('User response status:', userResponse.status)
     
     if (!userResponse.ok) {
       const errorData = await userResponse.text()
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
     
     const userData: MicrosoftUser = await userResponse.json()
-    console.log('User data received:', { id: userData.id, email: userData.mail || userData.userPrincipalName })
+    // console.log('User data received:', { id: userData.id, email: userData.mail || userData.userPrincipalName })
     
     const email = userData.mail || userData.userPrincipalName
     
