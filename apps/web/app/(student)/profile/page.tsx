@@ -149,7 +149,7 @@ export default function ProfilePage() {
 
   const handlePhotoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !user) return
+    if (!file || !profileData.user) return
 
     setIsUploadingPhoto(true)
     setError(null)
@@ -179,13 +179,13 @@ export default function ProfilePage() {
   }
 
   const handleCropComplete = async (croppedBase64: string) => {
-    if (!user) return
+    if (!profileData.user) return
 
     setIsUploadingPhoto(true)
     setError(null)
 
     try {
-      const updateResult = await updateUserPhoto(user.id, croppedBase64)
+      const updateResult = await updateUserPhoto(profileData.user.id, croppedBase64)
       if (updateResult.success) {
         // Update the local profile data to show the new photo immediately
         setProfileData(prev => ({
@@ -212,13 +212,13 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = async () => {
-    if (!user) return
+    if (!profileData.user) return
 
     setIsSavingProfile(true)
     setError(null)
 
     try {
-      const result = await updateUserProfile(user.id, editableProfile)
+      const result = await updateUserProfile(profileData.user.id, editableProfile)
       if (result.success) {
         // Update the local profile data
         setProfileData(prev => ({
@@ -704,11 +704,23 @@ export default function ProfilePage() {
                               {new Date(activity.submitted_at).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="text-sm font-medium">{activity.description}</p>
+                          <p className="text-sm font-medium pt-2 pl-2">{activity.event_name}</p>
                         </div>
-                        {activity.points_earned && (
-                          <span className="text-sm font-bold text-secondary">+{activity.points_earned} pts</span>
-                        )}
+                        <div className="text-right">
+                          {activity.status ? (
+                            <span className={`text-sm font-bold ${
+                              activity.status === 'Present' || activity.status === 'Involved' 
+                                ? 'text-green-600' 
+                                : activity.status === 'Absent' 
+                                ? 'text-red-600' 
+                                : 'text-yellow-600'
+                            }`}>
+                              {activity.status}
+                            </span>
+                          ) : activity.points_earned !== undefined ? (
+                            <span className="text-sm font-bold text-secondary">+{activity.points_earned} pts</span>
+                          ) : null}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

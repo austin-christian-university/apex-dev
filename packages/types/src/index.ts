@@ -250,6 +250,7 @@ export interface RecentActivity {
   submission_type: string;
   submitted_at: string;
   points_earned?: number;
+  status?: string; // For attendance/monthly checkins (Present/Absent/Involved/etc.)
   description: string;
 }
 

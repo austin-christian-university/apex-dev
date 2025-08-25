@@ -494,4 +494,176 @@ export function gradeToGPA(gradeString: string): number {
   
   // Default to 0 if we can't parse
   return 0.0
+}
+
+/**
+ * Extract a clean event type name from event submission data
+ */
+export function getActivityNameFromSubmission(submissionData: Record<string, unknown>, eventName?: string): string {
+  const submissionType = submissionData.submission_type as string
+  
+  switch (submissionType) {
+    case 'attendance':
+      // Try to extract meaningful name from notes or use event name
+      const notes = submissionData.notes as string
+      if (notes) {
+        // Extract event type from notes like "chapel_attendance attendance #2"
+        if (notes.includes('chapel')) return 'Chapel'
+        if (notes.includes('fellow_friday')) return 'Fellow Friday'
+        if (notes.includes('gbe')) return 'GBE'
+        if (notes.includes('company_community')) return 'Company Event'
+      }
+      // Use event name if available and not a seed name
+      if (eventName && !eventName.includes('SEED')) {
+        return eventName
+      }
+      return 'Attendance'
+    
+    case 'community_service':
+      return 'Community Service'
+    
+    case 'job_promotion':
+      return 'Job Promotion'
+    
+    case 'credentials':
+      return 'Credential'
+    
+    case 'team_participation':
+      const teamType = submissionData.team_type as string
+      return teamType === 'fellow_friday_team' ? 'Fellow Friday' : 
+             teamType === 'chapel_team' ? 'Chapel Team' : 'Team Participation'
+    
+    case 'small_group':
+      return 'Small Group'
+    
+    case 'dream_team':
+      return 'Dream Team'
+    
+    case 'gbe_participation':
+      return 'GBE Participation'
+    
+    case 'company_team_building':
+      return 'Company Team Building'
+    
+    case 'lions_games':
+      return 'Lions Games'
+    
+    case 'participation':
+      return 'Participation Event'
+    
+    default:
+      return submissionType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+}
+
+/**
+ * Extract status from event submission data (for non-point events)
+ */
+export function getStatusFromSubmission(submissionData: Record<string, unknown>): string | null {
+  const submissionType = submissionData.submission_type as string
+  
+  switch (submissionType) {
+    case 'attendance':
+      const status = submissionData.status as string
+      return status === 'present' ? 'Present' : 
+             status === 'absent' ? 'Absent' : 
+             status === 'excused' ? 'Excused' : null
+    
+    case 'small_group':
+    case 'dream_team':
+      const monthlyStatus = submissionData.status as string
+      return monthlyStatus === 'involved' ? 'Involved' : 'Not Involved'
+    
+    // For point-based events, return null (they should show points instead)
+    case 'community_service':
+    case 'job_promotion':
+    case 'credentials':
+    case 'team_participation':
+    case 'gbe_participation':
+    case 'company_team_building':
+    case 'lions_games':
+    case 'participation':
+      return null
+    
+    default:
+      return null
+  }
+}
+
+/**
+ * Check if an event submission should display points (vs status)
+ */
+export function shouldShowPoints(submissionData: Record<string, unknown>): boolean {
+  const submissionType = submissionData.submission_type as string
+  
+  switch (submissionType) {
+    case 'attendance':
+    case 'small_group':
+    case 'dream_team':
+      return false // These show status instead
+    
+    case 'community_service':
+    case 'job_promotion':
+    case 'credentials':
+    case 'team_participation':
+    case 'gbe_participation':
+    case 'company_team_building':
+    case 'lions_games':
+    case 'participation':
+      return true // These show points
+    
+    default:
+      return false
+  }
+}
+
+/**
+ * Extract points earned from event submission data
+ */
+export function getPointsFromSubmission(
+  submissionData: Record<string, unknown>, 
+  pointsGranted?: number | null
+): number | undefined {
+  // First check if points were granted by staff
+  if (pointsGranted !== null && pointsGranted !== undefined) {
+    return Number(pointsGranted)
+  }
+  
+  const submissionType = submissionData.submission_type as string
+  
+  switch (submissionType) {
+    case 'attendance':
+      const status = submissionData.status as string
+      return status === 'present' ? 1 : 0
+    
+    case 'community_service':
+      const hours = submissionData.hours as number
+      return hours // Points typically equal hours for community service
+    
+    case 'job_promotion':
+    case 'credentials':
+      // These are staff-assigned, so return assigned_points if available
+      const assignedPoints = submissionData.assigned_points as number
+      return assignedPoints || undefined
+    
+    case 'small_group':
+    case 'dream_team':
+      const monthlyStatus = submissionData.status as string
+      return monthlyStatus === 'involved' ? 1 : 0
+    
+    case 'gbe_participation':
+    case 'company_team_building':
+    case 'participation':
+      return submissionData.points as number
+    
+    case 'team_participation':
+      return 1 // Standard point for team participation
+    
+    case 'lions_games':
+      const lionsPoints = submissionData.assigned_points as number
+      return lionsPoints || undefined
+    
+    default:
+      return undefined
+  }
 } 

@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { percentageToGPA, letterGradeToGPA } from '@acu-apex/utils'
+import { percentageToGPA, letterGradeToGPA, getActivityNameFromSubmission, getPointsFromSubmission, getStatusFromSubmission, shouldShowPoints } from '@acu-apex/utils'
 import type { 
   User, 
   Student, 
@@ -387,6 +387,7 @@ async function getStudentRecentActivity(userId: string): Promise<RecentActivity[
         id,
         submission_data,
         submitted_at,
+        points_granted,
         event_instances:event_id (
           id,
           name,
@@ -403,14 +404,26 @@ async function getStudentRecentActivity(userId: string): Promise<RecentActivity[
       return []
     }
 
-    return (submissions || []).map((submission: EventSubmissionWithEvent) => ({
-      id: submission.id,
-      event_name: submission.event_instances?.[0]?.name || 'Unknown Event',
-      submission_type: submission.event_instances?.[0]?.event_type || 'unknown',
-      submitted_at: submission.submitted_at,
-      description: submission.event_instances?.[0]?.description || '',
-      points_earned: undefined
-    }))
+    return (submissions || []).map((submission: EventSubmissionWithEvent & { points_granted?: number }) => {
+      const submissionData = submission.submission_data as Record<string, unknown>
+      const submissionType = submissionData?.submission_type as string || 'unknown'
+      
+      // Use utility functions to extract meaningful names, points, and status
+      const eventName = submission.event_instances?.[0]?.name
+      const activityName = submissionData ? getActivityNameFromSubmission(submissionData, eventName) : 'Unknown Activity'
+      const pointsEarned = submissionData ? getPointsFromSubmission(submissionData, submission.points_granted) : undefined
+      const status = submissionData ? getStatusFromSubmission(submissionData) : null
+      
+      return {
+        id: submission.id,
+        event_name: activityName,
+        submission_type: submissionType,
+        submitted_at: submission.submitted_at,
+        description: submissionData?.description as string || submissionData?.notes as string || '',
+        points_earned: pointsEarned,
+        status: status || undefined
+      }
+    })
 
   } catch (error) {
     console.error('Error fetching recent activity:', error)
