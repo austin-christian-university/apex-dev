@@ -19,8 +19,9 @@ import { useAuth } from '@/components/auth/auth-provider'
 import { getStudentProfileData } from '@/lib/profile-data'
 import { ProfileLoadingSkeleton } from '@/components/loading-skeletons'
 import { formatGradeDisplay } from '@acu-apex/utils'
-import { handlePhotoSelection } from '@/lib/photo-utils'
+import { handlePhotoUpload } from '@/lib/photo-utils'
 import { updateUserPhoto, updateUserProfile } from '@/lib/profile-actions'
+import { PhotoCropSelector } from '@/components/photo-crop-selector'
 import type { RecentActivity, PopuliAcademicRecord, PopuliFinancialInfo, Student, Company, User, StudentHolisticGPA } from '@acu-apex/types'
 
 interface CategoryBreakdown {
@@ -62,6 +63,8 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
   const [isSavingProfile, setIsSavingProfile] = useState(false)
+  const [showCropSelector, setShowCropSelector] = useState(false)
+  const [originalPhotoForCrop, setOriginalPhotoForCrop] = useState<string>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // Real profile data
@@ -144,7 +147,7 @@ export default function ProfilePage() {
     setEditableProfile(prev => ({ ...prev, [field]: value }))
   }
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
 
@@ -152,21 +155,16 @@ export default function ProfilePage() {
     setError(null)
 
     try {
-      const result = await handlePhotoSelection(file)
+      const result = await handlePhotoUpload(file)
       if (result.error) {
         setError(result.error)
         return
       }
 
-      const updateResult = await updateUserPhoto(user.id, result.base64Data)
-      if (updateResult.success) {
-        // Update the local profile data to show the new photo immediately
-        setProfileData(prev => ({
-          ...prev,
-          user: prev.user ? { ...prev.user, photo: result.base64Data } : null
-        }))
-      } else {
-        setError(updateResult.error || 'Failed to update photo')
+      if (result.needsCropping) {
+        // Show crop selector
+        setOriginalPhotoForCrop(result.originalBase64)
+        setShowCropSelector(true)
       }
     } catch (err) {
       console.error('Photo upload error:', err)
@@ -178,6 +176,39 @@ export default function ProfilePage() {
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  const handleCropComplete = async (croppedBase64: string) => {
+    if (!user) return
+
+    setIsUploadingPhoto(true)
+    setError(null)
+
+    try {
+      const updateResult = await updateUserPhoto(user.id, croppedBase64)
+      if (updateResult.success) {
+        // Update the local profile data to show the new photo immediately
+        setProfileData(prev => ({
+          ...prev,
+          user: prev.user ? { ...prev.user, photo: croppedBase64 } : null
+        }))
+        setShowCropSelector(false)
+        setOriginalPhotoForCrop('')
+      } else {
+        setError(updateResult.error || 'Failed to update photo')
+      }
+    } catch (err) {
+      console.error('Photo save error:', err)
+      setError('Failed to save photo')
+    } finally {
+      setIsUploadingPhoto(false)
+    }
+  }
+
+  const handleCropCancel = () => {
+    setShowCropSelector(false)
+    setOriginalPhotoForCrop('')
+    setIsUploadingPhoto(false)
   }
 
   const handleSaveProfile = async () => {
@@ -251,6 +282,20 @@ export default function ProfilePage() {
     score: Number(cat.category_score) || 0,
     fullScore: 4.0
   }))
+
+  // Show crop selector if needed
+  if (showCropSelector && originalPhotoForCrop) {
+    return (
+      <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
+        <PhotoCropSelector
+          imageBase64={originalPhotoForCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          isProcessing={isUploadingPhoto}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="px-4 py-6 space-y-6 max-w-md mx-auto">
@@ -415,7 +460,7 @@ export default function ProfilePage() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  onChange={handlePhotoUpload}
+                  onChange={handlePhotoFileSelect}
                   className="hidden"
                 />
               </div>

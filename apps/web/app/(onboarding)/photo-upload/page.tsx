@@ -8,7 +8,8 @@ import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Camera, Upload, Edit3, Loader2 } from 'lucide-react'
 
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
-import { handlePhotoSelection } from '@/lib/photo-utils'
+import { handlePhotoUpload } from '@/lib/photo-utils'
+import { PhotoCropSelector } from '@/components/photo-crop-selector'
 
 export default function PhotoUploadPage() {
   const router = useRouter()
@@ -18,6 +19,8 @@ export default function PhotoUploadPage() {
   const [photoData, setPhotoData] = useState<string>('')
   const [previewUrl, setPreviewUrl] = useState<string>('')
   const [error, setError] = useState<string>('')
+  const [showCropSelector, setShowCropSelector] = useState(false)
+  const [originalPhotoForCrop, setOriginalPhotoForCrop] = useState<string>('')
 
   useEffect(() => {
     // Check if user should be on this page
@@ -47,20 +50,35 @@ export default function PhotoUploadPage() {
     setIsLoading(true)
 
     try {
-      const result = await handlePhotoSelection(file)
+      const result = await handlePhotoUpload(file)
       if (result.error) {
         setError(result.error)
         return
       }
 
-      setPhotoData(result.base64Data)
-      setPreviewUrl(result.base64Data)
+      if (result.needsCropping) {
+        // Show crop selector
+        setOriginalPhotoForCrop(result.originalBase64)
+        setShowCropSelector(true)
+      }
     } catch (err) {
       setError('Failed to process image. Please try again.')
       console.error('Image processing error:', err)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleCropComplete = (croppedBase64: string) => {
+    setPhotoData(croppedBase64)
+    setPreviewUrl(croppedBase64)
+    setShowCropSelector(false)
+    setOriginalPhotoForCrop('')
+  }
+
+  const handleCropCancel = () => {
+    setShowCropSelector(false)
+    setOriginalPhotoForCrop('')
   }
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,6 +133,20 @@ export default function PhotoUploadPage() {
     } else {
       router.push('/company-selection')
     }
+  }
+
+  // Show crop selector if needed
+  if (showCropSelector && originalPhotoForCrop) {
+    return (
+      <div className="space-y-6">
+        <PhotoCropSelector
+          imageBase64={originalPhotoForCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          isProcessing={isLoading}
+        />
+      </div>
+    )
   }
 
   return (

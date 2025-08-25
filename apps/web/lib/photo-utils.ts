@@ -16,6 +16,12 @@ export interface PhotoProcessingResult {
   error?: string
 }
 
+export interface PhotoUploadResult {
+  originalBase64: string
+  needsCropping: boolean
+  error?: string
+}
+
 /**
  * Validate if a file is a valid image
  */
@@ -105,12 +111,76 @@ export function processImageToBase64(
 }
 
 /**
- * Handle file selection and processing
+ * Handle file selection and initial processing (before cropping)
+ * Returns the original image for crop selection
+ */
+export async function handlePhotoUpload(
+  file: File,
+  options?: PhotoProcessingOptions
+): Promise<PhotoUploadResult> {
+  const { maxFileSize = 5 } = options || {}
+
+  // First validate the file
+  const validation = validateImageFile(file, maxFileSize)
+  if (!validation.isValid) {
+    return { originalBase64: '', needsCropping: false, error: validation.error }
+  }
+
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    
+    reader.onload = (e) => {
+      const img = new window.Image()
+      img.onload = () => {
+        try {
+          // For crop selection, we want the original image (but potentially resized for performance)
+          const canvas = document.createElement('canvas')
+          const ctx = canvas.getContext('2d')
+          
+          if (!ctx) {
+            resolve({ originalBase64: '', needsCropping: false, error: 'Could not get canvas context' })
+            return
+          }
+
+          // Resize for performance if image is very large, but maintain aspect ratio
+          const maxDisplaySize = 800
+          let { width, height } = img
+          
+          if (width > maxDisplaySize || height > maxDisplaySize) {
+            const ratio = Math.min(maxDisplaySize / width, maxDisplaySize / height)
+            width = width * ratio
+            height = height * ratio
+          }
+
+          canvas.width = width
+          canvas.height = height
+          ctx.drawImage(img, 0, 0, width, height)
+          
+          const originalBase64 = canvas.toDataURL('image/jpeg', 0.9) // Higher quality for crop selection
+          resolve({ originalBase64, needsCropping: true })
+        } catch (error) {
+          resolve({ originalBase64: '', needsCropping: false, error: 'Failed to process image' })
+        }
+      }
+      
+      img.onerror = () => resolve({ originalBase64: '', needsCropping: false, error: 'Failed to load image' })
+      img.src = e.target?.result as string
+    }
+    
+    reader.onerror = () => resolve({ originalBase64: '', needsCropping: false, error: 'Failed to read file' })
+    reader.readAsDataURL(file)
+  })
+}
+
+/**
+ * Handle file selection and processing (legacy function for backward compatibility)
+ * This now goes through the crop flow
  */
 export async function handlePhotoSelection(
   file: File,
   options?: PhotoProcessingOptions
 ): Promise<PhotoProcessingResult> {
+  // For backward compatibility, this function processes directly without cropping
   return await processImageToBase64(file, options)
 }
 
