@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@acu-apex/ui'
 import { Camera, Upload, Edit3, Loader2 } from 'lucide-react'
 
 import { saveOnboardingData, getOnboardingData } from '@/lib/onboarding/storage'
+import { handlePhotoSelection } from '@/lib/photo-utils'
 
 export default function PhotoUploadPage() {
   const router = useRouter()
@@ -41,88 +42,19 @@ export default function PhotoUploadPage() {
     }
   }, [router])
 
-  const validateFile = (file: File): boolean => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file (JPEG, PNG, etc.)')
-      return false
-    }
-
-    // Check file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
-    if (file.size > maxSize) {
-      setError('Image file size must be less than 5MB')
-      return false
-    }
-
-    return true
-  }
-
-  const processImage = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      
-      reader.onload = (e) => {
-        const img = new window.Image()
-        img.onload = () => {
-          // Create canvas to resize image
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          
-          if (!ctx) {
-            reject(new Error('Could not get canvas context'))
-            return
-          }
-
-          // Calculate new dimensions (max 400x400)
-          const maxSize = 400
-          let { width, height } = img
-          
-          if (width > height) {
-            if (width > maxSize) {
-              height = (height * maxSize) / width
-              width = maxSize
-            }
-          } else {
-            if (height > maxSize) {
-              width = (width * maxSize) / height
-              height = maxSize
-            }
-          }
-
-          canvas.width = width
-          canvas.height = height
-
-          // Draw and compress image
-          ctx.drawImage(img, 0, 0, width, height)
-          
-          // Convert to base64 with compression
-          const base64 = canvas.toDataURL('image/jpeg', 0.8)
-          resolve(base64)
-        }
-        
-        img.onerror = () => reject(new Error('Failed to load image'))
-        img.src = e.target?.result as string
-      }
-      
-      reader.onerror = () => reject(new Error('Failed to read file'))
-      reader.readAsDataURL(file)
-    })
-  }
-
   const handleFileSelect = async (file: File) => {
     setError('')
-    
-    if (!validateFile(file)) {
-      return
-    }
-
     setIsLoading(true)
 
     try {
-      const base64Data = await processImage(file)
-      setPhotoData(base64Data)
-      setPreviewUrl(base64Data)
+      const result = await handlePhotoSelection(file)
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
+      setPhotoData(result.base64Data)
+      setPreviewUrl(result.base64Data)
     } catch (err) {
       setError('Failed to process image. Please try again.')
       console.error('Image processing error:', err)
