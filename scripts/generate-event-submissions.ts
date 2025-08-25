@@ -133,15 +133,24 @@ function buildMonthlyCheckSubmissions(
 ): EventSubmissionRow[] {
   const submissions: EventSubmissionRow[] = []
   for (let i = 0; i < totalChecks; i++) {
+    const submissionData: Record<string, any> = {
+      submission_type: submissionType,
+      status: i < presentChecks ? 'involved' : 'not_involved',
+      notes: `Monthly check ${i + 1}`,
+    }
+
+    // Add group_name or team_name based on submission type
+    if (submissionType === 'small_group') {
+      submissionData.group_name = faker.person.fullName() + "'s Small Group"
+    } else if (submissionType === 'dream_team') {
+      submissionData.team_name = faker.company.name() + " Dream Team"
+    }
+
     submissions.push({
       event_id: null,
       student_id: student.id,
       submitted_by: student.id,
-      submission_data: {
-        submission_type: submissionType,
-        status: i < presentChecks ? 'present' : 'absent',
-        notes: `Monthly check ${i + 1}`,
-      },
+      submission_data: submissionData,
       submitted_at: iso(randomDateInYear(student.academic_year_start)),
     })
   }

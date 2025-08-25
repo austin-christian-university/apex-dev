@@ -20,6 +20,7 @@ export type AttendanceSubmission = z.infer<typeof AttendanceSubmissionSchema>;
 export const SmallGroupMonthlyCheckSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('small_group'),
   status: z.enum(['involved', 'not_involved']),
+  group_name: z.string().min(1, 'Group name is required'),
 });
 export type SmallGroupMonthlyCheckSubmission = z.infer<
   typeof SmallGroupMonthlyCheckSubmissionSchema
@@ -28,6 +29,7 @@ export type SmallGroupMonthlyCheckSubmission = z.infer<
 export const DreamTeamMonthlyCheckSubmissionSchema = BaseSubmissionDataSchema.extend({
   submission_type: z.literal('dream_team'),
   status: z.enum(['involved', 'not_involved']),
+  team_name: z.string().min(1, 'Team name is required'),
 });
 export type DreamTeamMonthlyCheckSubmission = z.infer<
   typeof DreamTeamMonthlyCheckSubmissionSchema

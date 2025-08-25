@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@acu-apex/ui'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@acu-apex/ui'
 import { Label } from '@acu-apex/ui'
 import { Textarea } from '@acu-apex/ui'
+import { Input } from '@acu-apex/ui'
 import { AlertCircle, Users } from 'lucide-react'
 import { 
   SmallGroupMonthlyCheckSubmissionSchema, 
@@ -41,7 +42,9 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
   const [formData, setFormData] = useState<Partial<SmallGroupMonthlyCheckSubmission | DreamTeamMonthlyCheckSubmission>>({
     submission_type: submissionType,
     status: undefined,
-    notes: ''
+    notes: '',
+    ...(isSmallGroup && { group_name: '' }),
+    ...(isDreamTeam && { team_name: '' })
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -88,7 +91,15 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
       if (error instanceof Error) {
         // Handle Zod validation errors
         if (error.message.includes('Required')) {
-          setErrors({ status: 'Please select your involvement status' })
+          if (error.message.includes('status')) {
+            setErrors({ status: 'Please select your involvement status' })
+          } else if (error.message.includes('group_name') || error.message.includes('Group name')) {
+            setErrors({ group_name: 'Group name is required' })
+          } else if (error.message.includes('team_name') || error.message.includes('Team name')) {
+            setErrors({ team_name: 'Team name is required' })
+          } else {
+            setErrors({ general: error.message })
+          }
         } else {
           setErrors({ general: error.message })
         }
@@ -160,6 +171,31 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
             </p>
           </div>
 
+          {/* Group/Team Name */}
+          <div className="space-y-2">
+            <Label htmlFor="groupName">
+              {isSmallGroup ? 'Whose small group?' : isDreamTeam ? 'What Dream Team?' : 'Group Name'} *
+            </Label>
+            <Input
+              id="groupName"
+              placeholder={isSmallGroup ? 'Enter the name of your small group leader' : isDreamTeam ? 'Enter your Dream Team name' : 'Enter group name'}
+              value={isSmallGroup ? (formData as Partial<SmallGroupMonthlyCheckSubmission>).group_name || '' : (formData as Partial<DreamTeamMonthlyCheckSubmission>).team_name || ''}
+              onChange={(e) => {
+                if (isSmallGroup) {
+                  setFormData(prev => ({ ...prev, group_name: e.target.value }))
+                } else if (isDreamTeam) {
+                  setFormData(prev => ({ ...prev, team_name: e.target.value }))
+                }
+              }}
+            />
+            {(errors.group_name || errors.team_name) && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                {errors.group_name || errors.team_name}
+              </p>
+            )}
+          </div>
+
           {/* Optional Notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes (Optional)</Label>
@@ -196,7 +232,12 @@ export function MonthlyCheckinForm({ event, studentId, onSuccess, onCancel }: Mo
             <Button 
               type="submit" 
               className="flex-1"
-              disabled={isSubmitting || !formData.status}
+              disabled={
+                isSubmitting || 
+                !formData.status || 
+                (isSmallGroup && !(formData as Partial<SmallGroupMonthlyCheckSubmission>).group_name) ||
+                (isDreamTeam && !(formData as Partial<DreamTeamMonthlyCheckSubmission>).team_name)
+              }
             >
               {isSubmitting ? 'Submitting...' : 'Submit Check-In'}
             </Button>
